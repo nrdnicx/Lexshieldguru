@@ -314,9 +314,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_toke
         exit;
     } elseif ($action === 'update') {
         $status = (string) ($_POST['status'] ?? 'pending');
-        $stmt = $pdo->prepare("SELECT id FROM appointments WHERE id = :id AND lawyer_id = :lawyer_id");
+        $stmt = $pdo->prepare(
+            'SELECT a.id, c.user_id AS client_user_id
+             FROM appointments a
+             JOIN clients c ON c.id = a.client_id
+             WHERE a.id = :id AND a.lawyer_id = :lawyer_id
+             LIMIT 1'
+        );
         $stmt->execute(['id' => $appointmentId, 'lawyer_id' => $lawyerId]);
-        if ($stmt->fetchColumn()) {
+        $appointment = $stmt->fetch();
+        if ($appointment) {
             if (in_array($status, ['pending', 'confirmed', 'cancelled'], true)) {
                 $pdo->prepare('UPDATE appointments SET status = :status, scheduled_at = COALESCE(NULLIF(:scheduled_at, ""), scheduled_at), notes = COALESCE(NULLIF(:notes, ""), notes) WHERE id = :id AND lawyer_id = :lawyer_id')->execute([
                     'status' => $status,
@@ -327,6 +334,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_toke
                 ]);
                 lex_audit('update_appointment', 'appointments', (string) $appointmentId);
                 $message = $status === 'confirmed' ? 'Appointment approved.' : ($status === 'cancelled' ? 'Appointment cancelled.' : 'Appointment updated.');
+                lex_notify((int) $appointment['client_user_id'], 'appointment', $message);
                 lex_flash_set('success', $message);
                 header('Location: ' . $returnUrl);
                 exit;

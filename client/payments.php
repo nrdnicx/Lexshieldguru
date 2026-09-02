@@ -239,11 +239,19 @@ lex_page_header('Payments', 'payments', $user);
             </label>
             <label class="full">Proof of payment
               <div class="payment-upload-box">
-                <input class="payment-file-input" type="file" name="payment_proof" accept="image/png,image/jpeg,image/webp,image/gif,application/pdf" required>
+                <input class="payment-file-input" type="file" name="payment_proof" accept="image/png,image/jpeg,image/webp,image/gif,application/pdf" required data-payment-proof-input>
                 <div class="payment-upload-copy">
                   <strong>Drop file here or click to browse</strong>
                   <span>JPG • PNG • WEBP • PDF • Max 8 MB</span>
                 </div>
+              </div>
+              <div class="payment-file-preview" data-payment-proof-preview hidden>
+                <span class="payment-file-preview-icon" aria-hidden="true"></span>
+                <span class="payment-file-preview-copy">
+                  <strong data-payment-proof-name></strong>
+                  <small data-payment-proof-size></small>
+                </span>
+                <button class="payment-file-remove" type="button" aria-label="Remove selected proof" data-payment-proof-remove>&times;</button>
               </div>
             </label>
             <label class="full">Notes
@@ -355,21 +363,57 @@ lex_page_header('Payments', 'payments', $user);
 (() => {
   const select = document.querySelector('[data-lawyer-payment-select]');
   const dataEl = document.getElementById('lawyer-payment-accounts');
-  if (!select || !dataEl) return;
-  const accounts = JSON.parse(dataEl.textContent || '[]');
-  const qr = document.querySelector('[data-lawyer-payment-qr]');
-  const account = document.querySelector('[data-lawyer-payment-account]');
-  const number = document.querySelector('[data-lawyer-payment-number]');
-  const name = document.querySelector('[data-lawyer-payment-name]');
-  const render = () => {
-    const selected = accounts.find((item) => String(item.id) === String(select.value));
-    if (!selected) return;
-    if (qr) qr.src = selected.qrUrl;
-    if (account) account.textContent = selected.account;
-    if (number) number.textContent = selected.number;
-    if (name) name.textContent = selected.name;
+  if (select && dataEl) {
+    const accounts = JSON.parse(dataEl.textContent || '[]');
+    const qr = document.querySelector('[data-lawyer-payment-qr]');
+    const account = document.querySelector('[data-lawyer-payment-account]');
+    const number = document.querySelector('[data-lawyer-payment-number]');
+    const name = document.querySelector('[data-lawyer-payment-name]');
+    const render = () => {
+      const selected = accounts.find((item) => String(item.id) === String(select.value));
+      if (!selected) return;
+      if (qr) qr.src = selected.qrUrl;
+      if (account) account.textContent = selected.account;
+      if (number) number.textContent = selected.number;
+      if (name) name.textContent = selected.name;
+    };
+    select.addEventListener('change', render);
+  }
+
+  const proofInput = document.querySelector('[data-payment-proof-input]');
+  const proofPreview = document.querySelector('[data-payment-proof-preview]');
+  const proofName = document.querySelector('[data-payment-proof-name]');
+  const proofSize = document.querySelector('[data-payment-proof-size]');
+  const proofRemove = document.querySelector('[data-payment-proof-remove]');
+  if (!proofInput || !proofPreview || !proofName || !proofSize || !proofRemove) return;
+
+  const formatSize = (size) => {
+    if (!Number.isFinite(size) || size <= 0) return '0 KB';
+    if (size < 1024) return `${size} B`;
+    if (size < 1024 * 1024) return `${Math.round(size / 1024)} KB`;
+    return `${(size / 1024 / 1024).toFixed(1)} MB`;
   };
-  select.addEventListener('change', render);
+
+  const syncProofPreview = () => {
+    const file = proofInput.files && proofInput.files[0] ? proofInput.files[0] : null;
+    if (!file) {
+      proofPreview.hidden = true;
+      proofName.textContent = '';
+      proofSize.textContent = '';
+      return;
+    }
+
+    proofName.textContent = file.name;
+    proofSize.textContent = formatSize(file.size);
+    proofPreview.hidden = false;
+  };
+
+  proofInput.addEventListener('change', syncProofPreview);
+  proofRemove.addEventListener('click', () => {
+    proofInput.value = '';
+    syncProofPreview();
+    proofInput.focus();
+  });
 })();
 </script>
 <?php lex_page_footer(); ?>

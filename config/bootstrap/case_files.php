@@ -246,7 +246,15 @@ function lex_case_file_vault_fetch(int $caseFileId, array $viewer): array
          ORDER BY f.parent_folder_id IS NOT NULL, f.name ASC',
         ['case_file_id' => $caseFileId]
     );
-    $statusClause = ((string) ($viewer['role'] ?? '') === 'lawyer') ? '1 = 1' : 'd.upload_status = "approved"';
+    $params = ['case_file_id' => $caseFileId];
+    if ((string) ($viewer['role'] ?? '') === 'lawyer') {
+        $statusClause = '1 = 1';
+    } elseif ((string) ($viewer['role'] ?? '') === 'client') {
+        $statusClause = '(d.upload_status = "approved" OR d.uploaded_by_user_id = :viewer_user_id)';
+        $params['viewer_user_id'] = (int) ($viewer['id'] ?? 0);
+    } else {
+        $statusClause = 'd.upload_status = "approved"';
+    }
     $documents = lex_recent(
         'SELECT d.*, f.name AS folder_name, f.slug AS folder_slug, u.full_name AS uploaded_by_name, au.full_name AS approved_by_name
          FROM case_file_documents d
@@ -255,7 +263,7 @@ function lex_case_file_vault_fetch(int $caseFileId, array $viewer): array
          LEFT JOIN users au ON au.id = d.approved_by_user_id
          WHERE d.case_file_id = :case_file_id AND ' . $statusClause . '
          ORDER BY d.upload_status = "pending" DESC, d.created_at DESC',
-        ['case_file_id' => $caseFileId]
+        $params
     );
     return ['folders' => $folders, 'documents' => $documents];
 }

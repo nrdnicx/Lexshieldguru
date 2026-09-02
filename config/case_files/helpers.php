@@ -627,6 +627,9 @@ function lex_case_files_render_vault(array $record, array $filters, array $user)
                       </a>
                       <div class="case-vault-doc-main">
                         <strong><?= lex_e((string) $document['original_name']) ?></strong>
+                        <?php if ((string) $document['upload_status'] === 'rejected' && trim((string) ($document['rejection_reason'] ?? '')) !== ''): ?>
+                          <small class="case-vault-rejection-reason">Reason: <?= lex_e((string) $document['rejection_reason']) ?></small>
+                        <?php endif; ?>
                       </div>
                       <div class="case-vault-doc-owner">
                         <span class="case-vault-owner-icon" aria-hidden="true"></span>
@@ -674,6 +677,10 @@ function lex_case_files_render_vault(array $record, array $filters, array $user)
                                       <input type="hidden" name="action" value="reject_document">
                                       <input type="hidden" name="case_file_id" value="<?= (int) $record['id'] ?>">
                                       <input type="hidden" name="document_id" value="<?= (int) $document['id'] ?>">
+                                      <label class="case-vault-reject-field">
+                                        <span>Reject reason</span>
+                                        <textarea name="rejection_reason" rows="3" maxlength="500" required placeholder="Example: blurry image or wrong document"></textarea>
+                                      </label>
                                       <button class="is-danger" type="submit">Reject</button>
                                     </form>
                                   <?php endif; ?>

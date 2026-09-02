@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_toke
     $selectedNotes = $notes;
 
     $stmt = $pdo->prepare('
-        SELECT l.id
+        SELECT l.id, u.id AS lawyer_user_id
         FROM lawyers l
         JOIN users u ON u.id = l.user_id
         WHERE l.id = :lawyer_id
@@ -86,7 +86,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_toke
         LIMIT 1
     ');
     $stmt->execute(['lawyer_id' => $lawyerId]);
-    $lawyerExists = (int) ($stmt->fetchColumn() ?: 0);
+    $lawyerRow = $stmt->fetch();
+    $lawyerExists = (int) ($lawyerRow['id'] ?? 0);
 
     $scheduledDateTime = null;
     if ($scheduledAt !== '') {
@@ -154,6 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_toke
             $appointmentId = (string) $pdo->lastInsertId();
             lex_audit('book_appointment', 'appointments', $appointmentId);
             $pdo->commit();
+            lex_notify((int) ($lawyerRow['lawyer_user_id'] ?? 0), 'appointment', 'New appointment request from ' . (string) ($user['full_name'] ?? 'a client') . '.');
             $message = 'Appointment request submitted. Your lawyer will review it and confirm the schedule.';
             $selectedDate = '';
             $selectedTime = '';

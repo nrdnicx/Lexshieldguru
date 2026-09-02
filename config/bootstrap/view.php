@@ -35,6 +35,63 @@ function lex_render_toasts(array $flash): void
     echo '</div>';
 }
 
+function lex_render_notification_bell(array $user): void
+{
+    $userId = (int) ($user['id'] ?? 0);
+    if ($userId <= 0) {
+        return;
+    }
+
+    $state = lex_notifications_for_user($userId, 8);
+    $items = $state['items'];
+    $unreadCount = (int) $state['unread_count'];
+    $badge = $unreadCount > 99 ? '99+' : (string) $unreadCount;
+    $currentUri = $_SERVER['REQUEST_URI'] ?? lex_app_url('index.php');
+    $bellIcon = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21.25a2.35 2.35 0 0 0 2.28-1.8H9.72a2.35 2.35 0 0 0 2.28 1.8Zm6.45-5.15-.95-.94V10a5.5 5.5 0 0 0-4.25-5.35V4a1.25 1.25 0 1 0-2.5 0v.65A5.5 5.5 0 0 0 6.5 10v5.16l-.95.94a1.45 1.45 0 0 0 1.02 2.47h10.86a1.45 1.45 0 0 0 1.02-2.47Z" fill="currentColor"/></svg>';
+
+    echo '<details class="notification-menu">';
+    echo '<summary class="icon-button notification-trigger" aria-label="Open notifications" title="Notifications">';
+    echo $bellIcon;
+    if ($unreadCount > 0) {
+        echo '<span class="notification-badge">' . lex_e($badge) . '</span>';
+    }
+    echo '</summary>';
+    echo '<div class="notification-panel">';
+    echo '<div class="notification-panel-head"><strong>Notifications</strong>';
+    if ($unreadCount > 0) {
+        echo '<form method="post" action="' . lex_e(lex_app_url('notifications.php')) . '">';
+        echo lex_csrf_field();
+        echo '<input type="hidden" name="action" value="mark_notifications_read">';
+        echo '<input type="hidden" name="return_to" value="' . lex_e($currentUri) . '">';
+        echo '<button type="submit">Mark all read</button>';
+        echo '</form>';
+    }
+    echo '</div>';
+    if (!$items) {
+        echo '<div class="notification-empty">No notifications yet.</div>';
+    } else {
+        echo '<div class="notification-list">';
+        foreach ($items as $item) {
+            $isUnread = (int) ($item['is_read'] ?? 0) === 0;
+            $type = preg_replace('/[^a-z0-9_-]+/i', '', strtolower((string) ($item['type'] ?? 'notice'))) ?: 'notice';
+            $timeLabel = '';
+            if (!empty($item['created_at'])) {
+                $timestamp = strtotime((string) $item['created_at']);
+                $timeLabel = $timestamp ? date('M j, g:i A', $timestamp) : (string) $item['created_at'];
+            }
+            echo '<article class="notification-item' . ($isUnread ? ' is-unread' : '') . '">';
+            echo '<span class="notification-dot notification-dot--' . lex_e($type) . '" aria-hidden="true"></span>';
+            echo '<div><p>' . lex_e((string) ($item['message'] ?? 'Notification')) . '</p>';
+            if ($timeLabel !== '') {
+                echo '<time datetime="' . lex_e((string) ($item['created_at'] ?? '')) . '">' . lex_e($timeLabel) . '</time>';
+            }
+            echo '</div></article>';
+        }
+        echo '</div>';
+    }
+    echo '</div></details>';
+}
+
 function lex_page_header(string $title, string $active = '', ?array $user = null): void
 {
     $user = $user ?? lex_current_user();
@@ -158,6 +215,9 @@ function lex_page_header(string $title, string $active = '', ?array $user = null
     echo '<div class="topbar-actions">';
     echo '<button class="icon-button" id="themeToggle" type="button" aria-label="Toggle theme">&#9681;</button>';
     if ($user) {
+        if ($isWorkspaceLayout) {
+            lex_render_notification_bell($user);
+        }
         if ($isWorkspaceLayout) {
             echo '<div class="dashboard-user-chip">';
             if ($userAvatarUrl !== '') {

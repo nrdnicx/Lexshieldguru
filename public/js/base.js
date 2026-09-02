@@ -29,6 +29,36 @@
 
   applyTheme(getPreferredTheme());
 
+  const disableSavedInputSuggestions = (scope = document) => {
+    const forms = scope.querySelectorAll ? scope.querySelectorAll('form') : [];
+    forms.forEach((form) => {
+      if (form.dataset.allowAutocomplete === 'true') return;
+      form.setAttribute('autocomplete', 'off');
+    });
+
+    const fields = scope.querySelectorAll
+      ? scope.querySelectorAll('input:not([type="password"]):not([type="hidden"]):not([type="file"]), textarea')
+      : [];
+    fields.forEach((field) => {
+      if (field.dataset.allowAutocomplete === 'true') return;
+      field.setAttribute('autocomplete', 'off');
+      field.setAttribute('autocorrect', 'off');
+      field.setAttribute('spellcheck', 'false');
+    });
+  };
+
+  disableSavedInputSuggestions();
+
+  const suggestionObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (!(node instanceof HTMLElement)) return;
+        disableSavedInputSuggestions(node);
+      });
+    });
+  });
+  suggestionObserver.observe(document.documentElement, { childList: true, subtree: true });
+
   const sidebar = document.getElementById('sidebar');
   const toggle = document.getElementById('sidebarToggle');
   if (toggle && sidebar) {

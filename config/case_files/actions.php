@@ -144,16 +144,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         header('Location: ' . $returnUrl);
                         exit;
                     } elseif ($action === 'reject_document') {
+                        $rejectionReason = lex_sanitize_multiline_text($_POST['rejection_reason'] ?? '');
+                        if ($rejectionReason === '') {
+                            $error = 'Add a reason before rejecting the document.';
+                        } else {
+                            $rejectionReason = substr($rejectionReason, 0, 500);
                         $pdo->prepare(
                             'UPDATE case_file_documents
-                             SET upload_status = "rejected", approved_by_user_id = :approved_by_user_id, approved_at = NOW()
+                             SET upload_status = "rejected", approved_by_user_id = :approved_by_user_id, approved_at = NOW(), rejection_reason = :rejection_reason
                              WHERE id = :id'
-                        )->execute(['approved_by_user_id' => (int) $user['id'], 'id' => $documentId]);
+                        )->execute([
+                            'approved_by_user_id' => (int) $user['id'],
+                            'rejection_reason' => $rejectionReason,
+                            'id' => $documentId,
+                        ]);
                         lex_audit('reject_case_file_document', 'case_file_documents', (string) $documentId);
-                        lex_notify((int) $caseFile['client_user_id'], 'case_file', 'Your submitted case document was rejected.');
+                        lex_notify((int) $caseFile['client_user_id'], 'case_file', 'Your submitted case document was rejected: ' . $rejectionReason);
                         lex_flash_set('success', 'Document rejected.');
                         header('Location: ' . $returnUrl);
                         exit;
+                        }
                     } elseif ($action === 'rename_document') {
                         $newName = lex_sanitize_text($_POST['document_name'] ?? '');
                         if ($newName === '') {

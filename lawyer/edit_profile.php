@@ -6,7 +6,7 @@ $pdo = lex_pdo();
 $lawyerId = lex_user_lawyer_id((int) $user['id']);
 
 $profile = lex_recent(
-    'SELECT l.bar_number, l.specialization, l.status, l.bio, l.background, u.full_name, u.email, u.password_hash, u.avatar_stored_name, u.created_at
+    'SELECT l.specialization, l.status, l.bio, l.background, u.full_name, u.email, u.password_hash, u.avatar_stored_name, u.created_at
      FROM lawyers l
      JOIN users u ON u.id = l.user_id
      WHERE l.id = :id
@@ -14,7 +14,6 @@ $profile = lex_recent(
     ['id' => $lawyerId]
 );
 $profile = $profile[0] ?? [
-    'bar_number' => '',
     'specialization' => '',
     'status' => 'active',
     'bio' => '',

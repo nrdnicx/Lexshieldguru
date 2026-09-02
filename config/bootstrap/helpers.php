@@ -45,6 +45,7 @@ function lex_reject_upload(string $context, string $message): never
 function lex_notify(int $userId, string $type, string $message): void
 {
     try {
+        lex_notifications_table_ensure();
         $stmt = lex_pdo()->prepare('INSERT INTO notifications (user_id, type, message, is_read, created_at) VALUES (:user_id, :type, :message, 0, NOW())');
         $stmt->execute([
             'user_id' => $userId,
@@ -53,6 +54,59 @@ function lex_notify(int $userId, string $type, string $message): void
         ]);
     } catch (Throwable $e) {
         error_log(sprintf('[NOTIFY] %s for user %d failed: %s', $type, $userId, $e->getMessage()));
+    }
+}
+
+function lex_notifications_table_ensure(): void
+{
+    static $done = false;
+    if ($done) {
+        return;
+    }
+
+    lex_db_retry(static function () use (&$done): void {
+        lex_pdo()->exec(
+            "CREATE TABLE IF NOT EXISTS `notifications` (
+              `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+              `user_id` INT UNSIGNED NOT NULL,
+              `type` VARCHAR(60) NOT NULL,
+              `message` VARCHAR(255) NOT NULL,
+              `is_read` TINYINT(1) NOT NULL DEFAULT 0,
+              `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              PRIMARY KEY (`id`),
+              KEY `idx_notifications_user_read` (`user_id`, `is_read`),
+              CONSTRAINT `fk_notifications_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+        );
+        $done = true;
+    });
+}
+
+function lex_notifications_for_user(int $userId, int $limit = 8): array
+{
+    if ($userId <= 0) {
+        return ['items' => [], 'unread_count' => 0];
+    }
+
+    try {
+        lex_notifications_table_ensure();
+        $countStmt = lex_pdo()->prepare('SELECT COUNT(*) FROM notifications WHERE user_id = :user_id AND is_read = 0');
+        $countStmt->execute(['user_id' => $userId]);
+        $itemStmt = lex_pdo()->prepare(
+            'SELECT id, type, message, is_read, created_at
+             FROM notifications
+             WHERE user_id = :user_id
+             ORDER BY created_at DESC, id DESC
+             LIMIT ' . max(1, min(20, $limit))
+        );
+        $itemStmt->execute(['user_id' => $userId]);
+        return [
+            'items' => $itemStmt->fetchAll(),
+            'unread_count' => (int) $countStmt->fetchColumn(),
+        ];
+    } catch (Throwable $e) {
+        error_log(sprintf('[NOTIFY] Fetch for user %d failed: %s', $userId, $e->getMessage()));
+        return ['items' => [], 'unread_count' => 0];
     }
 }
 

@@ -3463,7 +3463,7 @@ img { max-width: 100%; display: block; }
   gap: 0.45rem;
   align-items: center;
   justify-content: space-between;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .topbar-title {
@@ -3533,6 +3533,160 @@ img { max-width: 100%; display: block; }
 .button:focus-visible, .icon-button:focus-visible {
   outline: 2px solid rgba(201, 168, 76, 0.48);
   outline-offset: 2px;
+}
+
+.notification-menu {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.notification-menu > summary {
+  list-style: none;
+}
+
+.notification-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.notification-trigger {
+  position: relative;
+  background: #071a31;
+  border: 1px solid rgba(80, 111, 154, 0.2);
+  color: #f3f7ff;
+}
+
+.notification-trigger svg {
+  width: 17px;
+  height: 17px;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 0.62rem;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 0 0 2px var(--surface);
+}
+
+.notification-panel {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  right: 0;
+  z-index: 90;
+  width: min(340px, calc(100vw - 2rem));
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.24);
+}
+
+.notification-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.notification-panel-head strong {
+  font-size: 0.82rem;
+}
+
+.notification-panel-head button {
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.notification-list {
+  max-height: 340px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.notification-list::-webkit-scrollbar {
+  display: none;
+}
+
+.notification-item {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr);
+  gap: 0.65rem;
+  padding: 0.72rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.notification-item:last-child {
+  border-bottom: 0;
+}
+
+.notification-item.is-unread {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.notification-dot {
+  width: 8px;
+  height: 8px;
+  margin-top: 0.28rem;
+  border-radius: 999px;
+  background: #94a3b8;
+}
+
+.notification-dot--case_file {
+  background: #60a5fa;
+}
+
+.notification-dot--payment {
+  background: #22c55e;
+}
+
+.notification-dot--message {
+  background: #a78bfa;
+}
+
+.notification-dot--appointment {
+  background: #f59e0b;
+}
+
+.notification-dot--security {
+  background: #ef4444;
+}
+
+.notification-item p {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.notification-item time,
+.notification-empty {
+  display: block;
+  margin-top: 0.22rem;
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.notification-empty {
+  padding: 1rem;
+  margin: 0;
 }
 
 .button-primary {
@@ -9086,6 +9240,93 @@ html[data-theme="dark"] .payment-upload-box {
 
 .payment-upload-copy span {
   font-size: 0.76rem;
+}
+
+.payment-file-preview {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 32px;
+  align-items: center;
+  gap: 0.62rem;
+  margin-top: 0.55rem;
+  padding: 0.58rem 0.62rem;
+  border-radius: 12px;
+  border: 1px solid rgba(59, 130, 246, 0.22);
+  background: rgba(239, 246, 255, 0.92);
+}
+
+.payment-file-preview[hidden] {
+  display: none;
+}
+
+.payment-file-preview-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(37, 99, 235, 0.13);
+  color: #2563eb;
+  position: relative;
+}
+
+.payment-file-preview-icon::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='black' d='M6.75 3.5h7.1c.6 0 1.17.24 1.59.66l2.9 2.9c.42.42.66.99.66 1.59v8.6A3.25 3.25 0 0 1 15.75 20H6.75A3.25 3.25 0 0 1 3.5 16.75v-10A3.25 3.25 0 0 1 6.75 3.5Zm7.35 1.9v1.45c0 .3.25.55.55.55h1.45l-2-2Z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='black' d='M6.75 3.5h7.1c.6 0 1.17.24 1.59.66l2.9 2.9c.42.42.66.99.66 1.59v8.6A3.25 3.25 0 0 1 15.75 20H6.75A3.25 3.25 0 0 1 3.5 16.75v-10A3.25 3.25 0 0 1 6.75 3.5Zm7.35 1.9v1.45c0 .3.25.55.55.55h1.45l-2-2Z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.payment-file-preview-copy {
+  min-width: 0;
+  display: grid;
+  gap: 0.08rem;
+}
+
+.payment-file-preview-copy strong {
+  overflow: hidden;
+  color: #102033;
+  font-size: 0.84rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.payment-file-preview-copy small {
+  color: #64748b;
+  font-size: 0.72rem;
+}
+
+.payment-file-remove {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  cursor: pointer;
+  font-size: 1.15rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.payment-file-remove:hover,
+.payment-file-remove:focus-visible {
+  background: rgba(239, 68, 68, 0.16);
+  outline: none;
+}
+
+html[data-theme="dark"] .payment-file-preview {
+  background: rgba(15, 23, 42, 0.76);
+  border-color: rgba(96, 165, 250, 0.28);
+}
+
+html[data-theme="dark"] .payment-file-preview-copy strong {
+  color: #f7fbff;
+}
+
+html[data-theme="dark"] .payment-file-preview-copy small {
+  color: #9fb0c5;
 }
 
 .payment-security-note {
@@ -19191,6 +19432,8 @@ body.app-workspace:has([data-appointment-board]) {
 
 body.app-workspace:has([data-appointment-board]) .main-content {
   padding: 0.75rem 1rem 1.2rem;
+  align-content: start;
+  grid-auto-rows: max-content;
   gap: 0.9rem;
   background: #020f20;
 }
@@ -19728,8 +19971,10 @@ html[data-theme="light"] body.app-workspace:has([data-appointment-board]) .topba
 
 html[data-theme="light"] body.app-workspace:has([data-case-files-app]) #sidebarToggle,
 html[data-theme="light"] body.app-workspace:has([data-case-files-app]) #themeToggle,
+html[data-theme="light"] body.app-workspace:has([data-case-files-app]) .notification-trigger,
 html[data-theme="light"] body.app-workspace:has([data-appointment-board]) #sidebarToggle,
-html[data-theme="light"] body.app-workspace:has([data-appointment-board]) #themeToggle {
+html[data-theme="light"] body.app-workspace:has([data-appointment-board]) #themeToggle,
+html[data-theme="light"] body.app-workspace:has([data-appointment-board]) .notification-trigger {
   background: #ffffff;
   border-color: rgba(37, 61, 92, 0.14);
   color: #102033;
@@ -19934,10 +20179,14 @@ html[data-theme="light"] body:has([data-case-files-app]) .case-vault-section-fol
 /* Case vault document browser redesign. */
 body:has([data-case-files-app]) .case-vault-doc-list {
   display: grid;
-  overflow: visible;
+  max-height: calc(34px + (72px * 5));
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
   border: 1px solid rgba(70, 98, 138, 0.24);
   border-radius: 8px;
   background: #07172c;
+  scrollbar-width: none;
 }
 
 body:has([data-case-files-app]) .case-vault-folder-section[open] {
@@ -19953,11 +20202,19 @@ body:has([data-case-files-app]) .case-vault-doc {
 }
 
 body:has([data-case-files-app]) .case-vault-doc-table-head {
+  position: sticky;
+  top: 0;
+  z-index: 5;
   min-height: 34px;
   padding: 0 0.82rem;
+  background: #07172c;
   color: #9dafc6;
   font-size: 0.7rem;
   font-weight: 800;
+}
+
+body:has([data-case-files-app]) .case-vault-doc-list::-webkit-scrollbar {
+  display: none;
 }
 
 body:has([data-case-files-app]) .case-vault-doc-table-head span:first-child {
@@ -19975,7 +20232,6 @@ body:has([data-case-files-app]) .case-vault-doc {
 
 body:has([data-case-files-app]) .case-vault-doc:has(.case-vault-doc-menu[open]) {
   z-index: 40;
-  margin-bottom: 9.5rem;
 }
 
 body:has([data-case-files-app]) .case-vault-doc-thumb {
@@ -20014,6 +20270,18 @@ body:has([data-case-files-app]) .case-vault-doc-main strong {
   font-size: 0.8rem;
   font-weight: 900;
   line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body:has([data-case-files-app]) .case-vault-rejection-reason {
+  display: block;
+  margin-top: 0.24rem;
+  overflow: hidden;
+  color: #fca5a5;
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 1.3;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -20101,8 +20369,9 @@ body:has([data-case-files-app]) .case-vault-doc-menu summary span {
 
 body:has([data-case-files-app]) .case-vault-doc-menu-panel {
   position: absolute;
-  bottom: calc(100% + 0.35rem);
+  top: calc(100% + 0.35rem);
   right: 0;
+  bottom: auto;
   z-index: 30;
   width: 218px;
   display: grid;
@@ -20152,18 +20421,27 @@ body:has([data-case-files-app]) .case-vault-menu-rename {
   background: rgba(125, 184, 255, 0.07);
 }
 
-body:has([data-case-files-app]) .case-vault-menu-rename label {
+body:has([data-case-files-app]) .case-vault-menu-rename label,
+body:has([data-case-files-app]) .case-vault-reject-field {
   display: grid;
   gap: 0.25rem;
 }
 
-body:has([data-case-files-app]) .case-vault-menu-rename label span {
+body:has([data-case-files-app]) .case-vault-reject-field {
+  padding: 0.35rem;
+  border-radius: 7px;
+  background: rgba(240, 85, 106, 0.08);
+}
+
+body:has([data-case-files-app]) .case-vault-menu-rename label span,
+body:has([data-case-files-app]) .case-vault-reject-field span {
   color: #9dafc6;
   font-size: 0.62rem;
   font-weight: 800;
 }
 
-body:has([data-case-files-app]) .case-vault-menu-rename input {
+body:has([data-case-files-app]) .case-vault-menu-rename input,
+body:has([data-case-files-app]) .case-vault-reject-field textarea {
   width: 100%;
   min-height: 30px;
   border-radius: 6px;
@@ -20176,6 +20454,13 @@ body:has([data-case-files-app]) .case-vault-menu-rename input {
   outline: none;
 }
 
+body:has([data-case-files-app]) .case-vault-reject-field textarea {
+  min-height: 74px;
+  padding-top: 0.45rem;
+  line-height: 1.35;
+  resize: vertical;
+}
+
 html[data-theme="light"] body:has([data-case-files-app]) .case-vault-doc-list {
   background: #ffffff;
   border-color: rgba(203, 213, 225, 0.85);
@@ -20183,6 +20468,7 @@ html[data-theme="light"] body:has([data-case-files-app]) .case-vault-doc-list {
 }
 
 html[data-theme="light"] body:has([data-case-files-app]) .case-vault-doc-table-head {
+  background: #ffffff;
   color: #64748b;
 }
 
@@ -20199,6 +20485,10 @@ html[data-theme="light"] body:has([data-case-files-app]) .case-vault-doc-thumb {
 html[data-theme="light"] body:has([data-case-files-app]) .case-vault-doc-main strong,
 html[data-theme="light"] body:has([data-case-files-app]) .case-vault-doc-date strong {
   color: #111827;
+}
+
+html[data-theme="light"] body:has([data-case-files-app]) .case-vault-rejection-reason {
+  color: #b91c1c;
 }
 
 html[data-theme="light"] body:has([data-case-files-app]) .case-vault-doc-owner,
@@ -20235,11 +20525,17 @@ html[data-theme="light"] body:has([data-case-files-app]) .case-vault-menu-rename
   background: #f1f5f9;
 }
 
-html[data-theme="light"] body:has([data-case-files-app]) .case-vault-menu-rename label span {
+html[data-theme="light"] body:has([data-case-files-app]) .case-vault-reject-field {
+  background: #fef2f2;
+}
+
+html[data-theme="light"] body:has([data-case-files-app]) .case-vault-menu-rename label span,
+html[data-theme="light"] body:has([data-case-files-app]) .case-vault-reject-field span {
   color: #64748b;
 }
 
-html[data-theme="light"] body:has([data-case-files-app]) .case-vault-menu-rename input {
+html[data-theme="light"] body:has([data-case-files-app]) .case-vault-menu-rename input,
+html[data-theme="light"] body:has([data-case-files-app]) .case-vault-reject-field textarea {
   background: #ffffff;
   border-color: #cbd5e1;
   color: #111827;
@@ -20254,6 +20550,10 @@ html[data-theme="light"] body:has([data-case-files-app]) .case-vault-folder-cont
 }
 
 @media (max-width: 980px) {
+  body:has([data-case-files-app]) .case-vault-doc-list {
+    max-height: calc(92px * 5);
+  }
+
   body:has([data-case-files-app]) .case-vault-doc-table-head {
     display: none;
   }
@@ -21017,6 +21317,16 @@ body.app-workspace .main-content {
   gap: 0.9rem;
 }
 
+body.app-workspace:has([data-appointment-board]) .main-content {
+  align-content: start;
+  align-items: start;
+  grid-auto-rows: max-content;
+}
+
+body:has([data-appointment-board]) .appointment-card {
+  align-self: start;
+}
+
 body.app-workspace .topbar {
   height: 40px;
   min-height: 40px;
@@ -21110,10 +21420,32 @@ html[data-theme="light"] body.app-workspace .dashboard-user-meta span {
 }
 
 html[data-theme="light"] body.app-workspace #sidebarToggle,
-html[data-theme="light"] body.app-workspace #themeToggle {
+html[data-theme="light"] body.app-workspace #themeToggle,
+html[data-theme="light"] body.app-workspace .notification-trigger {
   background: #ffffff;
   border-color: rgba(37, 61, 92, 0.14);
   color: #102033;
+}
+
+html[data-theme="light"] body.app-workspace .notification-panel {
+  background: #ffffff;
+  border-color: rgba(37, 61, 92, 0.14);
+  box-shadow: 0 18px 46px rgba(15, 23, 42, 0.16);
+}
+
+html[data-theme="light"] body.app-workspace .notification-panel-head,
+html[data-theme="light"] body.app-workspace .notification-item {
+  border-color: #e2e8f0;
+}
+
+html[data-theme="light"] body.app-workspace .notification-panel-head strong,
+html[data-theme="light"] body.app-workspace .notification-item p {
+  color: #102033;
+}
+
+html[data-theme="light"] body.app-workspace .notification-item time,
+html[data-theme="light"] body.app-workspace .notification-empty {
+  color: #64748b;
 }
 
 @media (max-width: 680px) {
@@ -21125,6 +21457,23 @@ html[data-theme="light"] body.app-workspace #themeToggle {
 
   body.app-workspace .dashboard-user-meta {
     display: none;
+  }
+
+  body.app-workspace .notification-menu {
+    position: static;
+  }
+
+  body.app-workspace .notification-panel {
+    position: fixed;
+    top: 58px;
+    right: 0.75rem;
+    left: 0.75rem;
+    width: auto;
+    max-height: min(70vh, 430px);
+  }
+
+  body.app-workspace .notification-list {
+    max-height: calc(min(70vh, 430px) - 48px);
   }
 }
 

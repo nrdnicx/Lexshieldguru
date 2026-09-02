@@ -10,7 +10,7 @@ $unreadMessages = lex_stats('SELECT COUNT(*) FROM messages WHERE receiver_id = :
 $totalClients = lex_stats('SELECT COUNT(DISTINCT client_id) FROM cases WHERE lawyer_id = :id', ['id' => $lawyerId]);
 
 $lawyerProfile = lex_recent(
-    'SELECT l.bar_number, l.specialization, l.status, l.bio, l.background, u.full_name, u.email, u.avatar_stored_name, u.created_at
+    'SELECT l.specialization, l.status, l.bio, l.background, u.full_name, u.email, u.avatar_stored_name, u.created_at
      FROM lawyers l
      JOIN users u ON u.id = l.user_id
      WHERE l.id = :id
@@ -18,7 +18,6 @@ $lawyerProfile = lex_recent(
     ['id' => $lawyerId]
 );
 $lawyerProfile = $lawyerProfile[0] ?? [
-    'bar_number' => '',
     'specialization' => '',
     'status' => 'active',
     'bio' => '',
@@ -210,10 +209,6 @@ lex_page_header('Lawyer Dashboard', 'dashboard', $user);
         <div class="lawyer-dashboard-detail-row">
           <span>Email</span>
           <strong><?= lex_e((string) ($lawyerProfile['email'] ?? 'Not provided')) ?></strong>
-        </div>
-        <div class="lawyer-dashboard-detail-row">
-          <span>Bar number</span>
-          <strong class="lawyer-dashboard-code"><?= lex_e((string) ($lawyerProfile['bar_number'] ?? 'Pending')) ?></strong>
         </div>
         <div class="lawyer-dashboard-detail-row">
           <span>Member since</span>

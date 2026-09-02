@@ -6,7 +6,7 @@ $pdo = lex_pdo();
 $lawyerId = lex_user_lawyer_id((int) $user['id']);
 
 $profile = lex_recent(
-    'SELECT l.bar_number, l.specialization, l.status, l.bio, l.background, l.contact_number, l.gcash_account_name, l.gcash_number, l.gcash_qr_stored_name, u.full_name, u.email, u.password_hash, u.avatar_stored_name, u.created_at
+    'SELECT l.specialization, l.status, l.bio, l.background, l.contact_number, l.gcash_account_name, l.gcash_number, l.gcash_qr_stored_name, u.full_name, u.email, u.password_hash, u.avatar_stored_name, u.created_at
      FROM lawyers l
      JOIN users u ON u.id = l.user_id
      WHERE l.id = :id
@@ -14,7 +14,6 @@ $profile = lex_recent(
     ['id' => $lawyerId]
 );
 $profile = $profile[0] ?? [
-    'bar_number' => '',
     'specialization' => '',
     'status' => 'active',
     'bio' => '',
@@ -225,7 +224,6 @@ try {
     $memberSince = (string) ($profile['created_at'] ?? 'Recently joined');
 }
 $lawyerCode = 'LW-' . str_pad((string) $lawyerId, 6, '0', STR_PAD_LEFT);
-$barNumber = (string) ($profile['bar_number'] ?? '');
 
 lex_page_header('Lawyer Profile', 'profile', $user);
 ?>
@@ -279,10 +277,6 @@ lex_page_header('Lawyer Profile', 'profile', $user);
         <div class="law-profile-detail-item">
           <span class="law-profile-detail-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.75 5h14.5A1.75 1.75 0 0 1 21 6.75v10.5A1.75 1.75 0 0 1 19.25 19H4.75A1.75 1.75 0 0 1 3 17.25V6.75A1.75 1.75 0 0 1 4.75 5Zm.45 2 6.8 5.1L18.8 7H5.2Z" fill="currentColor"/></svg></span>
           <div><span>Email Address</span><strong><?= lex_e($email) ?></strong></div>
-        </div>
-        <div class="law-profile-detail-item">
-          <span class="law-profile-detail-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5.75 4h12.5A1.75 1.75 0 0 1 20 5.75v12.5A1.75 1.75 0 0 1 18.25 20H5.75A1.75 1.75 0 0 1 4 18.25V5.75A1.75 1.75 0 0 1 5.75 4Zm2.5 4.25a.75.75 0 0 0 0 1.5h7.5a.75.75 0 0 0 0-1.5h-7.5Zm0 4a.75.75 0 0 0 0 1.5h5.5a.75.75 0 0 0 0-1.5h-5.5Z" fill="currentColor"/></svg></span>
-          <div><span>Bar Number</span><strong><?= lex_e($barNumber !== '' ? $barNumber : 'Not provided') ?></strong></div>
         </div>
         <div class="law-profile-detail-item">
           <span class="law-profile-detail-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6.62 3.75h2.3c.58 0 1.08.4 1.21.96l.55 2.38c.11.47-.06.96-.44 1.26l-1.25.98a10.1 10.1 0 0 0 5.68 5.68l.98-1.25c.3-.38.79-.55 1.26-.44l2.38.55c.56.13.96.63.96 1.21v2.3c0 1.03-.83 1.87-1.86 1.87C10.86 19.25 4.75 13.14 4.75 5.61c0-1.03.84-1.86 1.87-1.86Z" fill="currentColor"/></svg></span>

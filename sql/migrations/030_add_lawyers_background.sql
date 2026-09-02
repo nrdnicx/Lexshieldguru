@@ -1,0 +1,2 @@
+ALTER TABLE `lawyers`
+  ADD COLUMN IF NOT EXISTS `background` TEXT DEFAULT NULL AFTER `bio`;

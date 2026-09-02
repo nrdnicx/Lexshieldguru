@@ -1,0 +1,31 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Node dependencies
+node_modules/
+api/node_modules/
+
+# Python virtual environments and cache
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Uploaded/generated user files
+storage/
+config/storage/
+
+# Logs and temporary files
+*.log
+tmp/
+temp/
+cache/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

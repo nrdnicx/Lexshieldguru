@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="980" viewBox="0 0 1400 980" role="img" aria-labelledby="title desc">
+  <title id="title">LEXSHIELD System Workflow Diagram</title>
+  <desc id="desc">Workflow showing public visitors, clients, lawyers, and administrators moving through authentication, dashboards, appointments, payments, secure messaging, case files, security services, database storage, file storage, and audit logs.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#203b53"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#102437" flood-opacity="0.16"/>
+    </filter>
+    <style>
+      .bg { fill: #f6f8fb; }
+      .title { fill: #13293d; font: 700 34px Arial, Helvetica, sans-serif; }
+      .subtitle { fill: #526677; font: 400 17px Arial, Helvetica, sans-serif; }
+      .group-title { fill: #6c7d8b; font: 700 14px Arial, Helvetica, sans-serif; letter-spacing: .8px; text-transform: uppercase; }
+      .box { fill: #ffffff; stroke: #cad5df; stroke-width: 2; rx: 12; filter: url(#shadow); }
+      .box.primary { fill: #eaf5f1; stroke: #54a58c; }
+      .box.admin { fill: #fff3e6; stroke: #e39b4f; }
+      .box.lawyer { fill: #edf2ff; stroke: #6d87d9; }
+      .box.service { fill: #f1f6fb; stroke: #7995ac; }
+      .box.security { fill: #f8eeee; stroke: #c56d6d; }
+      .box.data { fill: #eef7ff; stroke: #4e94c7; }
+      .label { fill: #13293d; font: 700 21px Arial, Helvetica, sans-serif; }
+      .detail { fill: #4f6474; font: 400 15px Arial, Helvetica, sans-serif; }
+      .line { fill: none; stroke: #203b53; stroke-width: 2.7; marker-end: url(#arrow); }
+      .line.soft { stroke: #6e8191; stroke-width: 2.2; }
+      .line.bidirectional { marker-start: url(#arrow); marker-end: url(#arrow); }
+      .lane { fill: none; stroke: #d8e0e8; stroke-width: 2; stroke-dasharray: 8 9; rx: 18; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1400" height="980"/>
+  <text class="title" x="700" y="54" text-anchor="middle">Figure 4.1. LEXSHIELD System Workflow</text>
+  <text class="subtitle" x="700" y="86" text-anchor="middle">End-to-end flow for visitors, authenticated users, legal services, security controls, and persistent records</text>
+
+  <rect class="lane" x="50" y="125" width="1300" height="245"/>
+  <text class="group-title" x="78" y="153">Access and Role Routing</text>
+
+  <rect class="lane" x="50" y="405" width="1300" height="265"/>
+  <text class="group-title" x="78" y="433">Role-Based Transactions</text>
+
+  <rect class="lane" x="50" y="705" width="1300" height="200"/>
+  <text class="group-title" x="78" y="733">Security, Storage, and Records</text>
+
+  <g transform="translate(82 180)">
+    <rect class="box" width="250" height="110"/>
+    <text class="label" x="125" y="40" text-anchor="middle">Public Visitor</text>
+    <text class="detail" x="125" y="68" text-anchor="middle">Browse lawyers and services</text>
+    <text class="detail" x="125" y="90" text-anchor="middle">Submit quick inquiry</text>
+  </g>
+
+  <g transform="translate(425 180)">
+    <rect class="box primary" width="250" height="110"/>
+    <text class="label" x="125" y="40" text-anchor="middle">Register / Login</text>
+    <text class="detail" x="125" y="68" text-anchor="middle">Account credentials</text>
+    <text class="detail" x="125" y="90" text-anchor="middle">OTP when enabled</text>
+  </g>
+
+  <g transform="translate(768 180)">
+    <rect class="box primary" width="250" height="110"/>
+    <text class="label" x="125" y="40" text-anchor="middle">Role Verification</text>
+    <text class="detail" x="125" y="68" text-anchor="middle">Client, lawyer, or admin</text>
+    <text class="detail" x="125" y="90" text-anchor="middle">Session initialization</text>
+  </g>
+
+  <g transform="translate(1111 180)">
+    <rect class="box service" width="210" height="110"/>
+    <text class="label" x="105" y="40" text-anchor="middle">Dashboard</text>
+    <text class="detail" x="105" y="68" text-anchor="middle">Route to allowed</text>
+    <text class="detail" x="105" y="90" text-anchor="middle">system modules</text>
+  </g>
+
+  <g transform="translate(82 475)">
+    <rect class="box admin" width="250" height="116"/>
+    <text class="label" x="125" y="39" text-anchor="middle">Admin Portal</text>
+    <text class="detail" x="125" y="68" text-anchor="middle">Review inquiries</text>
+    <text class="detail" x="125" y="91" text-anchor="middle">Manage accounts and reports</text>
+  </g>
+
+  <g transform="translate(425 475)">
+    <rect class="box primary" width="250" height="116"/>
+    <text class="label" x="125" y="39" text-anchor="middle">Client Portal</text>
+    <text class="detail" x="125" y="68" text-anchor="middle">Profile, billing, payments</text>
+    <text class="detail" x="125" y="91" text-anchor="middle">Appointments and cases</text>
+  </g>
+
+  <g transform="translate(768 475)">
+    <rect class="box lawyer" width="250" height="116"/>
+    <text class="label" x="125" y="39" text-anchor="middle">Lawyer Portal</text>
+    <text class="detail" x="125" y="68" text-anchor="middle">Schedule and client cases</text>
+    <text class="detail" x="125" y="91" text-anchor="middle">Consultation workflow</text>
+  </g>
+
+  <g transform="translate(1111 475)">
+    <rect class="box service" width="210" height="116"/>
+    <text class="label" x="105" y="39" text-anchor="middle">Core Services</text>
+    <text class="detail" x="105" y="68" text-anchor="middle">Secure messages</text>
+    <text class="detail" x="105" y="91" text-anchor="middle">Case files and uploads</text>
+  </g>
+
+  <g transform="translate(205 760)">
+    <rect class="box security" width="260" height="105"/>
+    <text class="label" x="130" y="38" text-anchor="middle">Security Layer</text>
+    <text class="detail" x="130" y="67" text-anchor="middle">CSRF, rate limiting, scanning</text>
+    <text class="detail" x="130" y="88" text-anchor="middle">Input validation and alerts</text>
+  </g>
+
+  <g transform="translate(570 760)">
+    <rect class="box data" width="260" height="105"/>
+    <text class="label" x="130" y="38" text-anchor="middle">MySQL Database</text>
+    <text class="detail" x="130" y="67" text-anchor="middle">Users, lawyers, cases</text>
+    <text class="detail" x="130" y="88" text-anchor="middle">Messages and transactions</text>
+  </g>
+
+  <g transform="translate(935 760)">
+    <rect class="box data" width="260" height="105"/>
+    <text class="label" x="130" y="38" text-anchor="middle">Files and Audit Logs</text>
+    <text class="detail" x="130" y="67" text-anchor="middle">Documents and attachments</text>
+    <text class="detail" x="130" y="88" text-anchor="middle">Activity history</text>
+  </g>
+
+  <path class="line" d="M332 235 H415"/>
+  <path class="line" d="M675 235 H758"/>
+  <path class="line" d="M1018 235 H1101"/>
+  <path class="line soft" d="M207 290 V396 C207 430 207 442 207 465"/>
+  <path class="line soft" d="M1216 290 V465"/>
+  <path class="line" d="M550 290 V465"/>
+  <path class="line" d="M893 290 V465"/>
+  <path class="line bidirectional" d="M675 533 H758"/>
+  <path class="line bidirectional" d="M1018 533 H1101"/>
+  <path class="line soft" d="M332 533 H415"/>
+  <path class="line" d="M1216 591 V640 H335 V750"/>
+  <path class="line" d="M550 591 V640 H700 V750"/>
+  <path class="line" d="M893 591 V640 H700 V750"/>
+  <path class="line" d="M1216 591 V640 H1065 V750"/>
+  <path class="line" d="M465 812 H560"/>
+  <path class="line" d="M830 812 H925"/>
+
+  <text class="detail" x="288" y="220" text-anchor="middle">Account access</text>
+  <text class="detail" x="719" y="220" text-anchor="middle">Authenticate</text>
+  <text class="detail" x="1062" y="220" text-anchor="middle">Authorize</text>
+  <text class="detail" x="251" y="405" text-anchor="middle">Inquiry review</text>
+  <text class="detail" x="711" y="519" text-anchor="middle">Consultation</text>
+  <text class="detail" x="1060" y="519" text-anchor="middle">Messaging/files</text>
+  <text class="detail" x="512" y="797" text-anchor="middle">Protected requests</text>
+  <text class="detail" x="877" y="797" text-anchor="middle">Saved evidence</text>
+</svg>

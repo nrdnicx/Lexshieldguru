@@ -168,6 +168,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'smtp_pass' => trim((string) ($_POST['smtp_pass'] ?? '')) !== ''
                 ? (string) ($_POST['smtp_pass'] ?? '')
                 : (string) ($currentSettings['smtp_pass'] ?? ''),
+            'login_otp_enabled' => isset($_POST['login_otp_enabled']) ? 'true' : 'false',
+            'admin_otp_enabled' => isset($_POST['admin_otp_enabled']) ? 'true' : 'false',
+            'client_registration_otp_enabled' => isset($_POST['client_registration_otp_enabled']) ? 'true' : 'false',
             'gcash_account_name' => lex_sanitize_text($_POST['gcash_account_name'] ?? ''),
             'gcash_number' => preg_replace('/[^0-9+]/', '', (string) ($_POST['gcash_number'] ?? '')),
             'gcash_instructions' => trim((string) ($_POST['gcash_instructions'] ?? '')),
@@ -213,6 +216,18 @@ lex_page_header('System Settings', 'settings');
         <input type="password" name="smtp_pass" value="" placeholder="Leave blank to keep existing value" autocomplete="new-password">
         <button type="button" class="password-toggle" data-password-toggle-button aria-pressed="false" aria-label="Show password" title="Show password"><span class="sr-only">Show password</span></button>
       </div>
+    </label>
+    <label class="checkbox-row full">
+      <input type="checkbox" name="login_otp_enabled" value="1" <?= lex_bool_setting('login_otp_enabled', 'LOGIN_OTP_ENABLED', false) ? 'checked' : '' ?>>
+      Require OTP for normal user login
+    </label>
+    <label class="checkbox-row full">
+      <input type="checkbox" name="admin_otp_enabled" value="1" <?= lex_bool_setting('admin_otp_enabled', 'ADMIN_OTP_ENABLED', false) ? 'checked' : '' ?>>
+      Require OTP for admin login
+    </label>
+    <label class="checkbox-row full">
+      <input type="checkbox" name="client_registration_otp_enabled" value="1" <?= lex_bool_setting('client_registration_otp_enabled', 'CLIENT_REGISTRATION_OTP_ENABLED', false) ? 'checked' : '' ?>>
+      Require OTP for client registration
     </label>
     <label>GCash account name <input type="text" name="gcash_account_name" value="<?= lex_e($settings['gcash_account_name'] ?? '') ?>" placeholder="Juan Dela Cruz"></label>
     <label>GCash mobile number <input type="text" name="gcash_number" value="<?= lex_e($settings['gcash_number'] ?? '') ?>" placeholder="09XXXXXXXXX"></label>

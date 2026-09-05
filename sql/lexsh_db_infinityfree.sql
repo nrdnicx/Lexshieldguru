@@ -1,9 +1,6 @@
 -- LEXSHIELD database schema and seed data
-CREATE DATABASE IF NOT EXISTS `lexsh_db`
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
+-- InfinityFree version: import this after selecting your InfinityFree database in phpMyAdmin.
 
-USE `lexsh_db`;
 
 SET FOREIGN_KEY_CHECKS = 0;
 

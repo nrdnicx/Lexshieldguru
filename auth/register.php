@@ -11,8 +11,7 @@ $address = '';
 $city = '';
 $passwordMismatch = false;
 $passwordMismatchMessage = 'Those password doesn\'t match. Try again.';
-$registrationOtpRaw = getenv('CLIENT_REGISTRATION_OTP_ENABLED');
-$registrationOtpEnabled = filter_var($registrationOtpRaw === false ? 'true' : $registrationOtpRaw, FILTER_VALIDATE_BOOL);
+$registrationOtpEnabled = lex_bool_setting('client_registration_otp_enabled', 'CLIENT_REGISTRATION_OTP_ENABLED', false);
 $otpStep = !empty($_SESSION['pending_client_registration']);
 $otpEmail = $otpStep ? (string) ($_SESSION['pending_client_registration']['email'] ?? '') : '';
 

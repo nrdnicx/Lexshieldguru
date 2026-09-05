@@ -79,13 +79,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     } elseif (lex_case_files_is_default_vault_folder((string) $folder['slug'])) {
                         $error = 'Default vault folders cannot be deleted.';
                     } else {
-                        $folderPath = lex_case_file_vault_folder_dir($caseFile, $folder);
-                        lex_case_files_recursive_delete($folderPath);
-                        $pdo->prepare('DELETE FROM case_file_folders WHERE id = :id')->execute(['id' => $folderId]);
-                        lex_audit('delete_case_file_folder', 'case_file_folders', (string) $folderId);
-                        lex_flash_set('success', 'Vault folder deleted.');
-                        header('Location: ' . $returnUrl);
-                        exit;
+                        try {
+                            $documents = lex_recent(
+                                'SELECT d.*, f.slug AS folder_slug, f.name AS folder_name
+                                 FROM case_file_documents d
+                                 JOIN case_file_folders f ON f.id = d.folder_id
+                                 WHERE d.folder_id = :folder_id AND d.case_file_id = :case_file_id',
+                                ['folder_id' => $folderId, 'case_file_id' => $caseFileId]
+                            );
+                            foreach ($documents as $document) {
+                                lex_case_file_vault_delete_document_object($caseFile, $document);
+                            }
+                            $folderPath = lex_case_file_vault_folder_dir($caseFile, $folder);
+                            lex_case_files_recursive_delete($folderPath);
+                            $pdo->prepare('DELETE FROM case_file_folders WHERE id = :id')->execute(['id' => $folderId]);
+                            lex_audit('delete_case_file_folder', 'case_file_folders', (string) $folderId);
+                            lex_flash_set('success', 'Vault folder deleted.');
+                            header('Location: ' . $returnUrl);
+                            exit;
+                        } catch (Throwable $e) {
+                            $error = 'Unable to delete every document in this folder.';
+                        }
                     }
                 }
             } elseif ($action === 'upload_document') {
@@ -113,7 +127,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     header('Location: ' . $returnUrl);
                     exit;
                 } catch (Throwable $e) {
-                    $error = $e->getMessage();
+                    error_log('[CASE_FILE_STORAGE] Upload failed: ' . $e->getMessage());
+                    $error = 'STORAGE ERROR: ' . $e->getMessage();
                 }
             } elseif (in_array($action, ['approve_document', 'reject_document', 'rename_document', 'delete_document'], true)) {
                 if ($access !== 'manage') {
@@ -181,15 +196,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             exit;
                         }
                     } else {
-                        $path = lex_case_files_folder_path((string) $caseFile['folder_name']) . DIRECTORY_SEPARATOR . lex_case_file_vault_slug((string) $document['folder_slug']) . DIRECTORY_SEPARATOR . basename((string) $document['stored_name']);
-                        if (is_file($path)) {
-                            @unlink($path);
+                        try {
+                            lex_case_file_vault_delete_document_object($caseFile, $document);
+                            $pdo->prepare('DELETE FROM case_file_documents WHERE id = :id')->execute(['id' => $documentId]);
+                            lex_audit('delete_case_file_document', 'case_file_documents', (string) $documentId);
+                            lex_flash_set('success', 'Vault document deleted.');
+                            header('Location: ' . $returnUrl);
+                            exit;
+                        } catch (Throwable $e) {
+                            $error = 'Unable to delete the vault document.';
                         }
-                        $pdo->prepare('DELETE FROM case_file_documents WHERE id = :id')->execute(['id' => $documentId]);
-                        lex_audit('delete_case_file_document', 'case_file_documents', (string) $documentId);
-                        lex_flash_set('success', 'Vault document deleted.');
-                        header('Location: ' . $returnUrl);
-                        exit;
                     }
                 }
             }
@@ -371,16 +387,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
         } elseif ($action === 'delete' && $isLawyer && $caseFileId > 0) {
-            $stmt = $pdo->prepare('SELECT id, folder_name FROM case_files WHERE id = :id LIMIT 1');
+            $stmt = $pdo->prepare('SELECT cf.* FROM case_files cf WHERE cf.id = :id LIMIT 1');
             $stmt->execute(['id' => $caseFileId]);
             $caseFile = $stmt->fetch();
+            $access = $caseFile ? lex_case_file_vault_access($caseFile, $user) : 'none';
             $folderName = (string) ($caseFile['folder_name'] ?? '');
-            if (!$caseFile || $folderName === '') {
+            if (!$caseFile || $access !== 'manage' || $folderName === '') {
                 lex_audit('denied_delete_case_file', 'case_files', (string) $caseFileId);
                 $error = 'Case file not found.';
             } else {
                 $caseFolderPath = lex_case_files_folder_path($folderName);
                 try {
+                    $documents = lex_recent(
+                        'SELECT d.*, f.slug AS folder_slug, f.name AS folder_name
+                         FROM case_file_documents d
+                         JOIN case_file_folders f ON f.id = d.folder_id
+                         WHERE d.case_file_id = :case_file_id',
+                        ['case_file_id' => $caseFileId]
+                    );
+                    foreach ($documents as $document) {
+                        lex_case_file_vault_delete_document_object($caseFile, $document);
+                    }
+
                     $pdo->beginTransaction();
                     $pdo->prepare('DELETE FROM case_file_documents WHERE case_file_id = :case_file_id')->execute(['case_file_id' => $caseFileId]);
                     $pdo->prepare('DELETE FROM case_file_folders WHERE case_file_id = :case_file_id')->execute(['case_file_id' => $caseFileId]);

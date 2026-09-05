@@ -24769,3 +24769,144 @@ body.app-workspace:has(.payment-lawyer-shell) .main-content {
 .payment-lawyer-shell .payment-history-table td {
   overflow-wrap: anywhere;
 }
+
+/* Responsive consultation calendar + session capacity picker. */
+.client-appointment-picker-trigger {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.85rem;
+  min-height: 64px;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-panel-soft);
+  color: var(--color-ink);
+  text-align: left;
+  cursor: pointer;
+}
+.client-appointment-picker-trigger:hover { border-color: var(--color-ink-muted); }
+.client-appointment-picker-trigger strong,
+.client-appointment-picker-trigger small { display: block; }
+.client-appointment-picker-trigger small { margin-top: 0.2rem; color: var(--color-ink-muted); }
+.client-appointment-picker-icon { font-size: 1.35rem; }
+.client-appointment-picker-modal { z-index: 80; }
+.client-appointment-picker-card { width: min(720px, calc(100vw - 2rem)); max-height: min(90vh, 820px); overflow: auto; }
+.client-appointment-picker-card .modal-header { align-items: flex-start; }
+.client-appointment-picker-card .modal-header p { margin: 0.2rem 0 0; }
+.client-appointment-picker-body { padding: var(--space-4); }
+.client-appointment-calendar-head { display: grid; grid-template-columns: 42px 1fr 42px; gap: 0.75rem; align-items: center; margin-bottom: 1rem; }
+.client-appointment-calendar-head strong { text-align: center; font-size: 1.05rem; }
+.client-appointment-calendar-head .button { min-width: 42px; padding: 0; }
+.client-appointment-calendar-weekdays,
+.client-appointment-calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0.4rem; }
+.client-appointment-calendar-weekdays { margin-bottom: 0.4rem; color: var(--color-ink-muted); font-size: 0.72rem; font-weight: 800; text-align: center; text-transform: uppercase; }
+.client-appointment-calendar-day { min-height: 44px; border: 1px solid var(--color-line); border-radius: 10px; background: var(--color-panel); color: var(--color-ink); font-weight: 700; cursor: pointer; }
+.client-appointment-calendar-day:hover:not(:disabled),
+.client-appointment-calendar-day.is-selected { border-color: var(--color-ink); }
+.client-appointment-calendar-day.is-today { box-shadow: inset 0 0 0 2px var(--color-ink-muted); }
+.client-appointment-calendar-day:disabled { opacity: 0.38; cursor: not-allowed; }
+.client-appointment-calendar-day.is-empty { border-color: transparent; background: transparent; }
+.client-appointment-session-area { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--color-line); }
+.client-appointment-selected-date { margin-bottom: 0.75rem; font-weight: 800; }
+.client-appointment-session-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+.client-appointment-session-card { display: grid; gap: 0.18rem; padding: 1rem; border: 1px solid var(--color-line); border-radius: 12px; background: var(--color-panel); color: var(--color-ink); text-align: left; cursor: pointer; }
+.client-appointment-session-card:hover:not(:disabled),
+.client-appointment-session-card.is-selected { border-color: var(--color-ink); box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-ink) 12%, transparent); }
+.client-appointment-session-card span { color: var(--color-ink-muted); font-size: 0.78rem; font-weight: 800; text-transform: uppercase; }
+.client-appointment-session-card strong { font-size: 1rem; }
+.client-appointment-session-card small { color: var(--color-ink-muted); }
+.client-appointment-session-card:disabled { opacity: 0.48; cursor: not-allowed; }
+.client-appointment-time-area { margin-top: 1rem; }
+.client-appointment-time-area h3 { margin: 0 0 0.7rem; font-size: 0.95rem; }
+.client-appointment-time-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.5rem; }
+.client-appointment-time-button { min-height: 42px; border: 1px solid var(--color-line); border-radius: 9px; background: var(--color-panel); color: var(--color-ink); font-weight: 700; cursor: pointer; }
+.client-appointment-time-button:hover:not(:disabled),
+.client-appointment-time-button.is-selected { border-color: var(--color-ink); }
+.client-appointment-time-button.is-booked { opacity: 0.38; text-decoration: line-through; cursor: not-allowed; }
+.client-appointment-label { display: block; margin-bottom: 0.35rem; font-size: 0.9rem; font-weight: 700; }
+
+@media (max-width: 600px) {
+  .client-appointment-picker-card { width: calc(100vw - 1rem); max-height: 94vh; }
+  .client-appointment-picker-body { padding: 0.85rem; }
+  .client-appointment-calendar-weekdays { font-size: 0.62rem; }
+  .client-appointment-calendar-grid { gap: 0.25rem; }
+  .client-appointment-calendar-day { min-height: 40px; border-radius: 8px; }
+  .client-appointment-session-grid { grid-template-columns: 1fr; }
+  .client-appointment-time-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .client-appointment-picker-trigger { min-height: 58px; }
+}
+
+
+/* Lawyer availability management */
+.lawyer-availability-page { padding-bottom: 3rem; }
+.availability-hero { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
+.availability-hero h1 { margin:.25rem 0 .45rem; }
+.availability-hero .eyebrow { font-size:.72rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--color-ink-muted); }
+.availability-card { margin-top:1rem; overflow:hidden; }
+.availability-list { display:grid; gap:0; }
+.availability-day-row { display:grid; grid-template-columns:150px minmax(0,1fr) minmax(0,1fr); gap:1rem; padding:1rem 0; border-top:1px solid var(--color-line); align-items:start; }
+.availability-day-name label { display:flex; align-items:center; gap:.55rem; min-height:38px; cursor:pointer; }
+.availability-day-name input { width:18px; height:18px; }
+.availability-day-name small { display:block; color:var(--color-ink-muted); margin-left:1.7rem; }
+.availability-session { padding:.8rem; border:1px solid var(--color-line); border-radius:12px; background:var(--color-panel); }
+.availability-session > strong { display:block; margin-bottom:.7rem; }
+.availability-fields { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.6rem; }
+.availability-fields label, .availability-block-form label { display:grid; gap:.3rem; font-size:.78rem; font-weight:700; color:var(--color-ink-muted); }
+.availability-fields input, .availability-block-form input { width:100%; box-sizing:border-box; min-height:42px; padding:.55rem .65rem; border:1px solid var(--color-line); border-radius:9px; background:var(--color-bg); color:var(--color-ink); }
+.availability-actions { display:flex; justify-content:flex-end; padding-top:1rem; }
+.availability-block-form { display:grid; grid-template-columns:180px minmax(0,1fr) auto; gap:.8rem; align-items:end; padding-bottom:1rem; }
+.availability-block-form label span { font-weight:400; }
+.availability-block-list { display:grid; gap:.65rem; }
+.availability-block-item { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.8rem 1rem; border:1px solid var(--color-line); border-radius:10px; }
+.availability-block-item > div { display:grid; gap:.15rem; }
+.availability-block-item span { color:var(--color-ink-muted); font-size:.85rem; }
+@media (max-width: 900px) { .availability-day-row { grid-template-columns:1fr; } .availability-fields { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@media (max-width: 600px) { .availability-hero { align-items:flex-start; flex-direction:column; } .availability-hero .button { width:100%; } .availability-day-row { padding:.9rem 0; } .availability-fields { grid-template-columns:1fr 1fr; } .availability-fields label:last-child { grid-column:1/-1; } .availability-block-form { grid-template-columns:1fr; } .availability-block-form .button { width:100%; } .availability-block-item { align-items:flex-start; flex-direction:column; } .availability-block-item form, .availability-block-item button { width:100%; } }
+
+/* Compact lawyer availability layout */
+.lawyer-availability-page { max-width: 1180px; margin: 0 auto; padding-bottom: 2rem; }
+.lawyer-availability-page .card { border-radius: 14px; }
+.availability-hero { padding: 1rem 1.15rem !important; margin-bottom: .75rem; }
+.availability-hero h1 { font-size: 1.45rem; margin: .15rem 0 .25rem; }
+.availability-hero p { margin: 0; font-size: .84rem; line-height: 1.45; max-width: 760px; }
+.availability-hero .button { padding: .6rem .85rem; white-space: nowrap; }
+.availability-card { margin-top: .75rem; }
+.availability-card .card-head { padding: .85rem 1rem; }
+.availability-card .card-head h2 { font-size: 1rem; margin: 0 0 .2rem; }
+.availability-card .card-head p { margin: 0; font-size: .78rem; line-height: 1.4; }
+.availability-day-row { grid-template-columns: 125px minmax(0,1fr) minmax(0,1fr); gap: .65rem; padding: .65rem 0; }
+.availability-day-name label { min-height: 32px; gap: .45rem; font-size: .9rem; }
+.availability-day-name input { width: 16px; height: 16px; }
+.availability-day-name small { margin-left: 1.45rem; font-size: .7rem; }
+.availability-session { padding: .55rem; border-radius: 9px; }
+.availability-session > strong { margin-bottom: .45rem; font-size: .78rem; }
+.availability-fields { gap: .4rem; }
+.availability-fields label, .availability-block-form label { gap: .2rem; font-size: .68rem; }
+.availability-fields input, .availability-block-form input { min-height: 34px; padding: .35rem .5rem; border-radius: 7px; font-size: .8rem; }
+.availability-actions { padding-top: .7rem; }
+.availability-actions .button { padding: .6rem .85rem; }
+.availability-block-form { grid-template-columns: 155px minmax(0,1fr) auto; gap: .6rem; padding: .1rem 1rem .8rem; }
+.availability-block-form .button { padding: .6rem .8rem; }
+.availability-block-list { padding: 0 1rem 1rem; gap: .45rem; }
+.availability-block-item { padding: .55rem .75rem; border-radius: 8px; }
+.availability-block-item span { font-size: .75rem; }
+.availability-block-item .button { padding: .45rem .65rem; font-size: .75rem; }
+@media (max-width: 900px) {
+  .availability-day-row { grid-template-columns: 110px minmax(0,1fr) minmax(0,1fr); gap: .5rem; }
+  .availability-fields { grid-template-columns: repeat(3,minmax(0,1fr)); }
+}
+@media (max-width: 720px) {
+  .lawyer-availability-page { padding-left: .75rem; padding-right: .75rem; }
+  .availability-day-row { grid-template-columns: 1fr; gap: .45rem; }
+  .availability-session { padding: .6rem; }
+  .availability-fields { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .availability-fields label:last-child { grid-column: auto; }
+}
+@media (max-width: 480px) {
+  .availability-hero { padding: .85rem !important; }
+  .availability-hero h1 { font-size: 1.25rem; }
+  .availability-fields { grid-template-columns: 1fr 1fr; }
+  .availability-fields label:last-child { grid-column: 1/-1; }
+}

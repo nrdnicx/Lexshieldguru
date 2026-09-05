@@ -50,29 +50,32 @@ if ((string) $document['upload_status'] !== 'approved' && $access !== 'manage') 
     exit('Access denied.');
 }
 
-$path = lex_case_files_folder_path((string) $document['case_folder_name'])
-    . DIRECTORY_SEPARATOR
-    . lex_case_file_vault_slug((string) $document['folder_slug'])
-    . DIRECTORY_SEPARATOR
-    . basename((string) $document['stored_name']);
-
-if (!is_file($path)) {
-    lex_audit('missing_case_file_document', 'case_file_documents', (string) $documentId);
-    http_response_code(404);
-    exit('Document file missing.');
-}
-
 $mime = (string) ($document['mime_type'] ?: 'application/octet-stream');
 $name = trim((string) ($document['original_name'] ?: 'document'));
-$size = (int) ($document['file_size'] ?: filesize($path));
+$path = lex_case_file_vault_local_document_path($caseFile, $document);
+$size = (int) ($document['file_size'] ?: (is_file($path) ? filesize($path) : 0));
 $outputData = null;
+$cipherData = null;
+$provider = lex_case_file_vault_document_storage_provider($document);
 
 if ((string) ($document['encryption_algorithm'] ?? '') !== '') {
-    $cipherData = file_get_contents($path);
-    if ($cipherData === false) {
+    if ($provider === 'supabase') {
+        try {
+            $storagePath = lex_case_file_vault_verified_storage_path($document);
+            $cipherData = lex_supabase_storage_download($storagePath);
+        } catch (Throwable $e) {
+            lex_audit('failed_download_case_file_document', 'case_file_documents', (string) $documentId);
+            http_response_code(500);
+            exit('Unable to retrieve document.');
+        }
+    } elseif (is_file($path)) {
+        $cipherData = file_get_contents($path);
+    }
+
+    if (!is_string($cipherData)) {
         lex_audit('failed_read_encrypted_case_file_document', 'case_file_documents', (string) $documentId);
-        http_response_code(500);
-        exit('Unable to read encrypted document.');
+        http_response_code(404);
+        exit('Document file missing.');
     }
 
     try {
@@ -84,6 +87,14 @@ if ((string) ($document['encryption_algorithm'] ?? '') !== '') {
     }
 
     $size = strlen($outputData);
+} elseif ($provider === 'supabase') {
+    lex_audit('missing_case_file_document_encryption_metadata', 'case_file_documents', (string) $documentId);
+    http_response_code(500);
+    exit('Unable to decrypt document.');
+} elseif (!is_file($path)) {
+    lex_audit('missing_case_file_document', 'case_file_documents', (string) $documentId);
+    http_response_code(404);
+    exit('Document file missing.');
 }
 
 lex_audit($preview ? 'preview_case_file_document' : 'download_case_file_document', 'case_file_documents', (string) $documentId);

@@ -59,6 +59,76 @@ $availableLawyers = lex_recent(
       ORDER BY u.full_name ASC'
   );
 
+if (isset($_GET['availability']) && $_GET['availability'] === '1') {
+    header('Content-Type: application/json; charset=utf-8');
+    $lawyerId = lex_sanitize_int($_GET['lawyer_id'] ?? 0);
+    $date = lex_sanitize_text($_GET['date'] ?? '');
+    $month = lex_sanitize_text($_GET['month'] ?? '');
+    $result = ['ok' => false, 'days' => [], 'selected' => null];
+
+    if ($lawyerId > 0 && preg_match('/^\d{4}-\d{2}(?:-\d{2})?$/', $month !== '' ? $month : $date)) {
+        $monthKey = substr($month !== '' ? $month : $date, 0, 7);
+        $monthStart = DateTimeImmutable::createFromFormat('!Y-m-d', $monthKey . '-01');
+        if ($monthStart) {
+            $monthEnd = $monthStart->modify('last day of this month');
+            $stmt = $pdo->prepare('SELECT day_of_week, is_available, morning_start, morning_end, afternoon_start, afternoon_end, morning_capacity, afternoon_capacity FROM lawyer_availability WHERE lawyer_id = :lawyer_id');
+            $stmt->execute(['lawyer_id' => $lawyerId]);
+            $weekly = [];
+            foreach ($stmt->fetchAll() as $row) {
+                $weekly[(int) $row['day_of_week']] = $row;
+            }
+
+            $stmt = $pdo->prepare('SELECT unavailable_date, reason FROM lawyer_unavailable_dates WHERE lawyer_id = :lawyer_id AND unavailable_date BETWEEN :start_date AND :end_date');
+            $stmt->execute(['lawyer_id' => $lawyerId, 'start_date' => $monthStart->format('Y-m-d'), 'end_date' => $monthEnd->format('Y-m-d')]);
+            $blocked = [];
+            foreach ($stmt->fetchAll() as $row) {
+                $blocked[(string) $row['unavailable_date']] = (string) ($row['reason'] ?? '');
+            }
+
+            $stmt = $pdo->prepare('SELECT DATE(scheduled_at) AS appointment_date, TIME(scheduled_at) AS appointment_time FROM appointments WHERE lawyer_id = :lawyer_id AND scheduled_at >= :start_dt AND scheduled_at < :end_dt AND status IN ("pending", "confirmed")');
+            $stmt->execute(['lawyer_id' => $lawyerId, 'start_dt' => $monthStart->format('Y-m-d 00:00:00'), 'end_dt' => $monthEnd->modify('+1 day')->format('Y-m-d 00:00:00')]);
+            $bookings = [];
+            foreach ($stmt->fetchAll() as $row) {
+                $d = (string) $row['appointment_date'];
+                $t = substr((string) $row['appointment_time'], 0, 5);
+                if (!isset($bookings[$d])) $bookings[$d] = [];
+                $bookings[$d][] = $t;
+            }
+
+            for ($cursor = $monthStart; $cursor <= $monthEnd; $cursor = $cursor->modify('+1 day')) {
+                $key = $cursor->format('Y-m-d');
+                $weekday = (int) $cursor->format('w');
+                $schedule = $weekly[$weekday] ?? null;
+                $available = $schedule && (int) $schedule['is_available'] === 1 && !isset($blocked[$key]);
+                $morningCapacity = $schedule ? (int) $schedule['morning_capacity'] : 0;
+                $afternoonCapacity = $schedule ? (int) $schedule['afternoon_capacity'] : 0;
+                $morningStart = $schedule['morning_start'] ?? null;
+                $morningEnd = $schedule['morning_end'] ?? null;
+                $afternoonStart = $schedule['afternoon_start'] ?? null;
+                $afternoonEnd = $schedule['afternoon_end'] ?? null;
+                $morningBooked = 0;
+                $afternoonBooked = 0;
+                $bookedTimes = $bookings[$key] ?? [];
+                foreach ($bookedTimes as $bt) {
+                    if ($morningStart && $morningEnd && $bt >= substr($morningStart, 0, 5) && $bt < substr($morningEnd, 0, 5)) $morningBooked++;
+                    if ($afternoonStart && $afternoonEnd && $bt >= substr($afternoonStart, 0, 5) && $bt < substr($afternoonEnd, 0, 5)) $afternoonBooked++;
+                }
+                $result['days'][$key] = [
+                    'available' => $available,
+                    'blocked_reason' => $blocked[$key] ?? '',
+                    'morning' => ['booked' => $morningBooked, 'capacity' => $morningCapacity, 'start' => $morningStart ? substr($morningStart, 0, 5) : null, 'end' => $morningEnd ? substr($morningEnd, 0, 5) : null],
+                    'afternoon' => ['booked' => $afternoonBooked, 'capacity' => $afternoonCapacity, 'start' => $afternoonStart ? substr($afternoonStart, 0, 5) : null, 'end' => $afternoonEnd ? substr($afternoonEnd, 0, 5) : null],
+                    'booked_times' => $bookedTimes,
+                ];
+            }
+            $result['ok'] = true;
+            $result['selected'] = $result['days'][$date] ?? null;
+        }
+    }
+    echo json_encode($result);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_token'] ?? null)) {
     $lawyerId = lex_sanitize_int($_POST['lawyer_id'] ?? 0);
     $selectedLawyerId = $lawyerId;
@@ -104,7 +174,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_toke
         $error = 'Select a valid appointment date and time.';
     } elseif ($scheduledDateTime <= new DateTimeImmutable()) {
         $error = 'Choose a future date and time for the appointment.';
+    } elseif (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $scheduledDate) || !preg_match('/^\d{2}:\d{2}$/', $scheduledTime)) {
+        $error = 'Choose a valid consultation date and time.';
     } else {
+        $weekday = (int) $scheduledDateTime->format('w');
+        $stmt = $pdo->prepare('SELECT * FROM lawyer_availability WHERE lawyer_id = :lawyer_id AND day_of_week = :day_of_week AND is_available = 1 LIMIT 1');
+        $stmt->execute(['lawyer_id' => $lawyerId, 'day_of_week' => $weekday]);
+        $schedule = $stmt->fetch();
+        $stmt = $pdo->prepare('SELECT reason FROM lawyer_unavailable_dates WHERE lawyer_id = :lawyer_id AND unavailable_date = :unavailable_date LIMIT 1');
+        $stmt->execute(['lawyer_id' => $lawyerId, 'unavailable_date' => $scheduledDate]);
+        $blockedReason = $stmt->fetchColumn();
+
+        $timeInMinutes = static function (string $time): int {
+            [$h, $m] = array_map('intval', explode(':', $time));
+            return ($h * 60) + $m;
+        };
+        $selectedMinutes = $timeInMinutes($scheduledTime);
+        $session = null;
+        foreach (['morning', 'afternoon'] as $candidate) {
+            $startTime = $schedule[$candidate . '_start'] ?? null;
+            $endTime = $schedule[$candidate . '_end'] ?? null;
+            if ($startTime && $endTime) {
+                $startMinutes = $timeInMinutes(substr($startTime, 0, 5));
+                $endMinutes = $timeInMinutes(substr($endTime, 0, 5));
+                if ($selectedMinutes >= $startMinutes && $selectedMinutes < $endMinutes && (($selectedMinutes - $startMinutes) % 30 === 0)) {
+                    $session = $candidate;
+                    break;
+                }
+            }
+        }
+
+        if (!$schedule) {
+            $error = 'The lawyer is not available on this day.';
+        } elseif ($blockedReason !== false) {
+            $error = 'The lawyer is unavailable on this date. Please choose another date.';
+        } elseif (!$session) {
+            $error = 'Choose a consultation time within the lawyer\'s available hours.';
+        } else {
+            $sessionStart = substr((string) $schedule[$session . '_start'], 0, 8);
+            $sessionEnd = substr((string) $schedule[$session . '_end'], 0, 8);
+            $sessionCapacity = max(0, (int) $schedule[$session . '_capacity']);
+            $stmt = $pdo->prepare('SELECT COUNT(*) FROM appointments WHERE lawyer_id = :lawyer_id AND DATE(scheduled_at) = :date AND TIME(scheduled_at) = :scheduled_time AND status IN ("pending", "confirmed")');
+            $stmt->execute(['lawyer_id' => $lawyerId, 'date' => $scheduledDate, 'scheduled_time' => $scheduledTime . ':00']);
+            $slotTaken = (int) $stmt->fetchColumn() > 0;
+            $stmt = $pdo->prepare('SELECT COUNT(*) FROM appointments WHERE lawyer_id = :lawyer_id AND DATE(scheduled_at) = :date AND TIME(scheduled_at) >= :session_start AND TIME(scheduled_at) < :session_end AND status IN ("pending", "confirmed")');
+            $stmt->execute(['lawyer_id' => $lawyerId, 'date' => $scheduledDate, 'session_start' => $sessionStart, 'session_end' => $sessionEnd]);
+            $sessionCount = (int) $stmt->fetchColumn();
+            if ($slotTaken) {
+                $error = 'That time slot was just booked. Please choose another time.';
+            } elseif ($sessionCapacity <= 0 || $sessionCount >= $sessionCapacity) {
+                $error = ucfirst($session) . ' consultation capacity is full for this date. Please choose another session or date.';
+            } else {
         $pdo->beginTransaction();
         try {
             $stmt = $pdo->prepare('
@@ -168,7 +288,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_toke
             error_log('Client appointment booking failed: ' . $e->getMessage());
             $error = 'Unable to book the appointment. Please try again.';
         }
+        }
     }
+}
 }
 
 $appointments = lex_recent(
@@ -213,22 +335,19 @@ lex_page_header('Appointments', 'appointments', $user);
             </select>
           </span>
         </label>
-        <label class="client-appointment-field">Scheduled Date
-          <span class="client-appointment-control">
-            <span class="client-appointment-control-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" focusable="false"><path d="M7 3.5a.75.75 0 0 1 .75.75V5h8.5v-.75a.75.75 0 0 1 1.5 0V5h.5A2.25 2.25 0 0 1 20.5 7.25v10.5A2.25 2.25 0 0 1 18.25 20h-12.5A2.25 2.25 0 0 1 3.5 17.75V7.25A2.25 2.25 0 0 1 5.75 5h.5v-.75A.75.75 0 0 1 7 3.5Zm11.25 6h-12v8.25c0 .41.34.75.75.75h10.5c.41 0 .75-.34.75-.75V9.5Z" fill="currentColor"/></svg>
+        <div class="client-appointment-field client-appointment-field--full">
+          <span class="client-appointment-label">Date &amp; Consultation Time</span>
+          <input type="hidden" name="scheduled_date" value="<?= lex_e($selectedDate) ?>" required data-appointment-date>
+          <input type="hidden" name="scheduled_time" value="<?= lex_e($selectedTime) ?>" required data-appointment-time>
+          <button class="client-appointment-picker-trigger" type="button" data-appointment-picker-open>
+            <span class="client-appointment-picker-icon" aria-hidden="true">📅</span>
+            <span>
+              <strong data-appointment-picker-label><?= $selectedDate && $selectedTime ? lex_e($formatAppointmentDate($selectedDate . ' ' . $selectedTime) . ' at ' . $formatAppointmentTime($selectedDate . ' ' . $selectedTime)) : 'Choose date and time' ?></strong>
+              <small data-appointment-picker-meta>Choose your lawyer first, then select an available session and time.</small>
             </span>
-            <input type="date" name="scheduled_date" min="<?= lex_e(date('Y-m-d')) ?>" value="<?= lex_e($selectedDate) ?>" required data-appointment-date>
-          </span>
-        </label>
-        <label class="client-appointment-field">Time
-          <span class="client-appointment-control">
-            <span class="client-appointment-control-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" focusable="false"><path d="M12 3.25a8.75 8.75 0 1 1 0 17.5 8.75 8.75 0 0 1 0-17.5Zm.75 4.25h-1.5v5.25l4.1 2.46.78-1.29-3.38-2.02V7.5Z" fill="currentColor"/></svg>
-            </span>
-            <input type="time" name="scheduled_time" value="<?= lex_e($selectedTime) ?>" required data-appointment-time>
-          </span>
-        </label>
+            <span aria-hidden="true">›</span>
+          </button>
+        </div>
         <label class="client-appointment-field client-appointment-field--full">Appointment Type
           <span class="client-appointment-control">
             <span class="client-appointment-control-icon" aria-hidden="true">
@@ -324,6 +443,38 @@ lex_page_header('Appointments', 'appointments', $user);
     </table>
   </div>
 </section>
+
+<div class="modal-overlay client-appointment-picker-modal" data-appointment-picker-modal aria-hidden="true">
+  <article class="modal-card client-appointment-picker-card" role="dialog" aria-modal="true" aria-labelledby="appointmentPickerTitle">
+    <header class="modal-header">
+      <div>
+        <h2 id="appointmentPickerTitle">Choose Consultation Schedule</h2>
+        <p class="muted" data-appointment-picker-lawyer>Choose a lawyer first.</p>
+      </div>
+      <button class="close-button" type="button" data-appointment-picker-close aria-label="Close calendar">&times;</button>
+    </header>
+    <div class="client-appointment-picker-body">
+      <div class="client-appointment-calendar-head">
+        <button type="button" class="button" data-calendar-prev aria-label="Previous month">‹</button>
+        <strong data-calendar-title></strong>
+        <button type="button" class="button" data-calendar-next aria-label="Next month">›</button>
+      </div>
+      <div class="client-appointment-calendar-weekdays" aria-hidden="true"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+      <div class="client-appointment-calendar-grid" data-calendar-grid></div>
+      <div class="client-appointment-session-area" data-session-area hidden>
+        <div class="client-appointment-selected-date" data-selected-date-label></div>
+        <div class="client-appointment-session-grid">
+          <button type="button" class="client-appointment-session-card" data-session="morning"><span>Morning</span><strong data-morning-count>10/10</strong><small>8:00 AM – 12:30 PM</small></button>
+          <button type="button" class="client-appointment-session-card" data-session="afternoon"><span>Afternoon</span><strong data-afternoon-count>10/10</strong><small>1:00 PM – 5:30 PM</small></button>
+        </div>
+        <div class="client-appointment-time-area" data-time-area hidden>
+          <h3>Choose a time</h3>
+          <div class="client-appointment-time-grid" data-time-grid></div>
+        </div>
+      </div>
+    </div>
+  </article>
+</div>
 
 <div class="modal-overlay client-appointment-note-modal" data-client-note-modal aria-hidden="true">
   <article class="modal-card client-appointment-note-card" role="dialog" aria-modal="true" aria-labelledby="clientAppointmentNoteTitle">

@@ -504,50 +504,108 @@
 
   const appointmentForm = document.querySelector('[data-client-appointment-form]');
   if (appointmentForm instanceof HTMLFormElement) {
+    const page = appointmentForm.closest('[data-client-appointment-page]');
     const lawyerSelect = appointmentForm.querySelector('[data-appointment-lawyer-select]');
     const dateInput = appointmentForm.querySelector('[data-appointment-date]');
     const timeInput = appointmentForm.querySelector('[data-appointment-time]');
     const typeInput = appointmentForm.querySelector('[data-appointment-type]');
     const summaryLawyer = appointmentForm.querySelector('[data-appointment-summary-lawyer]');
     const summaryMeta = appointmentForm.querySelector('[data-appointment-summary-meta]');
+    const pickerModal = page?.querySelector('[data-appointment-picker-modal]');
+    const pickerOpen = page?.querySelector('[data-appointment-picker-open]');
+    const pickerClose = page?.querySelector('[data-appointment-picker-close]');
+    const calendarGrid = page?.querySelector('[data-calendar-grid]');
+    const calendarTitle = page?.querySelector('[data-calendar-title]');
+    const selectedDateLabel = page?.querySelector('[data-selected-date-label]');
+    const sessionArea = page?.querySelector('[data-session-area]');
+    const timeArea = page?.querySelector('[data-time-area]');
+    const timeGrid = page?.querySelector('[data-time-grid]');
+    const pickerLabel = page?.querySelector('[data-appointment-picker-label]');
+    const pickerMeta = page?.querySelector('[data-appointment-picker-meta]');
+    const pickerLawyer = page?.querySelector('[data-appointment-picker-lawyer]');
+    const morningCount = page?.querySelector('[data-morning-count]');
+    const afternoonCount = page?.querySelector('[data-afternoon-count]');
+    const prevMonth = page?.querySelector('[data-calendar-prev]');
+    const nextMonth = page?.querySelector('[data-calendar-next]');
+    const sessionButtons = [...(page?.querySelectorAll('[data-session]') || [])];
+    const defaultCapacity = 10;
+    let calendarCursor = new Date(); calendarCursor.setDate(1);
+    let monthData = { days: {} };
+    let selectedSession = '';
 
-    const formatDate = (value) => {
-      if (!value) return '';
-      const parsed = new Date(`${value}T00:00:00`);
-      if (Number.isNaN(parsed.getTime())) return value;
-      return parsed.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-    };
-
-    const formatTime = (value) => {
-      if (!value) return '';
-      const parsed = new Date(`2000-01-01T${value}`);
-      if (Number.isNaN(parsed.getTime())) return value;
-      return parsed.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-    };
+    const pad = (n) => String(n).padStart(2, '0');
+    const localDateKey = (date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    const monthKey = (date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}`;
+    const parseLocalDate = (value) => { if (!value) return null; const [y,m,d] = value.split('-').map(Number); return new Date(y,m-1,d); };
+    const formatDate = (value) => { const d=parseLocalDate(value); return d ? d.toLocaleDateString(undefined,{month:'long',day:'numeric',year:'numeric'}) : ''; };
+    const formatShortDate = (value) => { const d=parseLocalDate(value); return d ? d.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}) : ''; };
+    const formatTime = (value) => { if (!value) return ''; const d=new Date(`2000-01-01T${value}`); return Number.isNaN(d.getTime()) ? value : d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}); };
+    const todayKey = localDateKey(new Date());
 
     const updateAppointmentSummary = () => {
       const selectedOption = lawyerSelect?.selectedOptions?.[0];
       const lawyerLabel = selectedOption && selectedOption.value ? selectedOption.textContent.trim() : 'Choose a lawyer';
       const specialization = selectedOption?.dataset?.specialization || 'General Practice';
-      const dateLabel = formatDate(dateInput?.value || '');
-      const timeLabel = formatTime(timeInput?.value || '');
+      const dateLabel = formatShortDate(dateInput?.value || ''); const timeLabel = formatTime(timeInput?.value || '');
       const typeLabel = typeInput?.value || 'Consultation';
-
-      if (summaryLawyer) {
-        summaryLawyer.textContent = lawyerLabel;
-      }
-      if (summaryMeta) {
-        summaryMeta.textContent = dateLabel && timeLabel
-          ? `${typeLabel} with ${specialization} on ${dateLabel} at ${timeLabel}. The request will stay pending until the lawyer confirms it.`
-          : 'Select a date and time to preview this request.';
-      }
+      if (summaryLawyer) summaryLawyer.textContent = lawyerLabel;
+      if (summaryMeta) summaryMeta.textContent = dateLabel && timeLabel ? `${typeLabel} with ${specialization} on ${dateLabel} at ${timeLabel}. The request will stay pending until the lawyer confirms it.` : 'Select a date and time to preview this request.';
+      if (pickerLabel) pickerLabel.textContent = dateLabel && timeLabel ? `${dateLabel} at ${timeLabel}` : 'Choose date and time';
+      if (pickerMeta) pickerMeta.textContent = dateLabel && timeLabel ? 'Tap to change your consultation schedule.' : 'Choose an available date, session, and time.';
+      if (pickerLawyer) pickerLawyer.textContent = lawyerLabel === 'Choose a lawyer' ? 'Choose a lawyer first.' : `Availability for ${lawyerLabel}`;
     };
 
-    [lawyerSelect, dateInput, timeInput, typeInput].forEach((control) => {
-      control?.addEventListener('change', updateAppointmentSummary);
-      control?.addEventListener('input', updateAppointmentSummary);
-    });
-    updateAppointmentSummary();
+    const fetchMonthAvailability = async () => {
+      const lawyerId = lawyerSelect?.value || '';
+      if (!lawyerId) { monthData = {days:{}}; return; }
+      try {
+        const url = new URL(window.location.href); url.search=''; url.searchParams.set('availability','1'); url.searchParams.set('lawyer_id',lawyerId); url.searchParams.set('month',monthKey(calendarCursor));
+        const response = await fetch(url.toString(), {credentials:'same-origin',headers:{Accept:'application/json'}});
+        if (!response.ok) throw new Error('Availability request failed');
+        const data = await response.json(); if (data.ok) monthData = data;
+      } catch (error) { console.warn('Unable to load appointment availability.', error); monthData={days:{}}; }
+    };
+
+    const getDayData = (key) => monthData.days?.[key] || {available:false,morning:{booked:0,capacity:0,start:null,end:null},afternoon:{booked:0,capacity:0,start:null,end:null},booked_times:[],blocked_reason:''};
+    const buildTimes = (start, end) => {
+      if (!start || !end) return [];
+      const [sh,sm]=start.split(':').map(Number), [eh,em]=end.split(':').map(Number); let current=sh*60+sm, finish=eh*60+em, out=[];
+      while (current < finish) { out.push(`${pad(Math.floor(current/60))}:${pad(current%60)}`); current += 30; }
+      return out;
+    };
+    const updateSessionCards = () => {
+      const data=getDayData(dateInput?.value || '');
+      [['morning',morningCount],['afternoon',afternoonCount]].forEach(([key,count])=>{
+        const item=data[key] || {}; const cap=Number(item.capacity||0), booked=Number(item.booked||0), remaining=Math.max(0,cap-booked);
+        if(count) count.textContent=cap>0 ? `${remaining}/${cap} available` : 'Not available';
+        const button=sessionButtons.find(b=>b.dataset.session===key); if(button){ const open=Boolean(data.available && cap>0 && remaining>0 && item.start && item.end); button.disabled=!open; button.classList.toggle('is-full',!open); button.classList.toggle('is-selected',selectedSession===key); const small=button.querySelector('small'); if(small) small.textContent=item.start && item.end ? `${formatTime(item.start)} – ${formatTime(item.end)}` : 'Not available'; }
+      });
+    };
+    const renderTimes = () => {
+      if (!(timeGrid instanceof HTMLElement)) return; const data=getDayData(dateInput?.value||''); const item=data[selectedSession]; const times=buildTimes(item?.start,item?.end); const booked=new Set(data.booked_times||[]); timeGrid.innerHTML='';
+      times.forEach(time=>{ const button=document.createElement('button'); button.type='button'; button.className='client-appointment-time-button'; button.textContent=formatTime(time); button.disabled=booked.has(time); if(timeInput?.value===time) button.classList.add('is-selected'); if(button.disabled){button.classList.add('is-booked');button.title='Already booked';} button.addEventListener('click',()=>{if(button.disabled)return; timeInput.value=time; updateAppointmentSummary(); renderTimes();}); timeGrid.appendChild(button); });
+      if(timeArea) timeArea.hidden=times.length===0;
+    };
+    const renderCalendar = async () => {
+      if (!(calendarGrid instanceof HTMLElement) || !(calendarTitle instanceof HTMLElement)) return; await fetchMonthAvailability(); calendarTitle.textContent=calendarCursor.toLocaleDateString(undefined,{month:'long',year:'numeric'}); calendarGrid.innerHTML='';
+      const year=calendarCursor.getFullYear(), month=calendarCursor.getMonth(), firstDay=new Date(year,month,1).getDay(), days=new Date(year,month+1,0).getDate();
+      for(let i=0;i<firstDay;i++){const blank=document.createElement('span');blank.className='client-appointment-calendar-day is-empty';calendarGrid.appendChild(blank);}
+      for(let day=1;day<=days;day++){
+        const date=new Date(year,month,day), key=localDateKey(date), info=getDayData(key), button=document.createElement('button'); button.type='button'; button.className='client-appointment-calendar-day'; button.textContent=String(day); button.dataset.date=key;
+        const isPast=key<todayKey, canBook=Boolean(info.available && ((info.morning?.capacity>info.morning?.booked && info.morning?.start) || (info.afternoon?.capacity>info.afternoon?.booked && info.afternoon?.start)));
+        button.disabled=isPast || !canBook || !lawyerSelect?.value; if(isPast) button.classList.add('is-past'); if(info.available && canBook) button.classList.add('is-available'); else if(info.blocked_reason) button.classList.add('is-blocked'); else button.classList.add('is-unavailable'); if(key===todayKey) button.classList.add('is-today'); if(key===dateInput?.value) button.classList.add('is-selected');
+        button.title=isPast?'Past date':info.blocked_reason?info.blocked_reason:!info.available?'Lawyer unavailable':canBook?'Available':'Fully booked';
+        button.addEventListener('click',async()=>{dateInput.value=key;timeInput.value='';selectedSession='';if(selectedDateLabel)selectedDateLabel.textContent=formatDate(key);if(sessionArea)sessionArea.hidden=false;if(timeArea)timeArea.hidden=true;updateSessionCards();renderCalendar();updateAppointmentSummary();}); calendarGrid.appendChild(button);
+      }
+      if(dateInput?.value){updateSessionCards(); if(selectedSession)renderTimes();}
+    };
+    const openPicker=async()=>{if(!lawyerSelect?.value){lawyerSelect?.focus();return;}const selected=parseLocalDate(dateInput?.value||todayKey);if(selected)calendarCursor=new Date(selected.getFullYear(),selected.getMonth(),1);pickerModal?.classList.add('is-open');pickerModal?.setAttribute('aria-hidden','false');document.body.classList.add('modal-open');await renderCalendar();};
+    const closePicker=()=>{pickerModal?.classList.remove('is-open');pickerModal?.setAttribute('aria-hidden','true');document.body.classList.remove('modal-open');};
+    pickerOpen?.addEventListener('click',openPicker); pickerClose?.addEventListener('click',closePicker); pickerModal?.addEventListener('click',e=>{if(e.target===pickerModal)closePicker();});
+    prevMonth?.addEventListener('click',async()=>{calendarCursor=new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()-1,1);await renderCalendar();}); nextMonth?.addEventListener('click',async()=>{calendarCursor=new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()+1,1);await renderCalendar();});
+    sessionButtons.forEach(button=>button.addEventListener('click',()=>{if(button.disabled)return;selectedSession=button.dataset.session||'';timeInput.value='';updateSessionCards();renderTimes();}));
+    lawyerSelect?.addEventListener('change',async()=>{dateInput.value='';timeInput.value='';selectedSession='';if(sessionArea)sessionArea.hidden=true;if(timeArea)timeArea.hidden=true;await fetchMonthAvailability();updateAppointmentSummary();});
+    typeInput?.addEventListener('change',updateAppointmentSummary); typeInput?.addEventListener('input',updateAppointmentSummary); updateAppointmentSummary();
   }
 
   const apiBase = document.body.dataset.apiBase;

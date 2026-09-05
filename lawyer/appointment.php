@@ -423,6 +423,7 @@ lex_page_header('Appointments', 'appointments', $user);
       <h2>Appointment Requests</h2>
     </div>
     <div class="appointment-head-meta">
+      <a class="button button-secondary" href="<?= lex_e(lex_app_url('lawyer/availability.php')) ?>">Manage availability</a>
       <span class="pill"><?= (int) $baseTotalAppointments ?> total</span>
       <span class="pill"><?= (int) $filteredTotalAppointments ?> visible</span>
     </div>

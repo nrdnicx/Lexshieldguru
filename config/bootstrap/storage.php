@@ -65,6 +65,265 @@ function lex_messages_attachment_path(string $storedName): string
     return lex_messages_base_dir() . DIRECTORY_SEPARATOR . $storedName;
 }
 
+class LexStorageUnavailableException extends RuntimeException
+{
+}
+
+function lex_supabase_storage_config(): array
+{
+    // Reload the project .env defensively in case this module is reached
+    // from a request path that did not load the normal application bootstrap.
+    if (function_exists('lex_load_env_file')) {
+        lex_load_env_file(dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . '.env');
+    }
+
+    $readEnv = static function (string $name, string $default = ''): string {
+        $value = getenv($name);
+        if ($value !== false && trim((string) $value) !== '') {
+            return trim((string) $value);
+        }
+
+        $value = $_ENV[$name] ?? null;
+        if ($value !== null && trim((string) $value) !== '') {
+            return trim((string) $value);
+        }
+
+        $value = $_SERVER[$name] ?? null;
+        if ($value !== null && trim((string) $value) !== '') {
+            return trim((string) $value);
+        }
+
+        return $default;
+    };
+
+    $url = rtrim($readEnv('SUPABASE_URL'), '/');
+    $secretKey = $readEnv('SUPABASE_SECRET_KEY');
+    $bucket = $readEnv('SUPABASE_BUCKET', 'legal-documents');
+
+    if ($url === '' || $secretKey === '' || $bucket === '') {
+        throw new RuntimeException('Secure document storage is not configured.');
+    }
+
+    if (!preg_match('/^https:\/\/[A-Za-z0-9.-]+$/', $url)) {
+        throw new RuntimeException('Secure document storage is not configured.');
+    }
+
+    if (!preg_match('/^[A-Za-z0-9._-]+$/', $bucket)) {
+        throw new RuntimeException('Secure document storage is not configured.');
+    }
+
+    return [
+        'url' => $url,
+        'secret_key' => $secretKey,
+        'bucket' => $bucket,
+    ];
+}
+
+function lex_supabase_storage_configured(): bool
+{
+    try {
+        lex_supabase_storage_config();
+        return true;
+    } catch (Throwable $e) {
+        return false;
+    }
+}
+
+function lex_supabase_storage_clean_path(string $path): string
+{
+    $path = trim(str_replace('\\', '/', $path), '/');
+    $segments = array_values(array_filter(explode('/', $path), static fn (string $segment): bool => $segment !== ''));
+    $cleanSegments = [];
+
+    foreach ($segments as $segment) {
+        if ($segment === '.' || $segment === '..' || str_contains($segment, "\0")) {
+            throw new RuntimeException('Invalid storage path.');
+        }
+        if (!preg_match('/^[A-Za-z0-9._-]+$/', $segment)) {
+            throw new RuntimeException('Invalid storage path.');
+        }
+        $cleanSegments[] = $segment;
+    }
+
+    if ($cleanSegments === []) {
+        throw new RuntimeException('Invalid storage path.');
+    }
+
+    return implode('/', $cleanSegments);
+}
+
+function lex_supabase_storage_encoded_path(string $path): string
+{
+    $path = lex_supabase_storage_clean_path($path);
+    return implode('/', array_map('rawurlencode', explode('/', $path)));
+}
+
+function lex_supabase_storage_request(string $method, string $objectPath = '', ?string $body = null, array $headers = []): array
+{
+    if (!function_exists('curl_init')) {
+        throw new LexStorageUnavailableException('Secure document storage is unavailable.');
+    }
+
+    $config = lex_supabase_storage_config();
+    $url = $config['url'] . '/storage/v1/object/' . rawurlencode($config['bucket']);
+    if ($objectPath !== '') {
+        $url .= '/' . lex_supabase_storage_encoded_path($objectPath);
+    }
+
+    $requestHeaders = [
+        'apikey: ' . $config['secret_key'],
+        'Authorization: Bearer ' . $config['secret_key'],
+    ];
+    foreach ($headers as $header) {
+        $requestHeaders[] = $header;
+    }
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_CUSTOMREQUEST => strtoupper($method),
+        CURLOPT_HTTPHEADER => $requestHeaders,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HEADER => false,
+        CURLOPT_TIMEOUT => 60,
+        CURLOPT_CONNECTTIMEOUT => 15,
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_SSL_VERIFYHOST => 2,
+    ]);
+
+    if ($body !== null) {
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+    }
+
+    $responseBody = curl_exec($ch);
+    $curlError = curl_error($ch);
+    $status = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+    curl_close($ch);
+
+    if ($responseBody === false) {
+        error_log('[SUPABASE_STORAGE] Request failed: ' . $curlError);
+        throw new LexStorageUnavailableException('Secure document storage request failed.');
+    }
+
+    return [
+        'status' => $status,
+        'body' => (string) $responseBody,
+    ];
+}
+
+function lex_supabase_storage_upload(string $objectPath, string $data, string $contentType = 'application/octet-stream'): void
+{
+    $response = lex_supabase_storage_request('POST', $objectPath, $data, [
+        'Content-Type: ' . $contentType,
+        'Content-Length: ' . strlen($data),
+        'Cache-Control: no-store',
+        'x-upsert: false',
+    ]);
+
+    if ($response['status'] < 200 || $response['status'] >= 300) {
+        error_log('[SUPABASE_STORAGE] Upload failed with HTTP ' . $response['status']);
+        if (lex_supabase_storage_is_fallback_error($response['status'], $response['body'])) {
+            throw new LexStorageUnavailableException('Supabase storage cannot accept the encrypted document.');
+        }
+        throw new RuntimeException('Unable to save encrypted document.');
+    }
+}
+
+function lex_supabase_storage_is_fallback_error(int $status, string $body): bool
+{
+    if ($status === 408 || $status === 413 || $status === 429 || $status === 507 || $status >= 500) {
+        return true;
+    }
+
+    if ($status >= 400) {
+        $message = strtolower(substr($body, 0, 1000));
+        foreach (['quota', 'limit', 'capacity', 'full', 'insufficient storage', 'exceeded'] as $needle) {
+            if (str_contains($message, $needle)) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+function lex_supabase_storage_download(string $objectPath): string
+{
+    $response = lex_supabase_storage_request('GET', $objectPath);
+
+    if ($response['status'] < 200 || $response['status'] >= 300) {
+        error_log('[SUPABASE_STORAGE] Download failed with HTTP ' . $response['status']);
+        throw new RuntimeException('Unable to retrieve encrypted document.');
+    }
+
+    return $response['body'];
+}
+
+function lex_supabase_storage_delete(string $objectPath): void
+{
+    $response = lex_supabase_storage_request('DELETE', $objectPath);
+
+    if ($response['status'] < 200 || $response['status'] >= 300) {
+        error_log('[SUPABASE_STORAGE] Delete failed with HTTP ' . $response['status']);
+        throw new RuntimeException('Unable to delete encrypted document.');
+    }
+}
+
+function lex_storage_preferred_provider(): string
+{
+    $preference = strtolower(trim((string) (getenv('STORAGE_PREFERENCE') ?: 'supabase')));
+    return in_array($preference, ['supabase', 'local'], true) ? $preference : 'supabase';
+}
+
+function lex_local_storage_reserve_bytes(): int
+{
+    $reserveMb = (int) (getenv('LOCAL_STORAGE_RESERVE_MB') ?: 100);
+    return max(0, $reserveMb) * 1024 * 1024;
+}
+
+function lex_local_storage_can_store(string $directory, int $bytes): bool
+{
+    if ($bytes < 0) {
+        return false;
+    }
+    if (!is_dir($directory) && !@mkdir($directory, 0775, true) && !is_dir($directory)) {
+        return false;
+    }
+    if (!is_writable($directory)) {
+        return false;
+    }
+    if (!function_exists('disk_free_space')) {
+        return false;
+    }
+
+    $free = @disk_free_space($directory);
+    if (!is_int($free) && !is_float($free)) {
+        return false;
+    }
+
+    return (float) $free >= ($bytes + lex_local_storage_reserve_bytes());
+}
+
+function lex_storage_last_fallback_reason(?string $reason = null): string
+{
+    static $lastReason = '';
+    if ($reason !== null) {
+        $lastReason = substr($reason, 0, 180);
+    }
+    return $lastReason;
+}
+
+function lex_document_storage_status(int $fileSize = 0): array
+{
+    $localDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'case_files';
+    return [
+        'supabase_configured' => lex_supabase_storage_configured(),
+        'local_storage_available' => lex_local_storage_can_store($localDir, $fileSize),
+        'preferred_provider' => lex_storage_preferred_provider(),
+        'local_has_space_for_file' => lex_local_storage_can_store($localDir, $fileSize),
+        'last_fallback_reason' => lex_storage_last_fallback_reason(),
+    ];
+}
+
 function lex_human_file_size(int $bytes): string
 {
     if ($bytes <= 0) {

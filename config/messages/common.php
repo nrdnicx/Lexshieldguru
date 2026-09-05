@@ -79,7 +79,7 @@ function lex_phishing_detector_button(): string
 
 function lex_phishing_detector_modal(): void
 {
-    $endpointPath = parse_url(lex_app_url('api/phishing/check.php'), PHP_URL_PATH) ?: '/lexs_capstone/api/phishing/check.php';
+    $endpointPath = lex_api_url('api/phishing/check');
     ?>
     <div class="modal-overlay phishing-detector-modal" id="phishingDetectorModal" data-modal aria-hidden="true">
       <div class="modal-card phishing-detector-card" role="dialog" aria-modal="true" aria-labelledby="phishingDetectorTitle">

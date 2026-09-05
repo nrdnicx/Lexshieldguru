@@ -123,6 +123,22 @@ function lex_site_setting(string $key, string $default = ''): string
     return (string) $value;
 }
 
+function lex_bool_setting(string $settingKey, string $envName, bool $default = false): bool
+{
+    $defaultValue = $default ? 'true' : 'false';
+    $settingValue = trim(lex_site_setting($settingKey, ''));
+    if ($settingValue !== '') {
+        return filter_var($settingValue, FILTER_VALIDATE_BOOL);
+    }
+
+    $envValue = getenv($envName);
+    if ($envValue !== false && trim((string) $envValue) !== '') {
+        return filter_var($envValue, FILTER_VALIDATE_BOOL);
+    }
+
+    return filter_var($defaultValue, FILTER_VALIDATE_BOOL);
+}
+
 function lex_asset_url(string $path): string
 {
     $path = ltrim(str_replace('\\', '/', $path), '/');

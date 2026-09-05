@@ -101,6 +101,8 @@ function lex_case_file_vault_table_ensure(): void
               `folder_id` INT UNSIGNED NOT NULL,
               `original_name` VARCHAR(255) NOT NULL,
               `stored_name` VARCHAR(255) NOT NULL,
+              `storage_provider` VARCHAR(30) NOT NULL DEFAULT 'local',
+              `storage_path` VARCHAR(500) DEFAULT NULL,
               `mime_type` VARCHAR(120) DEFAULT NULL,
               `file_size` INT UNSIGNED DEFAULT NULL,
               `file_hash` CHAR(64) DEFAULT NULL,
@@ -132,6 +134,14 @@ function lex_case_file_vault_table_ensure(): void
         if ($columnStmt) {
             $columns = array_map(static fn (array $row): string => (string) $row['Field'], $columnStmt->fetchAll());
         }
+        if (!in_array('storage_provider', $columns, true)) {
+            $pdo->exec("ALTER TABLE `case_file_documents` ADD COLUMN `storage_provider` VARCHAR(30) NOT NULL DEFAULT 'local' AFTER `stored_name`");
+            $columns[] = 'storage_provider';
+        }
+        if (!in_array('storage_path', $columns, true)) {
+            $pdo->exec("ALTER TABLE `case_file_documents` ADD COLUMN `storage_path` VARCHAR(500) DEFAULT NULL AFTER `storage_provider`");
+            $columns[] = 'storage_path';
+        }
         if (!in_array('encryption_algorithm', $columns, true)) {
             $pdo->exec("ALTER TABLE `case_file_documents` ADD COLUMN `encryption_algorithm` VARCHAR(40) DEFAULT NULL AFTER `file_hash`");
         }
@@ -148,14 +158,42 @@ function lex_case_file_vault_table_ensure(): void
     });
 }
 
+function lex_case_files_assert_local_path(string $path, bool $allowBase = false): string
+{
+    $base = realpath(lex_case_files_base_dir());
+    if ($base === false) {
+        throw new RuntimeException('Local case-file storage is unavailable.');
+    }
+
+    $target = realpath($path);
+    if ($target === false) {
+        $parent = realpath(dirname($path));
+        if ($parent === false) {
+            throw new RuntimeException('Invalid local case-file storage path.');
+        }
+        $target = $parent . DIRECTORY_SEPARATOR . basename($path);
+    }
+
+    $base = rtrim($base, DIRECTORY_SEPARATOR);
+    $basePrefix = $base . DIRECTORY_SEPARATOR;
+    $insideBase = strncmp($target, $basePrefix, strlen($basePrefix)) === 0;
+    if (($allowBase && $target === $base) || $insideBase) {
+        return $path;
+    }
+
+    throw new RuntimeException('Invalid local case-file storage path.');
+}
+
 function lex_case_files_folder_path(string $folderName): string
 {
-    return lex_case_files_base_dir() . DIRECTORY_SEPARATOR . $folderName;
+    $path = lex_case_files_base_dir() . DIRECTORY_SEPARATOR . $folderName;
+    return lex_case_files_assert_local_path($path);
 }
 
 function lex_case_files_metadata_path(string $folderName): string
 {
-    return lex_case_files_folder_path($folderName) . DIRECTORY_SEPARATOR . 'metadata.json';
+    $path = lex_case_files_folder_path($folderName) . DIRECTORY_SEPARATOR . 'metadata.json';
+    return lex_case_files_assert_local_path($path);
 }
 
 function lex_case_files_ensure_folders(string $folderName): void
@@ -166,7 +204,7 @@ function lex_case_files_ensure_folders(string $folderName): void
         @mkdir($root, 0775, true);
     }
     foreach ($subfolders as $subfolder) {
-        $path = $root . DIRECTORY_SEPARATOR . $subfolder;
+        $path = lex_case_files_assert_local_path($root . DIRECTORY_SEPARATOR . $subfolder);
         if (!is_dir($path)) {
             @mkdir($path, 0775, true);
         }
@@ -195,7 +233,133 @@ function lex_case_file_vault_slug(string $value): string
 function lex_case_file_vault_folder_dir(array $caseFile, array $folder): string
 {
     $slug = lex_case_file_vault_slug((string) ($folder['slug'] ?? $folder['name'] ?? 'DOCUMENTS'));
-    return lex_case_files_folder_path((string) $caseFile['folder_name']) . DIRECTORY_SEPARATOR . $slug;
+    return lex_case_files_assert_local_path(
+        lex_case_files_folder_path((string) $caseFile['folder_name']) . DIRECTORY_SEPARATOR . $slug
+    );
+}
+
+function lex_case_file_vault_storage_path(int $caseFileId, int $documentId, string $storedName): string
+{
+    return 'case-files/' . $caseFileId . '/' . $documentId . '/' . basename($storedName);
+}
+
+function lex_case_file_vault_local_document_path(array $caseFile, array $document): string
+{
+    $path = lex_case_files_folder_path((string) $caseFile['folder_name'])
+        . DIRECTORY_SEPARATOR
+        . lex_case_file_vault_slug((string) ($document['folder_slug'] ?? $document['folder_name'] ?? 'DOCUMENTS'))
+        . DIRECTORY_SEPARATOR
+        . basename((string) $document['stored_name']);
+
+    return lex_case_files_assert_local_path($path);
+}
+
+function lex_case_file_vault_document_storage_provider(array $document): string
+{
+    $provider = strtolower(trim((string) ($document['storage_provider'] ?? '')));
+    return $provider !== '' ? $provider : 'local';
+}
+
+function lex_case_file_vault_document_storage_path(array $document): string
+{
+    return trim((string) ($document['storage_path'] ?? ''));
+}
+
+function lex_case_file_vault_verified_storage_path(array $document): string
+{
+    $caseFileId = (int) ($document['case_file_id'] ?? 0);
+    $documentId = (int) ($document['id'] ?? 0);
+    $storedName = basename((string) ($document['stored_name'] ?? ''));
+    if ($caseFileId <= 0 || $documentId <= 0 || $storedName === '') {
+        throw new RuntimeException('Invalid document storage metadata.');
+    }
+
+    $storagePath = lex_supabase_storage_clean_path(lex_case_file_vault_document_storage_path($document));
+    $expectedPath = lex_case_file_vault_storage_path($caseFileId, $documentId, $storedName);
+    if (!hash_equals($expectedPath, $storagePath)) {
+        throw new RuntimeException('Invalid document storage path.');
+    }
+
+    return $storagePath;
+}
+
+function lex_case_file_vault_delete_document_object(array $caseFile, array $document): void
+{
+    $provider = lex_case_file_vault_document_storage_provider($document);
+
+    if ($provider === 'supabase') {
+        lex_supabase_storage_delete(lex_case_file_vault_verified_storage_path($document));
+    }
+
+    $localPath = lex_case_file_vault_local_document_path($caseFile, $document);
+    if (is_file($localPath)) {
+        @unlink($localPath);
+    }
+}
+
+function lex_case_file_vault_provider_order(): array
+{
+    $preferred = lex_storage_preferred_provider();
+    return $preferred === 'local' ? ['local', 'supabase'] : ['supabase', 'local'];
+}
+
+function lex_case_file_vault_store_encrypted_data(
+    string $provider,
+    array $caseFile,
+    array $folder,
+    int $documentId,
+    string $storedName,
+    string $encryptedData
+): array {
+    if ($provider === 'supabase') {
+        $storagePath = lex_case_file_vault_storage_path((int) $caseFile['id'], $documentId, $storedName);
+        lex_supabase_storage_upload($storagePath, $encryptedData, 'application/octet-stream');
+        error_log('[CASE_FILE_STORAGE] Stored encrypted document using Supabase.');
+
+        return [
+            'provider' => 'supabase',
+            'storage_path' => $storagePath,
+            'local_path' => '',
+        ];
+    }
+
+    if ($provider === 'local') {
+        $targetDir = lex_case_file_vault_folder_dir($caseFile, $folder);
+        if (!lex_local_storage_can_store($targetDir, strlen($encryptedData))) {
+            throw new LexStorageUnavailableException('Local encrypted document storage does not have enough available space.');
+        }
+
+        $document = [
+            'stored_name' => $storedName,
+            'folder_slug' => (string) ($folder['slug'] ?? $folder['name'] ?? 'DOCUMENTS'),
+        ];
+        $targetPath = lex_case_file_vault_local_document_path($caseFile, $document);
+        if (file_put_contents($targetPath, $encryptedData, LOCK_EX) === false) {
+            throw new LexStorageUnavailableException('Unable to write encrypted document to local storage.');
+        }
+        error_log('[CASE_FILE_STORAGE] Stored encrypted document using local storage.');
+
+        return [
+            'provider' => 'local',
+            'storage_path' => null,
+            'local_path' => $targetPath,
+        ];
+    }
+
+    throw new RuntimeException('Invalid document storage provider.');
+}
+
+function lex_case_file_vault_cleanup_stored_data(array $storage): void
+{
+    try {
+        if (($storage['provider'] ?? '') === 'supabase' && !empty($storage['storage_path'])) {
+            lex_supabase_storage_delete((string) $storage['storage_path']);
+        } elseif (($storage['provider'] ?? '') === 'local' && !empty($storage['local_path']) && is_file((string) $storage['local_path'])) {
+            @unlink((string) $storage['local_path']);
+        }
+    } catch (Throwable $cleanupError) {
+        error_log('[CASE_FILE_STORAGE] Cleanup after failed document metadata update failed.');
+    }
 }
 
 function lex_case_file_vault_ensure_defaults(int $caseFileId, int $createdByUserId = 1): void
@@ -363,11 +527,6 @@ function lex_case_file_vault_store_document(array $caseFile, int $folderId, arra
         lex_reject_upload('case_file_document', 'Unsupported document type. Allowed types: PDF, JPG, PNG, WEBP, DOCX.');
     }
     $storedName = bin2hex(random_bytes(16)) . '.enc';
-    $targetDir = lex_case_file_vault_folder_dir($caseFile, $folder);
-    if (!is_dir($targetDir)) {
-        @mkdir($targetDir, 0775, true);
-    }
-    $targetPath = $targetDir . DIRECTORY_SEPARATOR . $storedName;
     $tmpPath = (string) $file['tmp_name'];
     $validatedType = lex_validate_allowed_upload_type($tmpPath, $originalName, 'case_file_document');
     lex_scan_upload_for_malware($tmpPath, 'case_file_document', $originalName);
@@ -377,37 +536,88 @@ function lex_case_file_vault_store_document(array $caseFile, int $folderId, arra
     }
     $hash = hash('sha256', $plainData);
     $encrypted = lex_case_file_document_encrypt($plainData);
-    if (file_put_contents($targetPath, $encrypted['data'], LOCK_EX) === false) {
-        lex_reject_upload('case_file_document', 'Unable to save encrypted document.');
-    }
+
     $approvedBy = $status === 'approved' ? (int) $user['id'] : null;
     $approvedAt = $status === 'approved' ? date('Y-m-d H:i:s') : null;
-    lex_pdo()->prepare(
-        'INSERT INTO case_file_documents
-            (case_file_id, folder_id, original_name, stored_name, mime_type, file_size, file_hash, encryption_algorithm, encryption_iv, encryption_tag, encrypted_at, upload_status, uploaded_by_user_id, approved_by_user_id, approved_at)
-         VALUES
-            (:case_file_id, :folder_id, :original_name, :stored_name, :mime_type, :file_size, :file_hash, :encryption_algorithm, :encryption_iv, :encryption_tag, NOW(), :upload_status, :uploaded_by_user_id, :approved_by_user_id, :approved_at)'
-    )->execute([
-        'case_file_id' => (int) $caseFile['id'],
-        'folder_id' => $folderId,
-        'original_name' => $originalName,
-        'stored_name' => $storedName,
-        'mime_type' => $validatedType['mime_type'],
-        'file_size' => $size,
-        'file_hash' => $hash,
-        'encryption_algorithm' => $encrypted['algorithm'],
-        'encryption_iv' => $encrypted['iv'],
-        'encryption_tag' => $encrypted['tag'],
-        'upload_status' => $status,
-        'uploaded_by_user_id' => (int) $user['id'],
-        'approved_by_user_id' => $approvedBy,
-        'approved_at' => $approvedAt,
-    ]);
+    $pdo = lex_pdo();
+    $documentId = 0;
+    $storagePath = null;
+    $storage = [];
+
+    try {
+        $pdo->beginTransaction();
+        $pdo->prepare(
+            'INSERT INTO case_file_documents
+                (case_file_id, folder_id, original_name, stored_name, storage_provider, storage_path, mime_type, file_size, file_hash, encryption_algorithm, encryption_iv, encryption_tag, encrypted_at, upload_status, uploaded_by_user_id, approved_by_user_id, approved_at)
+             VALUES
+                (:case_file_id, :folder_id, :original_name, :stored_name, :storage_provider, :storage_path, :mime_type, :file_size, :file_hash, :encryption_algorithm, :encryption_iv, :encryption_tag, NOW(), :upload_status, :uploaded_by_user_id, :approved_by_user_id, :approved_at)'
+        )->execute([
+            'case_file_id' => (int) $caseFile['id'],
+            'folder_id' => $folderId,
+            'original_name' => $originalName,
+            'stored_name' => $storedName,
+            'storage_provider' => 'supabase',
+            'storage_path' => $storagePath,
+            'mime_type' => $validatedType['mime_type'],
+            'file_size' => $size,
+            'file_hash' => $hash,
+            'encryption_algorithm' => $encrypted['algorithm'],
+            'encryption_iv' => $encrypted['iv'],
+            'encryption_tag' => $encrypted['tag'],
+            'upload_status' => $status,
+            'uploaded_by_user_id' => (int) $user['id'],
+            'approved_by_user_id' => $approvedBy,
+            'approved_at' => $approvedAt,
+        ]);
+        $documentId = (int) $pdo->lastInsertId();
+        $fallbackReasons = [];
+        foreach (lex_case_file_vault_provider_order() as $provider) {
+            try {
+                error_log('[CASE_FILE_STORAGE] Trying encrypted document storage provider: ' . $provider);
+                $storage = lex_case_file_vault_store_encrypted_data($provider, $caseFile, $folder, $documentId, $storedName, $encrypted['data']);
+                break;
+            } catch (LexStorageUnavailableException $storageError) {
+                $fallbackReasons[] = $provider . ': ' . $storageError->getMessage();
+                lex_storage_last_fallback_reason($provider . ': ' . $storageError->getMessage());
+                error_log('[CASE_FILE_STORAGE] Provider fallback: ' . $provider . ' unavailable.');
+                continue;
+            }
+        }
+
+        if ($storage === []) {
+            error_log('[CASE_FILE_STORAGE] No document storage provider accepted encrypted upload.');
+            throw new RuntimeException('Unable to save encrypted document.');
+        }
+
+        $pdo->prepare(
+            'UPDATE case_file_documents
+             SET storage_provider = :storage_provider,
+                 storage_path = :storage_path
+             WHERE id = :id'
+        )->execute([
+            'storage_provider' => $storage['provider'],
+            'storage_path' => $storage['storage_path'],
+            'id' => $documentId,
+        ]);
+
+        $pdo->commit();
+    } catch (Throwable $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        if ($storage !== []) {
+            lex_case_file_vault_cleanup_stored_data($storage);
+        }
+        throw $e;
+    }
+
     return [
-        'id' => (int) lex_pdo()->lastInsertId(),
+        'id' => $documentId,
         'original_name' => $originalName,
         'stored_name' => $storedName,
-        'path' => $targetPath,
+        'storage_provider' => (string) $storage['provider'],
+        'storage_path' => $storage['storage_path'],
+        'path' => (string) ($storage['storage_path'] ?? $storage['local_path'] ?? ''),
         'mime_type' => $validatedType['mime_type'],
         'size' => $size,
     ];
@@ -439,6 +649,7 @@ function lex_case_files_write_metadata(array $record): void
 
 function lex_case_files_recursive_delete(string $path): void
 {
+    $path = lex_case_files_assert_local_path($path);
     if (!is_dir($path)) {
         return;
     }

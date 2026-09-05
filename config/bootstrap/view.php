@@ -134,6 +134,7 @@ function lex_page_header(string $title, string $active = '', ?array $user = null
             ['key' => 'profile', 'label' => 'Profile', 'href' => lex_app_url('lawyer/profile.php')],
             ['key' => 'case-files', 'label' => 'Case Files', 'href' => lex_app_url('case_files.php')],
             ['key' => 'appointments', 'label' => 'Appointments', 'href' => lex_app_url('lawyer/appointment.php')],
+            ['key' => 'availability', 'label' => 'Availability', 'href' => lex_app_url('lawyer/availability.php')],
             ['key' => 'payments', 'label' => 'Payments', 'href' => lex_app_url('lawyer/payments.php')],
             ['key' => 'messages', 'label' => 'Messages', 'href' => lex_app_url('lawyer/messages.php')],
         ],
@@ -152,6 +153,7 @@ function lex_page_header(string $title, string $active = '', ?array $user = null
         'dashboard' => '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4.75 4h5.5a.75.75 0 0 1 .75.75v5.5a.75.75 0 0 1-.75.75h-5.5A.75.75 0 0 1 4 10.25v-5.5A.75.75 0 0 1 4.75 4Zm9 0h5.5a.75.75 0 0 1 .75.75v5.5a.75.75 0 0 1-.75.75h-5.5a.75.75 0 0 1-.75-.75v-5.5a.75.75 0 0 1 .75-.75Zm-9 9h5.5a.75.75 0 0 1 .75.75v5.5a.75.75 0 0 1-.75.75h-5.5A.75.75 0 0 1 4 19.25v-5.5a.75.75 0 0 1 .75-.75Zm9 0h5.5a.75.75 0 0 1 .75.75v5.5a.75.75 0 0 1-.75.75h-5.5a.75.75 0 0 1-.75-.75v-5.5a.75.75 0 0 1 .75-.75Z" fill="currentColor"/></svg>',
         'profile' => '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 1.5c-4 0-7.25 2.2-7.25 4.9a.75.75 0 0 0 1.5 0c0-1.57 2.44-3.4 5.75-3.4s5.75 1.83 5.75 3.4a.75.75 0 0 0 1.5 0c0-2.7-3.25-4.9-7.25-4.9Z" fill="currentColor"/></svg>',
         'case-files' => '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5.75 4h4.12c.5 0 .98.2 1.33.56l1.09 1.11c.07.07.17.11.27.11h5.69A1.75 1.75 0 0 1 20 7.53v10.72A1.75 1.75 0 0 1 18.25 20h-12.5A1.75 1.75 0 0 1 4 18.25V5.75A1.75 1.75 0 0 1 5.75 4Z" fill="currentColor"/></svg>',
+        'availability' => '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 3.75h12A2.25 2.25 0 0 1 20.25 6v12A2.25 2.25 0 0 1 18 20.25H6A2.25 2.25 0 0 1 3.75 18V6A2.25 2.25 0 0 1 6 3.75Zm0 1.5a.75.75 0 0 0-.75.75v3h13.5V6a.75.75 0 0 0-.75-.75H6Zm-.75 5.25v7.5c0 .414.336.75.75.75h12a.75.75 0 0 0 .75-.75v-7.5H5.25Zm3 2h2v2h-2v-2Zm4 0h2v2h-2v-2Z" fill="currentColor"/></svg>',
         'appointments' => '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3.5a.75.75 0 0 1 .75.75V5h8.5v-.75a.75.75 0 0 1 1.5 0V5h.5A2.25 2.25 0 0 1 20.5 7.25v10.5A2.25 2.25 0 0 1 18.25 20h-12.5A2.25 2.25 0 0 1 3.5 17.75V7.25A2.25 2.25 0 0 1 5.75 5h.5v-.75A.75.75 0 0 1 7 3.5Zm11.25 6h-12v8.25c0 .41.34.75.75.75h10.5c.41 0 .75-.34.75-.75V9.5Z" fill="currentColor"/></svg>',
         'messages' => '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5.75 4h12.5A1.75 1.75 0 0 1 20 5.75v8.5A1.75 1.75 0 0 1 18.25 16H9.9l-3.68 3.08A.75.75 0 0 1 5 18.5V16.1a1.75 1.75 0 0 1-1-1.6v-8.75A1.75 1.75 0 0 1 5.75 4Z" fill="currentColor"/></svg>',
         'inquiries' => '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4.75 5h14.5A1.75 1.75 0 0 1 21 6.75v8.5A1.75 1.75 0 0 1 19.25 17H8.7l-3.45 2.68A.75.75 0 0 1 4 19.08V6.75A1.75 1.75 0 0 1 4.75 5Zm3.5 4.25a.75.75 0 0 0 0 1.5h7.5a.75.75 0 0 0 0-1.5Zm0 3a.75.75 0 0 0 0 1.5h4.5a.75.75 0 0 0 0-1.5Z" fill="currentColor"/></svg>',
@@ -186,7 +188,7 @@ function lex_page_header(string $title, string $active = '', ?array $user = null
     echo '<link rel="stylesheet" href="' . lex_e(lex_asset_url('public/css/style.css')) . '">';
     echo '<script defer src="' . lex_e(lex_asset_url('public/js/base.js')) . '"></script>';
     echo '<script defer src="' . lex_e(lex_asset_url('public/js/case-files.js')) . '"></script>';
-    echo '<script defer src="' . lex_e(lex_asset_url('public/js/chat.js')) . '"></script>';
+    echo '<script defer src="' . lex_e(lex_asset_url('public/js/messages-ui.js')) . '"></script>';
     echo '<script defer src="' . lex_e(lex_asset_url('public/js/main.js')) . '"></script>';
     echo '</head><body' . $bodyClassAttribute . ' data-api-base="' . lex_e(lex_api_url()) . '" data-role="' . lex_e($role) . '">';
     echo '<a class="skip-link" href="#main">Skip to content</a>';
@@ -255,7 +257,7 @@ function lex_auth_page_header(string $title): void
     echo '<link rel="stylesheet" href="' . lex_e(lex_asset_url('public/css/style.css')) . '">';
     echo '<script defer src="' . lex_e(lex_asset_url('public/js/base.js')) . '"></script>';
     echo '<script defer src="' . lex_e(lex_asset_url('public/js/case-files.js')) . '"></script>';
-    echo '<script defer src="' . lex_e(lex_asset_url('public/js/chat.js')) . '"></script>';
+    echo '<script defer src="' . lex_e(lex_asset_url('public/js/messages-ui.js')) . '"></script>';
     echo '<script defer src="' . lex_e(lex_asset_url('public/js/main.js')) . '"></script>';
     echo '</head><body class="auth-page" data-api-base="' . lex_e(lex_api_url()) . '">';
     echo '<button class="icon-button auth-theme-toggle" id="themeToggle" type="button" aria-label="Toggle theme">&#9681;</button>';

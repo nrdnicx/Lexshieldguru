@@ -165,6 +165,28 @@ lex_page_header('Payments', 'payments');
             </div>
           </div>
 
+          <div class="payment-admin-mobile-details">
+            <div class="payment-mobile-primary-detail">
+              <span>Amount</span>
+              <strong>PHP <?= lex_e(number_format((float) $payment['amount'], 2)) ?></strong>
+              <small><?= lex_e((string) $payment['payment_for']) ?></small>
+            </div>
+            <div class="payment-mobile-detail-grid">
+              <div><span>Client</span><strong><?= lex_e((string) $payment['client_name']) ?></strong><small><?= lex_e((string) $payment['client_email']) ?></small></div>
+              <div><span>Lawyer</span><strong><?= !empty($payment['lawyer_name']) ? lex_e((string) $payment['lawyer_name']) : 'Unassigned' ?></strong><small><?= !empty($payment['lawyer_gcash_number']) ? lex_e((string) $payment['lawyer_gcash_number']) : 'GCash number not provided' ?></small></div>
+              <div><span>Payment for</span><strong><?= lex_e((string) $payment['payment_for']) ?></strong><small>Purpose of this submission</small></div>
+              <div><span>Reference</span><strong><?= (string) ($payment['reference_number'] ?? '') !== '' ? lex_e((string) $payment['reference_number']) : 'None' ?></strong><small><?= lex_e((string) ($payment['proof_original_name'] ?? 'Uploaded file')) ?></small></div>
+              <div><span>Submitted</span><strong><?= lex_e($submittedAt) ?></strong><small><?= !empty($payment['payment_channel']) ? lex_e(strtoupper((string) $payment['payment_channel'])) : 'Manual payment' ?></small></div>
+              <div><span>Status</span><strong><span class="pill payment-status-pill payment-status-<?= lex_e($status) ?>"><?= lex_e($statusLabel) ?></span></strong><small><?= $reviewedAt ? 'Updated ' . lex_e($reviewedAt) : 'Awaiting review' ?></small></div>
+            </div>
+            <div class="payment-mobile-contact-grid">
+              <div><span>Payer name</span><strong><?= (string) ($payment['payer_name'] ?? '') !== '' ? lex_e((string) $payment['payer_name']) : 'Not provided' ?></strong></div>
+              <div><span>Payer contact</span><strong><?= (string) ($payment['payer_contact'] ?? '') !== '' ? lex_e((string) $payment['payer_contact']) : 'Not provided' ?></strong></div>
+              <div><span>Lawyer GCash</span><strong><?= !empty($payment['lawyer_gcash_account_name']) ? lex_e((string) $payment['lawyer_gcash_account_name']) : 'Not provided' ?></strong></div>
+              <div><span>Client contact</span><strong><?= (string) ($payment['client_contact'] ?? '') !== '' ? lex_e((string) $payment['client_contact']) : 'Not provided' ?></strong></div>
+            </div>
+          </div>
+
           <dl class="payment-account-list payment-admin-details-list">
             <div><dt>Client</dt><dd><?= lex_e((string) $payment['client_name']) ?></dd></div>
             <div><dt>Lawyer</dt><dd><?= !empty($payment['lawyer_name']) ? lex_e((string) $payment['lawyer_name']) : 'Unassigned' ?></dd></div>

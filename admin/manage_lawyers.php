@@ -424,6 +424,61 @@ lex_page_header('Manage Lawyers', 'lawyers');
         </tbody>
       </table>
     </div>
+
+    <div class="admin-mobile-record-list admin-lawyers-mobile-list" aria-label="Lawyers list on mobile">
+      <?php foreach ($lawyers as $lawyer): ?>
+        <?php
+          $lawyerStatus = (string) ($lawyer['status'] ?? 'active');
+          $avatarUrl = lex_profile_avatar_url((string) ($lawyer['avatar_stored_name'] ?? ''));
+          $initials = lex_lawyer_initials((string) $lawyer['full_name']);
+          $tone = lex_lawyer_initial_tone((string) $lawyer['full_name']);
+        ?>
+        <article class="admin-mobile-record admin-lawyer-mobile-card">
+          <div class="admin-mobile-record-top">
+            <div class="admin-mobile-person">
+              <?php if ($avatarUrl !== ''): ?>
+                <img class="admin-lawyers-avatar" src="<?= lex_e($avatarUrl) ?>" alt="Avatar for <?= lex_e((string) $lawyer['full_name']) ?>">
+              <?php else: ?>
+                <span class="admin-lawyers-avatar admin-lawyers-avatar--<?= lex_e($tone) ?>" aria-hidden="true"><?= lex_e($initials) ?></span>
+              <?php endif; ?>
+              <div class="admin-mobile-person-copy">
+                <button class="admin-directory-name-button admin-mobile-name" type="button" data-lawyer-profile-open
+                  data-profile-name="<?= lex_e((string) $lawyer['full_name']) ?>" data-profile-user-id="<?= (int) $lawyer['user_id'] ?>"
+                  data-profile-email="<?= lex_e((string) $lawyer['email']) ?>" data-profile-phone="<?= lex_e((string) ($lawyer['contact_number'] ?: 'No phone number')) ?>"
+                  data-profile-bar="<?= lex_e((string) ($lawyer['bar_number'] ?: 'No bar number')) ?>" data-profile-specialization="<?= lex_e((string) ($lawyer['specialization'] ?: 'No specialization')) ?>"
+                  data-profile-status="<?= lex_e(lex_lawyer_status_label($lawyerStatus)) ?>" data-profile-status-class="is-<?= lex_e($lawyerStatus) ?>"
+                  data-profile-background="<?= lex_e((string) ($lawyer['background'] ?: 'No background added yet')) ?>" data-profile-bio="<?= lex_e((string) ($lawyer['bio'] ?: 'No bio added yet')) ?>"
+                  data-profile-avatar="<?= lex_e($avatarUrl) ?>" data-profile-initials="<?= lex_e($initials) ?>" data-profile-tone="<?= lex_e($tone) ?>">
+                  <?= lex_e($lawyer['full_name']) ?>
+                </button>
+                <span><?= lex_e((string) $lawyer['email']) ?></span>
+              </div>
+            </div>
+            <span class="admin-lawyers-status-pill is-<?= lex_e($lawyerStatus) ?>"><span class="admin-lawyers-status-dot" aria-hidden="true"></span><?= lex_e(lex_lawyer_status_label($lawyerStatus)) ?></span>
+          </div>
+          <div class="admin-mobile-record-grid">
+            <div><span>Bar number</span><strong><?= lex_e((string) $lawyer['bar_number']) ?></strong></div>
+            <div><span>Specialization</span><strong><?= lex_e((string) $lawyer['specialization']) ?></strong></div>
+          </div>
+          <div class="admin-mobile-record-actions">
+            <form method="post" class="admin-mobile-select-form">
+              <?= lex_csrf_field() ?>
+              <input type="hidden" name="action" value="set_status"><input type="hidden" name="id" value="<?= (int) $lawyer['id'] ?>">
+              <label><span class="sr-only">Set lawyer status</span><select name="status" onchange="this.form.submit()">
+                <option value="active"<?= $lawyerStatus === 'active' ? ' selected' : '' ?>>Active</option>
+                <option value="busy"<?= $lawyerStatus === 'busy' ? ' selected' : '' ?>>Busy</option>
+                <option value="suspended"<?= $lawyerStatus === 'suspended' ? ' selected' : '' ?>>Suspended</option>
+              </select></label>
+            </form>
+            <form method="post" onsubmit="return confirm('Remove this lawyer?');">
+              <?= lex_csrf_field() ?><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int) $lawyer['id'] ?>">
+              <button class="button button-danger" type="submit">Remove</button>
+            </form>
+          </div>
+        </article>
+      <?php endforeach; ?>
+      <?php if (!$lawyers): ?><div class="admin-mobile-empty">No lawyers matched your current filters.</div><?php endif; ?>
+    </div>
     <?= lex_admin_pagination('admin/manage_lawyers.php', ['q' => $search, 'status' => $statusFilter], $totalFilteredLawyers, $currentPage, $perPage) ?>
   </section>
 

@@ -24910,3 +24910,3941 @@ body.app-workspace:has(.payment-lawyer-shell) .main-content {
   .availability-fields { grid-template-columns: 1fr 1fr; }
   .availability-fields label:last-child { grid-column: 1/-1; }
 }
+
+
+/* ============================================================
+   LEXSHIELD MOBILE UX POLISH
+   Mobile-first visual refinement. Desktop behavior is preserved.
+   Targeted for 320px–430px phones, with tablet support.
+   ============================================================ */
+
+@media (max-width: 900px) {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body.app-workspace {
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  body.app-workspace .app-shell {
+    display: block;
+    min-height: 100vh;
+  }
+
+  body.app-workspace .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(82vw, 300px);
+    max-width: 300px;
+    z-index: 45;
+    transform: translateX(-105%);
+    transition: transform .22s ease;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    box-shadow: 18px 0 45px rgba(0,0,0,.22);
+  }
+
+  body.app-workspace .sidebar.open {
+    transform: translateX(0);
+  }
+
+  body.app-workspace .main-content {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: .65rem .65rem calc(1.25rem + env(safe-area-inset-bottom));
+    gap: .7rem;
+  }
+
+  body.app-workspace .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    min-height: 52px;
+    height: auto;
+    padding: .45rem .55rem;
+    border-radius: 13px;
+    backdrop-filter: blur(14px);
+  }
+
+  body.app-workspace .topbar-title {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+  }
+
+  body.app-workspace .topbar h1,
+  body.app-workspace .topbar-title h1 {
+    max-width: 100%;
+    font-size: .95rem;
+    line-height: 1.2;
+  }
+
+  body.app-workspace .topbar-actions {
+    flex: 0 0 auto;
+    gap: .3rem;
+  }
+
+  body.app-workspace #sidebarToggle,
+  body.app-workspace #themeToggle,
+  body.app-workspace .notification-trigger {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    min-height: 40px;
+  }
+
+  body.app-workspace .dashboard-user-chip {
+    padding: 0;
+    margin-left: .1rem;
+  }
+
+  body.app-workspace .dashboard-user-meta {
+    display: none;
+  }
+
+  body.app-workspace .dashboard-user-avatar {
+    width: 34px;
+    height: 34px;
+  }
+
+  body.app-workspace .notification-panel {
+    position: fixed;
+    top: calc(58px + env(safe-area-inset-top));
+    right: .65rem;
+    left: .65rem;
+    width: auto;
+    max-width: none;
+    max-height: min(70vh, 520px);
+    overflow-y: auto;
+  }
+
+  /* Keep the workspace comfortable to tap. */
+  body.app-workspace button,
+  body.app-workspace .button,
+  body.app-workspace input,
+  body.app-workspace select,
+  body.app-workspace textarea {
+    font-size: 16px;
+  }
+
+  body.app-workspace input,
+  body.app-workspace select,
+  body.app-workspace textarea {
+    min-height: 46px;
+  }
+
+  body.app-workspace textarea {
+    min-height: 100px;
+  }
+
+  body.app-workspace .button {
+    min-height: 44px;
+    padding: .65rem .9rem;
+  }
+
+  body.app-workspace .card {
+    min-width: 0;
+    border-radius: 13px;
+  }
+
+  body.app-workspace .card-head {
+    gap: .65rem;
+    padding: .85rem .9rem;
+  }
+
+  body.app-workspace .card-head h2,
+  body.app-workspace .card-head h3 {
+    font-size: .95rem;
+    line-height: 1.3;
+  }
+
+  body.app-workspace .card-body {
+    min-width: 0;
+    padding: .9rem;
+  }
+
+  body.app-workspace .content-grid,
+  body.app-workspace .two-col,
+  body.app-workspace .three-col,
+  body.app-workspace .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.app-workspace .table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 10px;
+  }
+
+  body.app-workspace table {
+    font-size: .84rem;
+  }
+
+  body.app-workspace th,
+  body.app-workspace td {
+    padding: .7rem .65rem;
+  }
+
+  /* Prevent long legal/case identifiers from breaking the viewport. */
+  body.app-workspace td,
+  body.app-workspace th,
+  body.app-workspace p,
+  body.app-workspace h1,
+  body.app-workspace h2,
+  body.app-workspace h3,
+  body.app-workspace h4,
+  body.app-workspace .muted {
+    overflow-wrap: anywhere;
+  }
+
+  /* Generic action rows become easy-to-use vertical stacks. */
+  body.app-workspace .inline-actions {
+    gap: .5rem;
+    flex-wrap: wrap;
+  }
+
+  body.app-workspace .inline-actions .button,
+  body.app-workspace .card-head .button {
+    min-height: 44px;
+  }
+
+  /* Dashboard: one-column reading flow on phones. */
+  body.app-workspace .client-dashboard-shell,
+  body.app-workspace .lawyer-dashboard-shell {
+    min-width: 0;
+  }
+
+  body.app-workspace .client-dashboard-metrics,
+  body.app-workspace .lawyer-dashboard-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .55rem;
+  }
+
+  body.app-workspace .client-dashboard-grid,
+  body.app-workspace .lawyer-dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: .65rem;
+  }
+
+  body.app-workspace .client-dashboard-next,
+  body.app-workspace .lawyer-dashboard-next {
+    padding: .9rem;
+  }
+
+  body.app-workspace .client-dashboard-next-actions,
+  body.app-workspace .lawyer-dashboard-next-actions {
+    width: 100%;
+  }
+
+  body.app-workspace .client-dashboard-next-actions .button,
+  body.app-workspace .lawyer-dashboard-next-actions .button {
+    width: 100%;
+  }
+
+  body.app-workspace .client-metric-card,
+  body.app-workspace .lawyer-metric-card {
+    min-width: 0;
+    padding: .75rem;
+  }
+
+  body.app-workspace .client-metric-value,
+  body.app-workspace .lawyer-metric-value {
+    font-size: 1.35rem;
+  }
+
+  /* Dialogs: use nearly the full phone screen without feeling cramped. */
+  body.app-workspace .modal-overlay {
+    padding: .55rem;
+    align-items: flex-end;
+  }
+
+  body.app-workspace .modal-card {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100dvh - 1.1rem - env(safe-area-inset-top));
+    margin: 0;
+    border-radius: 16px 16px 12px 12px;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+
+  body.app-workspace .modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: inherit;
+  }
+
+  body.app-workspace .modal-body {
+    padding: .9rem;
+  }
+}
+
+@media (max-width: 600px) {
+  body.app-workspace .main-content {
+    padding-left: .55rem;
+    padding-right: .55rem;
+  }
+
+  body.app-workspace .topbar {
+    border-radius: 11px;
+  }
+
+  body.app-workspace .topbar-actions .notification-menu {
+    position: static;
+  }
+
+  body.app-workspace .skip-link {
+    left: .5rem;
+  }
+
+  /* Two-column dashboard metrics remain compact; everything else is one column. */
+  body.app-workspace .client-dashboard-metrics,
+  body.app-workspace .lawyer-dashboard-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.app-workspace .client-dashboard-metrics > *,
+  body.app-workspace .lawyer-dashboard-metrics > * {
+    min-width: 0;
+  }
+
+  body.app-workspace .client-dashboard-card,
+  body.app-workspace .lawyer-dashboard-card {
+    padding: .8rem;
+  }
+
+  body.app-workspace .client-dashboard-card-head,
+  body.app-workspace .lawyer-dashboard-card-head {
+    gap: .5rem;
+  }
+
+  body.app-workspace .client-dashboard-appointment-row,
+  body.app-workspace .lawyer-dashboard-appointment-row,
+  body.app-workspace .lawyer-dashboard-case-row {
+    grid-template-columns: 1fr;
+    gap: .45rem;
+    padding: .75rem 0;
+  }
+
+  body.app-workspace .client-dashboard-appointment-side,
+  body.app-workspace .lawyer-dashboard-appointment-side,
+  body.app-workspace .lawyer-dashboard-case-side {
+    justify-self: start;
+    text-align: left;
+  }
+
+  /* Search/filter toolbars become thumb-friendly. */
+  body.app-workspace .toolbar,
+  body.app-workspace .filter-bar,
+  body.app-workspace .search-bar,
+  body.app-workspace .lawyer-directory-toolbar {
+    width: 100%;
+  }
+
+  body.app-workspace .toolbar .button,
+  body.app-workspace .filter-bar .button,
+  body.app-workspace .search-bar .button {
+    width: 100%;
+  }
+
+  /* Lawyer directory becomes a clean single-column feed. */
+  body.app-workspace .client-lawyers-react-card {
+    padding: .75rem;
+    border-radius: 13px;
+  }
+
+  body.app-workspace .client-lawyers-react-card .lawyer-directory-grid {
+    grid-template-columns: 1fr;
+    gap: .75rem;
+  }
+
+  body.app-workspace .client-lawyers-react-card .lawyer-card {
+    max-width: none;
+    min-height: 0;
+  }
+
+  body.app-workspace .client-lawyers-react-card .lawyer-card__actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Appointment calendar and booking form. */
+  body.app-workspace .client-appointment-picker-card {
+    width: calc(100vw - 1rem);
+    max-width: none;
+    max-height: calc(100dvh - 1rem);
+    border-radius: 16px;
+  }
+
+  body.app-workspace .client-appointment-picker-body {
+    padding: .75rem;
+  }
+
+  body.app-workspace .client-appointment-calendar-grid {
+    gap: .2rem;
+  }
+
+  body.app-workspace .client-appointment-calendar-day {
+    min-height: 42px;
+    border-radius: 9px;
+  }
+
+  body.app-workspace .client-appointment-session-grid,
+  body.app-workspace .client-appointment-form {
+    grid-template-columns: 1fr;
+  }
+
+  body.app-workspace .client-appointment-time-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .45rem;
+  }
+
+  body.app-workspace .client-appointment-picker-trigger {
+    min-height: 56px;
+  }
+
+  /* Availability: readable sections instead of tiny desktop controls. */
+  body.app-workspace .lawyer-availability-page {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  body.app-workspace .availability-hero {
+    gap: .65rem;
+    margin-bottom: .6rem;
+    padding: .85rem !important;
+  }
+
+  body.app-workspace .availability-hero h1 {
+    font-size: 1.2rem;
+  }
+
+  body.app-workspace .availability-hero .button {
+    width: 100%;
+  }
+
+  body.app-workspace .availability-day-row {
+    grid-template-columns: 1fr;
+    gap: .55rem;
+    padding: .8rem 0;
+  }
+
+  body.app-workspace .availability-day-name {
+    padding-bottom: .15rem;
+  }
+
+  body.app-workspace .availability-session {
+    padding: .7rem;
+  }
+
+  body.app-workspace .availability-fields {
+    grid-template-columns: 1fr 1fr;
+    gap: .5rem;
+  }
+
+  body.app-workspace .availability-fields label:last-child {
+    grid-column: 1 / -1;
+  }
+
+  body.app-workspace .availability-block-form {
+    grid-template-columns: 1fr;
+    padding-inline: .75rem;
+  }
+
+  body.app-workspace .availability-block-form .button,
+  body.app-workspace .availability-block-item .button {
+    width: 100%;
+  }
+
+  body.app-workspace .availability-block-item {
+    align-items: stretch;
+    gap: .55rem;
+  }
+
+  /* Messages: maximize usable width and keep composer above the safe area. */
+  body.app-workspace:has([data-chat-shell]) .chat-feed {
+    min-height: 0;
+    max-height: none;
+  }
+
+  body.app-workspace:has([data-chat-shell]) .composer-input {
+    min-height: 88px;
+  }
+
+  body.app-workspace:has([data-chat-shell]) .message-row {
+    max-width: 100%;
+  }
+
+  /* Case vault/documents: don't let wide controls push the page sideways. */
+  body.app-workspace:has([data-case-files-app]) .case-vault-panel,
+  body.app-workspace:has([data-case-files-app]) .case-panel,
+  body.app-workspace:has([data-case-files-app]) .case-hero {
+    border-radius: 12px;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-vault-topbar,
+  body.app-workspace:has([data-case-files-app]) .case-vault-section-head {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-search-actions,
+  body.app-workspace:has([data-case-files-app]) .case-search-actions .button {
+    width: 100%;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-vault-upload-form,
+  body.app-workspace:has([data-case-files-app]) .case-vault-folder-form {
+    grid-template-columns: 1fr;
+  }
+
+  /* Admin dashboard: compact cards and readable feeds. */
+  body.app-workspace .admin-dashboard-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .55rem;
+  }
+
+  body.app-workspace .admin-dashboard-stat-card {
+    min-width: 0;
+    padding: .7rem;
+    border-radius: 12px;
+  }
+
+  body.app-workspace .admin-dashboard-stat-copy strong {
+    font-size: 1.2rem;
+  }
+
+  body.app-workspace .admin-dashboard-workbench,
+  body.app-workspace .admin-risk-layout,
+  body.app-workspace .admin-security-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  /* Auth screens: full-width form, comfortable controls, no desktop split overflow. */
+  body.auth-page {
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  body.auth-page .auth-shell {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: .75rem;
+  }
+
+  body.auth-page .auth-card,
+  body.auth-page .auth-card-split {
+    width: 100%;
+    max-width: 100%;
+    grid-template-columns: 1fr;
+    border-radius: 16px;
+  }
+
+  body.auth-page .auth-copy {
+    padding: 1.1rem;
+  }
+
+  body.auth-page .auth-panel {
+    padding: 1rem;
+  }
+
+  body.auth-page input,
+  body.auth-page select,
+  body.auth-page textarea {
+    min-height: 48px;
+    font-size: 16px;
+  }
+
+  body.auth-page .auth-submit,
+  body.auth-page .auth-home-link {
+    min-height: 46px;
+  }
+
+  body.auth-page .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.auth-page .feature-list {
+    gap: .6rem;
+  }
+}
+
+@media (max-width: 380px) {
+  body.app-workspace .topbar {
+    padding-inline: .4rem;
+  }
+
+  body.app-workspace .topbar-actions {
+    gap: .2rem;
+  }
+
+  body.app-workspace #sidebarToggle,
+  body.app-workspace #themeToggle,
+  body.app-workspace .notification-trigger {
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+    min-height: 38px;
+  }
+
+  body.app-workspace .dashboard-user-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  body.app-workspace .client-dashboard-metrics,
+  body.app-workspace .lawyer-dashboard-metrics,
+  body.app-workspace .admin-dashboard-stats {
+    gap: .45rem;
+  }
+
+  body.app-workspace .client-metric-card,
+  body.app-workspace .lawyer-metric-card,
+  body.app-workspace .admin-dashboard-stat-card {
+    padding: .6rem;
+  }
+
+  body.app-workspace .client-metric-value,
+  body.app-workspace .lawyer-metric-value {
+    font-size: 1.2rem;
+  }
+
+  body.app-workspace .button {
+    padding-inline: .75rem;
+  }
+}
+
+/* ================================================================
+   FINAL MOBILE POLISH — LAWYER WORKSPACE
+   Phone-first fixes for header, metrics, case files and appointments.
+   Desktop/tablet layouts are intentionally left unchanged.
+   ================================================================ */
+@media (max-width: 760px) {
+  /* Accessibility skip link: visually hidden by default on phones.
+     It becomes visible only for keyboard-style focus, so it cannot
+     remain stuck over the mobile header after a touch tap. */
+  body.app-workspace .skip-link:not(:focus-visible),
+  body.app-workspace--admin .skip-link:not(:focus-visible) {
+    position: fixed !important;
+    left: -10000px !important;
+    top: auto !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+
+  body.app-workspace .skip-link:focus-visible,
+  body.app-workspace--admin .skip-link:focus-visible {
+    position: fixed !important;
+    left: .65rem !important;
+    top: .65rem !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: .65rem .85rem !important;
+    overflow: visible !important;
+    clip: auto !important;
+    clip-path: none !important;
+    white-space: normal !important;
+    z-index: 10000 !important;
+  }
+
+  /* One compact header row: menu | page title | theme | bell | avatar. */
+  body.app-workspace .topbar {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: .45rem;
+    row-gap: 0;
+    flex-wrap: nowrap;
+    min-height: 58px;
+    height: 58px;
+    padding: .55rem .65rem;
+    overflow: visible;
+  }
+
+  body.app-workspace .topbar-title {
+    order: 0;
+    min-width: 0;
+  }
+
+  body.app-workspace .topbar-title h1 {
+    font-size: .9rem;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  body.app-workspace #sidebarToggle {
+    order: 0;
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0;
+    border-radius: 11px;
+  }
+
+  body.app-workspace .topbar-actions {
+    order: 0;
+    width: auto;
+    height: 40px;
+    min-width: 0;
+    justify-content: flex-end;
+    gap: .25rem;
+  }
+
+  body.app-workspace #themeToggle,
+  body.app-workspace .notification-trigger {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0;
+    border-radius: 11px;
+  }
+
+  body.app-workspace .dashboard-user-chip {
+    flex: 0 0 auto;
+    width: 40px;
+    min-width: 40px;
+    max-width: 40px;
+    height: 40px;
+    margin: 0;
+    padding: 0;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+  }
+
+  body.app-workspace .dashboard-user-avatar {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    flex: 0 0 36px;
+    font-size: .78rem;
+  }
+
+  body.app-workspace .dashboard-user-meta {
+    display: none;
+  }
+
+  body.app-workspace .notification-menu {
+    position: static;
+    flex: 0 0 auto;
+  }
+
+  body.app-workspace .notification-panel {
+    top: 62px;
+    right: .55rem;
+    left: .55rem;
+    width: auto;
+    max-width: none;
+    max-height: min(68vh, 520px);
+  }
+
+  /* All workspace metric dashboards use the same 2 × 2 rhythm. */
+  body.app-workspace .lawyer-dashboard-metrics,
+  body.app-workspace .client-dashboard-metrics,
+  body.app-workspace .admin-dashboard-stats,
+  body.app-workspace .appointment-kpis,
+  body.app-workspace:has(.payment-lawyer-shell) .admin-payments-stats,
+  body.app-workspace:has([data-case-files-app]) #case-files-summary .case-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: .55rem;
+  }
+
+  body.app-workspace .appointment-kpi,
+  body.app-workspace:has(.payment-lawyer-shell) .admin-payments-stat-card,
+  body.app-workspace:has([data-case-files-app]) #case-files-summary .kpi-card {
+    min-width: 0;
+    min-height: 92px;
+    padding: .72rem;
+    border-radius: 14px;
+  }
+
+  body.app-workspace:has(.payment-lawyer-shell) .admin-payments-stat-card {
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: .55rem;
+  }
+
+  body.app-workspace:has(.payment-lawyer-shell) .admin-payments-stat-icon {
+    width: 34px;
+    height: 34px;
+    font-size: .64rem;
+  }
+
+  body.app-workspace:has(.payment-lawyer-shell) .admin-payments-stat-copy span {
+    font-size: .72rem;
+    line-height: 1.2;
+  }
+
+  body.app-workspace:has(.payment-lawyer-shell) .admin-payments-stat-copy strong {
+    font-size: 1.05rem;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+  }
+
+  body.app-workspace:has([data-case-files-app]) #case-files-summary .kpi-card {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    gap: .35rem;
+    align-content: center;
+  }
+
+  body.app-workspace:has([data-case-files-app]) #case-files-summary .case-stat-label {
+    grid-column: 1;
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: .5rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) #case-files-summary .case-stat-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+
+  body.app-workspace:has([data-case-files-app]) #case-files-summary .case-stat-label em {
+    font-size: .7rem;
+    line-height: 1.15;
+  }
+
+  body.app-workspace:has([data-case-files-app]) #case-files-summary .kpi-card strong {
+    grid-column: 1;
+    margin: 0;
+    font-size: 1.55rem;
+  }
+
+  /* ---------------- CASE FILES ----------------
+     Turn the wide desktop table into compact phone cards. */
+  body.app-workspace:has([data-case-files-app]) .case-list-panel {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-panel .case-panel-header {
+    padding: .8rem .75rem;
+    gap: .5rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-panel .case-panel-header h2 {
+    font-size: 1rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-table-wrap {
+    overflow: visible;
+    width: 100%;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table {
+    width: 100%;
+    min-width: 0 !important;
+    display: block;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table thead {
+    display: none;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody {
+    display: grid;
+    gap: .6rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody tr {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    margin: 0;
+    padding: .25rem .75rem;
+    border: 1px solid var(--case-border);
+    border-radius: 13px;
+    background: var(--case-panel);
+    overflow: hidden;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td {
+    display: block;
+    width: auto;
+    min-width: 0;
+    padding: .65rem .1rem;
+    border-bottom: 1px solid var(--case-border);
+    overflow-wrap: anywhere;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:last-child {
+    border-bottom: 0;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td::before {
+    display: block;
+    margin-bottom: .22rem;
+    color: var(--case-muted);
+    font-size: .62rem;
+    font-weight: 800;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(1)::before { content: "Client"; }
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(2)::before { content: "Case file"; }
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(3)::before { content: "Status"; }
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(4)::before { content: "Assigned lawyer"; }
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(5)::before { content: "Date created"; }
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(6)::before { content: "Actions"; }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-folder-link {
+    display: block;
+    width: 100%;
+    padding: 0;
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-file-cell {
+    min-width: 0;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-file-cell strong,
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-file-cell .muted {
+    overflow-wrap: anywhere;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-row-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+    gap: .45rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-row-actions .button {
+    width: 100%;
+    min-height: 42px;
+  }
+
+  /* ---------------- APPOINTMENTS ----------------
+     Remove the old 760px mobile table and make each appointment a card. */
+  body.app-workspace:has([data-appointment-board]) .appointment-card-shell {
+    min-width: 0;
+    padding: .7rem;
+    overflow: hidden;
+  }
+
+  body.app-workspace:has([data-appointment-board]) .appointment-head {
+    align-items: flex-start;
+    gap: .55rem;
+  }
+
+  body.app-workspace:has([data-appointment-board]) .appointment-head h2 {
+    font-size: 1rem;
+  }
+
+  body.app-workspace:has([data-appointment-board]) .appointment-table-wrap {
+    overflow: visible;
+    width: 100%;
+  }
+
+  body.app-workspace:has([data-appointment-board]) .appointment-table {
+    display: block;
+    width: 100%;
+    min-width: 0 !important;
+    border-spacing: 0;
+  }
+
+  body.app-workspace:has([data-appointment-board]) .appointment-table thead {
+    display: none;
+  }
+
+  body.app-workspace:has([data-appointment-board]) .appointment-table tbody {
+    display: grid;
+    gap: .6rem;
+  }
+
+  body.app-workspace:has([data-appointment-board]) .appointment-table .appointment-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    margin: 0;
+    padding: .25rem .75rem;
+    border: 1px solid rgba(70, 98, 138, .28);
+    border-radius: 13px;
+    background: #081a30;
+    transform: none;
+  }
+
+  body.app-workspace:has([data-appointment-board]) .appointment-table .appointment-row td {
+    display: block;
+    width: auto;
+    min-width: 0;
+    padding: .65rem .1rem;
+    border: 0;
+    border-bottom: 1px solid rgba(70, 98, 138, .2);
+    border-radius: 0;
+    background: transparent;
+    overflow-wrap: anywhere;
+  }
+
+  body.app-workspace:has([data-appointment-board]) .appointment-table .appointment-row td:last-child {
+    border-bottom: 0;
+  }
+
+  body.app-workspace:has([data-appointment-board]) .appointment-table .appointment-row td::before {
+    display: block;
+    margin-bottom: .25rem;
+    color: #91a4bd;
+    font-size: .62rem;
+    font-weight: 800;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+  }
+
+  body.app-workspace:has([data-appointment-board]) .appointment-table .appointment-row td[data-label="Case / Client"]::before { content: "Case / client"; }
+  body.app-workspace:has([data-appointment-board]) .appointment-table .appointment-row td[data-label="Scheduled"]::before { content: "Scheduled"; }
+  body.app-workspace:has([data-appointment-board]) .appointment-table .appointment-row td[data-label="Status"]::before { content: "Status"; }
+  body.app-workspace:has([data-appointment-board]) .appointment-table .appointment-row td[data-label="Notes"]::before { content: "Notes"; }
+  body.app-workspace:has([data-appointment-board]) .appointment-table .appointment-row td[data-label="Actions"]::before { content: "Actions"; }
+
+  body.app-workspace:has([data-appointment-board]) .appointment-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+    gap: .45rem;
+  }
+
+  body.app-workspace:has([data-appointment-board]) .appointment-inline-form {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+    gap: .45rem;
+  }
+
+  body.app-workspace:has([data-appointment-board]) .appointment-inline-form select,
+  body.app-workspace:has([data-appointment-board]) .appointment-inline-form input[type="datetime-local"],
+  body.app-workspace:has([data-appointment-board]) .appointment-action-button {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  body.app-workspace:has([data-appointment-board]) .appointment-inline-delete {
+    width: 100%;
+  }
+
+  body.app-workspace:has([data-appointment-board]) .appointment-delete-button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  body.app-workspace:has([data-appointment-board]) .appointment-note-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Keep filters from creating another horizontal overflow. */
+  body.app-workspace:has([data-appointment-board]) .appointment-filters {
+    width: 100%;
+    max-width: none;
+    grid-template-columns: 1fr;
+  }
+
+  /* Prevent any workspace child from becoming wider than the phone. */
+  body.app-workspace .main-content,
+  body.app-workspace .main-content > *,
+  body.app-workspace .card,
+  body.app-workspace .table-wrap {
+    max-width: 100%;
+  }
+
+  body.app-workspace {
+    overflow-x: hidden;
+  }
+}
+
+@media (max-width: 380px) {
+  body.app-workspace .topbar {
+    grid-template-columns: 38px minmax(0, 1fr) auto;
+    padding-inline: .45rem;
+  }
+
+  body.app-workspace #sidebarToggle,
+  body.app-workspace #themeToggle,
+  body.app-workspace .notification-trigger {
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+    min-height: 38px;
+  }
+
+  body.app-workspace .dashboard-user-chip {
+    width: 38px;
+    min-width: 38px;
+    max-width: 38px;
+  }
+
+  body.app-workspace .dashboard-user-avatar {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    flex-basis: 34px;
+  }
+
+  body.app-workspace .lawyer-dashboard-metrics,
+  body.app-workspace .client-dashboard-metrics,
+  body.app-workspace .appointment-kpis,
+  body.app-workspace:has(.payment-lawyer-shell) .admin-payments-stats,
+  body.app-workspace:has([data-case-files-app]) #case-files-summary .case-stats {
+    gap: .45rem;
+  }
+}
+
+/* ================================================================
+   ADMIN MOBILE UX POLISH
+   Admin-only visual redesign. No application logic changes.
+   ================================================================ */
+
+body.app-workspace--admin {
+  --admin-card-radius: 18px;
+}
+
+body.app-workspace--admin .main-content {
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+body.app-workspace--admin .topbar {
+  min-width: 0;
+}
+
+body.app-workspace--admin .topbar-title {
+  min-width: 0;
+}
+
+body.app-workspace--admin .topbar-title h1 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.app-workspace--admin .admin-dashboard-stats,
+body.app-workspace--admin .admin-clients-stats,
+body.app-workspace--admin .admin-lawyers-stats,
+body.app-workspace--admin .admin-inquiries-stats {
+  width: 100%;
+}
+
+body.app-workspace--admin .admin-dashboard-stat-card,
+body.app-workspace--admin .admin-clients-stat-card,
+body.app-workspace--admin .admin-lawyers-stat-card,
+body.app-workspace--admin .admin-inquiries-stat-card {
+  min-width: 0;
+}
+
+body.app-workspace--admin .card,
+body.app-workspace--admin .admin-dashboard-card,
+body.app-workspace--admin .admin-clients-directory-card,
+body.app-workspace--admin .admin-lawyers-directory-card,
+body.app-workspace--admin .admin-inquiries-card,
+body.app-workspace--admin .admin-audit-card,
+body.app-workspace--admin .admin-settings-card {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+@media (max-width: 760px) {
+  /* Compact admin header: menu | page title | theme | bell | avatar */
+  body.app-workspace--admin .topbar {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .4rem;
+    min-height: 58px;
+    padding: .45rem .6rem;
+  }
+
+  body.app-workspace--admin .topbar-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .25rem;
+    min-width: 0;
+  }
+
+  body.app-workspace--admin #sidebarToggle,
+  body.app-workspace--admin #themeToggle,
+  body.app-workspace--admin .notification-trigger {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0;
+  }
+
+  body.app-workspace--admin .dashboard-user-chip {
+    width: 40px;
+    min-width: 40px;
+    max-width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  body.app-workspace--admin .dashboard-user-meta {
+    display: none;
+  }
+
+  body.app-workspace--admin .dashboard-user-avatar {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    border-radius: 50%;
+  }
+
+  body.app-workspace--admin .topbar-title h1 {
+    font-size: 1rem;
+    line-height: 1.2;
+  }
+
+  /* Do not let the accessibility link cover the dashboard on touch. */
+  body.app-workspace--admin .skip-link:focus {
+    left: -9999px;
+    top: 0;
+  }
+
+  body.app-workspace--admin .skip-link:focus-visible {
+    left: .65rem;
+    top: .65rem;
+  }
+
+  /* Admin dashboard metrics: consistent 2 x 2 phone layout. */
+  body.app-workspace--admin .admin-dashboard-stats,
+  body.app-workspace--admin .admin-clients-stats,
+  body.app-workspace--admin .admin-lawyers-stats,
+  body.app-workspace--admin .admin-inquiries-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .65rem;
+  }
+
+  body.app-workspace--admin .admin-dashboard-stat-card,
+  body.app-workspace--admin .admin-clients-stat-card,
+  body.app-workspace--admin .admin-lawyers-stat-card,
+  body.app-workspace--admin .admin-inquiries-stat-card {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    min-height: 96px;
+    padding: .8rem;
+    border-radius: 16px;
+  }
+
+  body.app-workspace--admin .admin-dashboard-stat-icon,
+  body.app-workspace--admin .admin-clients-stat-icon,
+  body.app-workspace--admin .admin-lawyers-stat-icon,
+  body.app-workspace--admin .admin-inquiries-stat-icon {
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+  }
+
+  body.app-workspace--admin .admin-dashboard-stat-copy,
+  body.app-workspace--admin .admin-clients-stat-copy,
+  body.app-workspace--admin .admin-lawyers-stat-copy,
+  body.app-workspace--admin .admin-inquiries-stat-copy {
+    min-width: 0;
+  }
+
+  body.app-workspace--admin .admin-dashboard-stat-copy span,
+  body.app-workspace--admin .admin-clients-stat-copy span,
+  body.app-workspace--admin .admin-lawyers-stat-copy span,
+  body.app-workspace--admin .admin-inquiries-stat-copy span {
+    display: block;
+    font-size: .72rem;
+    line-height: 1.2;
+    white-space: normal;
+  }
+
+  body.app-workspace--admin .admin-dashboard-stat-copy strong,
+  body.app-workspace--admin .admin-clients-stat-copy strong,
+  body.app-workspace--admin .admin-lawyers-stat-copy strong,
+  body.app-workspace--admin .admin-inquiries-stat-copy strong {
+    display: block;
+    margin-top: .2rem;
+    font-size: 1.35rem;
+    line-height: 1.05;
+    overflow-wrap: anywhere;
+  }
+
+  /* Dashboard sections become a clean vertical flow. */
+  body.app-workspace--admin .admin-dashboard-workbench {
+    grid-template-columns: 1fr;
+    gap: .8rem;
+  }
+
+  body.app-workspace--admin .admin-dashboard-card {
+    padding: 1rem;
+    border-radius: var(--admin-card-radius);
+  }
+
+  body.app-workspace--admin .admin-dashboard-card .card-head,
+  body.app-workspace--admin .admin-clients-directory-head,
+  body.app-workspace--admin .admin-lawyers-directory-head,
+  body.app-workspace--admin .admin-inquiries-head {
+    gap: .65rem;
+  }
+
+  body.app-workspace--admin .admin-dashboard-card .card-head h2,
+  body.app-workspace--admin .admin-clients-directory-head h2,
+  body.app-workspace--admin .admin-lawyers-directory-head h2,
+  body.app-workspace--admin .admin-inquiries-head h2,
+  body.app-workspace--admin .admin-audit-card .card-head h2,
+  body.app-workspace--admin .admin-settings-card .card-head h2 {
+    font-size: 1.05rem;
+  }
+
+  body.app-workspace--admin .admin-risk-layout {
+    grid-template-columns: 1fr;
+    gap: .75rem;
+  }
+
+  body.app-workspace--admin .admin-risk-chart {
+    min-height: 190px;
+  }
+
+  body.app-workspace--admin .admin-security-metrics {
+    grid-template-columns: 1fr;
+    gap: .55rem;
+  }
+
+  body.app-workspace--admin .admin-security-metric {
+    padding: .7rem;
+  }
+
+  /* Admin directories: stack controls instead of squeezing them. */
+  body.app-workspace--admin .admin-clients-directory-head,
+  body.app-workspace--admin .admin-lawyers-directory-head,
+  body.app-workspace--admin .admin-inquiries-head {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  body.app-workspace--admin .admin-clients-filters,
+  body.app-workspace--admin .admin-lawyers-filters,
+  body.app-workspace--admin .admin-inquiries-filter-bar {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: .55rem;
+    width: 100%;
+  }
+
+  body.app-workspace--admin .admin-clients-search,
+  body.app-workspace--admin .admin-clients-risk-filter,
+  body.app-workspace--admin .admin-lawyers-search,
+  body.app-workspace--admin .admin-lawyers-status-filter,
+  body.app-workspace--admin .admin-inquiries-search,
+  body.app-workspace--admin .admin-inquiries-status-filter,
+  body.app-workspace--admin .admin-clients-search input,
+  body.app-workspace--admin .admin-clients-risk-filter select,
+  body.app-workspace--admin .admin-lawyers-search input,
+  body.app-workspace--admin .admin-lawyers-status-filter select,
+  body.app-workspace--admin .admin-inquiries-search input,
+  body.app-workspace--admin .admin-inquiries-status-filter select,
+  body.app-workspace--admin .admin-clients-filter-button,
+  body.app-workspace--admin .admin-lawyers-filter-button,
+  body.app-workspace--admin .admin-inquiries-filter-button,
+  body.app-workspace--admin .admin-clients-add-button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  body.app-workspace--admin .admin-clients-directory-card,
+  body.app-workspace--admin .admin-lawyers-directory-card,
+  body.app-workspace--admin .admin-inquiries-card,
+  body.app-workspace--admin .admin-audit-card,
+  body.app-workspace--admin .admin-settings-card {
+    border-radius: var(--admin-card-radius);
+  }
+
+  /* Tables stay inside the viewport. */
+  body.app-workspace--admin .table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body.app-workspace--admin .data-table {
+    min-width: 620px;
+  }
+
+  /* Where rows have data-label attributes, turn them into mobile cards. */
+  body.app-workspace--admin .admin-clients-table,
+  body.app-workspace--admin .admin-lawyers-table,
+  body.app-workspace--admin .admin-inquiries-table {
+    min-width: 0;
+    border-collapse: separate;
+    border-spacing: 0 .65rem;
+  }
+
+  body.app-workspace--admin .admin-clients-table thead,
+  body.app-workspace--admin .admin-lawyers-table thead,
+  body.app-workspace--admin .admin-inquiries-table thead {
+    display: none;
+  }
+
+  body.app-workspace--admin .admin-clients-table tbody tr,
+  body.app-workspace--admin .admin-lawyers-table tbody tr,
+  body.app-workspace--admin .admin-inquiries-table tbody tr {
+    display: block;
+    width: 100%;
+    margin: 0 0 .7rem;
+    padding: .8rem;
+    border: 1px solid rgba(143, 165, 196, .18);
+    border-radius: 15px;
+    background: rgba(11, 29, 52, .72);
+  }
+
+  body.app-workspace--admin .admin-clients-table tbody td,
+  body.app-workspace--admin .admin-lawyers-table tbody td,
+  body.app-workspace--admin .admin-inquiries-table tbody td {
+    display: grid;
+    grid-template-columns: minmax(82px, .4fr) minmax(0, 1fr);
+    gap: .65rem;
+    align-items: start;
+    width: 100%;
+    min-width: 0;
+    padding: .55rem 0;
+    border: 0;
+  }
+
+  body.app-workspace--admin .admin-clients-table tbody td::before,
+  body.app-workspace--admin .admin-lawyers-table tbody td::before,
+  body.app-workspace--admin .admin-inquiries-table tbody td::before {
+    content: attr(data-label);
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #8ea1ba;
+  }
+
+  body.app-workspace--admin .admin-clients-table tbody td:first-child,
+  body.app-workspace--admin .admin-lawyers-table tbody td:first-child,
+  body.app-workspace--admin .admin-inquiries-table tbody td:first-child {
+    padding-top: 0;
+  }
+
+  body.app-workspace--admin .admin-clients-table tbody td:last-child,
+  body.app-workspace--admin .admin-lawyers-table tbody td:last-child,
+  body.app-workspace--admin .admin-inquiries-table tbody td:last-child {
+    padding-bottom: 0;
+  }
+
+  body.app-workspace--admin .admin-clients-actions,
+  body.app-workspace--admin .admin-lawyers-actions,
+  body.app-workspace--admin .admin-inquiries-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+    gap: .45rem;
+  }
+
+  body.app-workspace--admin .admin-clients-actions .button,
+  body.app-workspace--admin .admin-lawyers-actions .button,
+  body.app-workspace--admin .admin-inquiries-actions .button,
+  body.app-workspace--admin .admin-clients-actions select,
+  body.app-workspace--admin .admin-lawyers-actions select,
+  body.app-workspace--admin .admin-inquiries-actions select {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  /* Audit logs: comfortable horizontal scroll rather than broken columns. */
+  body.app-workspace--admin .admin-audit-table-wrap {
+    margin-inline: -.2rem;
+    width: calc(100% + .4rem);
+  }
+
+  body.app-workspace--admin .admin-audit-table {
+    min-width: 720px;
+  }
+
+  /* Settings: one-column mobile forms and full-width actions. */
+  body.app-workspace--admin .admin-settings-form,
+  body.app-workspace--admin .admin-account-security-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.app-workspace--admin .admin-settings-form .full,
+  body.app-workspace--admin .admin-account-security-grid .full {
+    grid-column: 1 / -1;
+  }
+
+  body.app-workspace--admin .admin-settings-submit,
+  body.app-workspace--admin .admin-account-security-form .button {
+    width: 100%;
+    min-height: 46px;
+  }
+
+  /* Modals fit the phone with comfortable side margins. */
+  body.app-workspace--admin .modal-overlay {
+    padding: .65rem;
+  }
+
+  body.app-workspace--admin .modal-card,
+  body.app-workspace--admin .modal-card.wide {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100dvh - 1.3rem);
+    overflow: auto;
+    border-radius: 18px;
+  }
+
+  body.app-workspace--admin .modal-body {
+    padding: .9rem;
+  }
+
+  body.app-workspace--admin .modal-header {
+    padding: .85rem .9rem;
+  }
+
+  /* Avoid accidental page-wide overflow from long IDs, IPs and emails. */
+  body.app-workspace--admin .admin-case-row,
+  body.app-workspace--admin .admin-audit-row,
+  body.app-workspace--admin .admin-ip-row,
+  body.app-workspace--admin .stack-row,
+  body.app-workspace--admin .admin-profile-details {
+    min-width: 0;
+  }
+
+  body.app-workspace--admin .admin-case-row strong,
+  body.app-workspace--admin .admin-case-row span,
+  body.app-workspace--admin .admin-audit-row span,
+  body.app-workspace--admin .admin-audit-row strong,
+  body.app-workspace--admin .admin-audit-row time,
+  body.app-workspace--admin .admin-ip-row span,
+  body.app-workspace--admin .admin-ip-row strong {
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 380px) {
+  body.app-workspace--admin .topbar {
+    grid-template-columns: 38px minmax(0, 1fr) auto;
+    padding-inline: .4rem;
+  }
+
+  body.app-workspace--admin #sidebarToggle,
+  body.app-workspace--admin #themeToggle,
+  body.app-workspace--admin .notification-trigger {
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+    min-height: 38px;
+  }
+
+  body.app-workspace--admin .dashboard-user-chip {
+    width: 38px;
+    min-width: 38px;
+    max-width: 38px;
+  }
+
+  body.app-workspace--admin .dashboard-user-avatar {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+  }
+
+  body.app-workspace--admin .admin-dashboard-stat-card,
+  body.app-workspace--admin .admin-clients-stat-card,
+  body.app-workspace--admin .admin-lawyers-stat-card,
+  body.app-workspace--admin .admin-inquiries-stat-card {
+    min-height: 88px;
+    padding: .65rem;
+    gap: .5rem;
+  }
+
+  body.app-workspace--admin .admin-dashboard-stat-icon,
+  body.app-workspace--admin .admin-clients-stat-icon,
+  body.app-workspace--admin .admin-lawyers-stat-icon,
+  body.app-workspace--admin .admin-inquiries-stat-icon {
+    flex-basis: 36px;
+    width: 36px;
+    height: 36px;
+  }
+
+  body.app-workspace--admin .admin-dashboard-stat-copy strong,
+  body.app-workspace--admin .admin-clients-stat-copy strong,
+  body.app-workspace--admin .admin-lawyers-stat-copy strong,
+  body.app-workspace--admin .admin-inquiries-stat-copy strong {
+    font-size: 1.15rem;
+  }
+}
+
+
+/* ================================================================
+   FINAL ADMIN MOBILE METRIC LAYOUT + SHARED NOTIFICATION TOGGLE
+   ================================================================ */
+
+@media (max-width: 760px) {
+  /* Admin: Quick Inquiries, Manage Lawyers, and Payments = 2 x 2. */
+  body.app-workspace--admin:has(.admin-inquiries-card) .admin-inquiries-stats,
+  body.app-workspace--admin:has(.admin-lawyers-directory-card) .admin-lawyers-stats,
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-payments-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: .65rem;
+  }
+
+  /* Admin: Manage Clients = 2 x 1 rhythm (third card wraps to the next row). */
+  body.app-workspace--admin:has(.admin-clients-directory-card) .admin-clients-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: .65rem;
+  }
+
+  body.app-workspace--admin .admin-inquiries-stat-card,
+  body.app-workspace--admin .admin-lawyers-stat-card,
+  body.app-workspace--admin .admin-payments-stat-card,
+  body.app-workspace--admin .admin-clients-stat-card {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+/* Keep notification menus usable across admin, lawyer, and client workspaces. */
+body.app-workspace .notification-menu[open] {
+  z-index: 1000;
+}
+
+body.app-workspace .notification-menu .notification-panel {
+  pointer-events: auto;
+}
+
+@media (max-width: 680px) {
+  body.app-workspace .notification-panel {
+    top: calc(58px + env(safe-area-inset-top));
+    right: .65rem;
+    left: .65rem;
+    width: auto;
+    max-width: none;
+    border-radius: 16px;
+  }
+}
+
+/* Admin mobile content redesign: purpose-built cards for narrow screens. */
+.admin-mobile-record-list { display: none; }
+
+@media (max-width: 767px) {
+  body.app-workspace--admin .admin-mobile-record-list {
+    display: grid;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  body.app-workspace--admin .admin-mobile-record-list + .admin-pagination,
+  body.app-workspace--admin .admin-mobile-record-list + nav {
+    margin-top: 14px;
+  }
+
+  body.app-workspace--admin .admin-mobile-record {
+    background: var(--surface, #fff);
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, .05);
+    min-width: 0;
+  }
+
+  body.app-workspace--admin .admin-mobile-record-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  body.app-workspace--admin .admin-mobile-person {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  body.app-workspace--admin .admin-mobile-person-copy {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  body.app-workspace--admin .admin-mobile-person-copy > span,
+  body.app-workspace--admin .admin-mobile-person-copy > a {
+    color: var(--text-muted, #64748b);
+    font-size: .78rem;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  body.app-workspace--admin .admin-mobile-name,
+  body.app-workspace--admin .admin-mobile-name-text {
+    font-size: .96rem;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  body.app-workspace--admin .admin-mobile-record-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  body.app-workspace--admin .admin-mobile-record-grid > div,
+  body.app-workspace--admin .admin-mobile-record-detail {
+    min-width: 0;
+    padding: 9px 10px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--surface-muted, #f8fafc) 80%, transparent);
+  }
+
+  body.app-workspace--admin .admin-mobile-record-grid span,
+  body.app-workspace--admin .admin-mobile-record-detail span,
+  body.app-workspace--admin .admin-mobile-inquiry-topic span,
+  body.app-workspace--admin .admin-payment-mobile-amount span,
+  body.app-workspace--admin .admin-mobile-message-preview span {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--text-muted, #64748b);
+    font-size: .68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .045em;
+  }
+
+  body.app-workspace--admin .admin-mobile-record-grid strong,
+  body.app-workspace--admin .admin-mobile-record-detail strong {
+    display: block;
+    color: var(--text, #0f172a);
+    font-size: .8rem;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  body.app-workspace--admin .admin-mobile-record-detail {
+    margin-top: 8px;
+  }
+
+  body.app-workspace--admin .admin-mobile-record-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+    margin-top: 12px;
+  }
+
+  body.app-workspace--admin .admin-mobile-record-actions form,
+  body.app-workspace--admin .admin-mobile-select-form {
+    min-width: 0;
+    margin: 0;
+  }
+
+  body.app-workspace--admin .admin-mobile-record-actions select,
+  body.app-workspace--admin .admin-mobile-record-actions .button {
+    width: 100%;
+    min-height: 42px;
+  }
+
+  body.app-workspace--admin .admin-lawyer-mobile-card .admin-mobile-record-actions {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  body.app-workspace--admin .admin-client-mobile-actions {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  body.app-workspace--admin .admin-mobile-empty {
+    padding: 28px 16px;
+    text-align: center;
+    color: var(--text-muted, #64748b);
+    border: 1px dashed var(--border, #e5e7eb);
+    border-radius: 14px;
+    font-size: .86rem;
+  }
+
+  /* Lawyers */
+  body.app-workspace--admin .admin-lawyers-mobile-list .admin-lawyers-avatar {
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+  }
+
+  /* Clients */
+  body.app-workspace--admin .admin-clients-mobile-list .admin-clients-avatar {
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+  }
+
+  /* Inquiries */
+  body.app-workspace--admin .admin-inquiry-mobile-card .admin-inquiries-avatar {
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+  }
+
+  body.app-workspace--admin .admin-inquiry-mobile-card .admin-mobile-record-top .pill {
+    flex: 0 0 auto;
+  }
+
+  body.app-workspace--admin .admin-mobile-inquiry-topic {
+    margin-top: 12px;
+    padding: 10px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--surface-muted, #f8fafc) 80%, transparent);
+  }
+
+  body.app-workspace--admin .admin-mobile-inquiry-topic strong {
+    display: block;
+    font-size: .84rem;
+    overflow-wrap: anywhere;
+  }
+
+  body.app-workspace--admin .admin-mobile-message-preview {
+    display: block;
+    width: 100%;
+    margin-top: 8px;
+    padding: 11px 12px;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 11px;
+    background: transparent;
+    text-align: left;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  body.app-workspace--admin .admin-mobile-message-preview strong {
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--text, #0f172a);
+    font-size: .82rem;
+    line-height: 1.45;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+
+  body.app-workspace--admin .admin-mobile-message-preview em {
+    display: block;
+    margin-top: 7px;
+    color: var(--primary, #2563eb);
+    font-size: .72rem;
+    font-style: normal;
+    font-weight: 600;
+  }
+
+  body.app-workspace--admin .admin-mobile-record-meta {
+    margin-top: 9px;
+    color: var(--text-muted, #64748b);
+    font-size: .72rem;
+  }
+
+  /* Payments */
+  body.app-workspace--admin .admin-payment-mobile-card .admin-payments-client-avatar {
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+  }
+
+  body.app-workspace--admin .admin-payment-mobile-amount {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 13px;
+    padding: 12px;
+    border-radius: 11px;
+    background: color-mix(in srgb, var(--primary-soft, #eff6ff) 75%, transparent);
+  }
+
+  body.app-workspace--admin .admin-payment-mobile-amount span { margin: 0; }
+  body.app-workspace--admin .admin-payment-mobile-amount strong {
+    font-size: 1.02rem;
+    line-height: 1.2;
+  }
+
+  body.app-workspace--admin .admin-mobile-review-button {
+    width: 100%;
+    min-height: 43px;
+    margin-top: 12px;
+    justify-content: center;
+  }
+
+  /* On phones, use the purpose-built cards instead of squeezing desktop tables. */
+  body.app-workspace--admin .admin-lawyers-directory-card .table-wrap,
+  body.app-workspace--admin .admin-clients-directory-card .table-wrap,
+  body.app-workspace--admin .admin-inquiries-card .table-wrap,
+  body.app-workspace--admin .admin-payments-review-card:last-of-type .table-wrap {
+    display: none;
+  }
+
+  body.app-workspace--admin .admin-lawyers-directory-head,
+  body.app-workspace--admin .admin-clients-directory-head,
+  body.app-workspace--admin .admin-inquiries-head,
+  body.app-workspace--admin .admin-payments-review-head {
+    align-items: flex-start;
+  }
+
+  body.app-workspace--admin .admin-lawyers-filters,
+  body.app-workspace--admin .admin-clients-filters,
+  body.app-workspace--admin .admin-inquiries-filter-bar,
+  body.app-workspace--admin .payment-filter-bar {
+    width: 100%;
+  }
+
+  body.app-workspace--admin .admin-lawyers-filters input,
+  body.app-workspace--admin .admin-clients-filters input,
+  body.app-workspace--admin .admin-inquiries-filter-bar input,
+  body.app-workspace--admin .payment-filter-bar input,
+  body.app-workspace--admin .admin-lawyers-filters select,
+  body.app-workspace--admin .admin-clients-filters select,
+  body.app-workspace--admin .admin-inquiries-filter-bar select,
+  body.app-workspace--admin .payment-filter-bar select {
+    min-height: 42px;
+  }
+}
+
+@media (max-width: 420px) {
+  body.app-workspace--admin .admin-mobile-record { padding: 12px; border-radius: 14px; }
+  body.app-workspace--admin .admin-mobile-record-grid { grid-template-columns: 1fr; }
+  body.app-workspace--admin .admin-client-mobile-actions { grid-template-columns: 1fr 1fr; }
+  body.app-workspace--admin .admin-client-mobile-actions select { grid-column: 1 / -1; }
+  body.app-workspace--admin .admin-mobile-record-top { gap: 7px; }
+  body.app-workspace--admin .admin-mobile-person { gap: 8px; }
+}
+
+/* ================================================================
+   PAYMENT MOBILE POLISH — TRUSTED BLUE/GOLD PALETTE + EARNINGS CARDS
+   ================================================================ */
+body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-mobile-list {
+  display: none;
+}
+
+body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-table-wrap {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(62, 94, 135, .28);
+  background: #07182d;
+}
+
+body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-table tbody tr {
+  background: #0a1d34;
+}
+
+body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-table tbody tr + tr {
+  border-top: 1px solid rgba(62, 94, 135, .18);
+}
+
+@media (max-width: 767px) {
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-payments-mobile-list .admin-payment-mobile-card {
+    background: #0a1b31;
+    border: 1px solid #1d3859;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+  }
+
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-payment-mobile-card .admin-mobile-person-copy > span {
+    color: #8fa6c2;
+  }
+
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-payment-mobile-amount {
+    background: #102844;
+    border: 1px solid #1e4168;
+  }
+
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-payment-mobile-amount span {
+    color: #8fa6c2;
+  }
+
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-payment-mobile-amount strong {
+    color: #f4d36d;
+    font-size: 1.16rem;
+    font-weight: 850;
+  }
+
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-payment-mobile-card .admin-mobile-record-grid > div {
+    background: #0e243d;
+    border: 1px solid rgba(50, 83, 120, .42);
+  }
+
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-payment-mobile-card .admin-mobile-record-grid span {
+    color: #829ab7;
+  }
+
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-payment-mobile-card .admin-mobile-record-grid strong {
+    color: #e8f0fa;
+  }
+
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-mobile-review-button {
+    background: #102a48;
+    border-color: #315b88;
+    color: #f5f8fc;
+  }
+
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-table-wrap {
+    display: none;
+  }
+
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-mobile-list {
+    display: grid;
+    gap: 10px;
+  }
+
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-mobile-card {
+    padding: 14px;
+    border-radius: 16px;
+    background: #0a1b31;
+    border: 1px solid #1d3859;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+  }
+
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-mobile-top {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+  }
+
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-lawyer-mark {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2f66e7, #173c91);
+    color: #fff;
+    font-size: .82rem;
+    font-weight: 850;
+  }
+
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-lawyer-copy {
+    min-width: 0;
+    display: grid;
+    gap: 3px;
+  }
+
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-lawyer-copy strong {
+    color: #f4f8fd;
+    font-size: .95rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-lawyer-copy span {
+    color: #8fa6c2;
+    font-size: .74rem;
+  }
+
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-total {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #112b49, #0d223b);
+    border: 1px solid rgba(196, 151, 43, .35);
+  }
+
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-total span {
+    display: block;
+    color: #8fa6c2;
+    font-size: .68rem;
+    font-weight: 750;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-total strong {
+    display: block;
+    margin-top: 3px;
+    color: #f4d36d;
+    font-size: 1.22rem;
+    line-height: 1.2;
+    font-weight: 900;
+  }
+
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-mobile-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-mobile-grid > div {
+    padding: 10px;
+    border-radius: 10px;
+    background: #0e243d;
+    border: 1px solid rgba(50, 83, 120, .42);
+  }
+
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-mobile-grid span {
+    display: block;
+    color: #829ab7;
+    font-size: .66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+
+  body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-mobile-grid strong {
+    display: block;
+    margin-top: 3px;
+    color: #e8f0fa;
+    font-size: .95rem;
+  }
+}
+
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-mobile-card,
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-payment-mobile-card {
+  background: #ffffff;
+  border-color: #dbe4ef;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, .07);
+}
+
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-payment-mobile-amount,
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-mobile-grid > div {
+  background: #f5f8fc;
+  border-color: #dbe4ef;
+}
+
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-payment-mobile-amount strong,
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-total strong {
+  color: #9a6b00;
+}
+
+/* ================================================================
+   ADMIN MOBILE V5 — unified mobile content system
+   ================================================================ */
+@media (max-width: 767px) {
+  body.app-workspace--admin .admin-mobile-record-list {
+    gap: 14px;
+    margin-top: 14px;
+  }
+
+  body.app-workspace--admin .admin-mobile-record {
+    position: relative;
+    overflow: hidden;
+    padding: 16px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #0b2038 0%, #081a2f 100%);
+    border: 1px solid #1b3858;
+    box-shadow: 0 10px 28px rgba(0,0,0,.20);
+  }
+
+  body.app-workspace--admin .admin-mobile-record::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: #2f6fe8;
+    opacity: .9;
+  }
+
+  body.app-workspace--admin .admin-mobile-record-top {
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(74,108,145,.24);
+  }
+
+  body.app-workspace--admin .admin-mobile-person { gap: 11px; }
+  body.app-workspace--admin .admin-mobile-person-copy { gap: 4px; }
+  body.app-workspace--admin .admin-mobile-name,
+  body.app-workspace--admin .admin-mobile-name-text {
+    color: #f5f8fd;
+    font-size: .98rem;
+    font-weight: 800;
+  }
+  body.app-workspace--admin .admin-mobile-person-copy > span,
+  body.app-workspace--admin .admin-mobile-person-copy > a {
+    color: #91a8c3;
+    font-size: .76rem;
+  }
+
+  body.app-workspace--admin .admin-mobile-record-grid {
+    gap: 9px;
+    margin-top: 12px;
+  }
+
+  body.app-workspace--admin .admin-mobile-record-grid > div,
+  body.app-workspace--admin .admin-mobile-record-detail {
+    padding: 10px 11px;
+    border-radius: 12px;
+    background: #0d2743;
+    border: 1px solid rgba(50,88,128,.42);
+  }
+
+  body.app-workspace--admin .admin-mobile-record-grid span,
+  body.app-workspace--admin .admin-mobile-record-detail span,
+  body.app-workspace--admin .admin-mobile-inquiry-topic span,
+  body.app-workspace--admin .admin-payment-mobile-amount span,
+  body.app-workspace--admin .admin-mobile-message-preview span {
+    color: #7892af;
+    font-size: .64rem;
+    letter-spacing: .06em;
+  }
+
+  body.app-workspace--admin .admin-mobile-record-grid strong,
+  body.app-workspace--admin .admin-mobile-record-detail strong {
+    color: #e9f0f8;
+    font-size: .79rem;
+  }
+
+  /* Lawyers: profile-first card with status and management actions. */
+  body.app-workspace--admin .admin-lawyer-mobile-card .admin-lawyers-status-pill {
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: .68rem;
+    white-space: nowrap;
+  }
+  body.app-workspace--admin .admin-lawyer-mobile-card .admin-mobile-record-grid > div {
+    min-height: 58px;
+  }
+  body.app-workspace--admin .admin-lawyer-mobile-card .admin-mobile-record-actions {
+    grid-template-columns: 1fr 92px;
+    margin-top: 12px;
+  }
+  body.app-workspace--admin .admin-lawyer-mobile-card .admin-mobile-select-form select,
+  body.app-workspace--admin .admin-lawyer-mobile-card .admin-mobile-record-actions .button {
+    min-height: 44px;
+    border-radius: 12px;
+  }
+
+  /* Clients: contact-first card; risk remains visually prominent. */
+  body.app-workspace--admin .admin-client-mobile-card .admin-clients-risk-pill {
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: .68rem;
+    white-space: nowrap;
+  }
+  body.app-workspace--admin .admin-client-mobile-card .admin-mobile-record-detail {
+    display: grid;
+    grid-template-columns: 62px minmax(0,1fr);
+    align-items: center;
+    gap: 8px;
+  }
+  body.app-workspace--admin .admin-client-mobile-card .admin-mobile-record-detail span { margin: 0; }
+  body.app-workspace--admin .admin-client-mobile-actions {
+    grid-template-columns: minmax(0,1fr) 76px 76px;
+  }
+  body.app-workspace--admin .admin-client-mobile-actions select,
+  body.app-workspace--admin .admin-client-mobile-actions .button {
+    min-height: 44px;
+    border-radius: 12px;
+  }
+
+  /* Inquiries: inbox-style message card. */
+  body.app-workspace--admin .admin-inquiry-mobile-card .admin-mobile-record-top {
+    align-items: center;
+  }
+  body.app-workspace--admin .admin-inquiry-mobile-card .admin-mobile-inquiry-topic {
+    margin-top: 12px;
+    padding: 11px 12px;
+    border-radius: 12px;
+    background: #0d2743;
+    border: 1px solid rgba(50,88,128,.42);
+  }
+  body.app-workspace--admin .admin-inquiry-mobile-card .admin-mobile-inquiry-topic strong {
+    color: #eaf1f9;
+    margin-top: 3px;
+  }
+  body.app-workspace--admin .admin-mobile-message-preview {
+    margin-top: 9px;
+    padding: 12px;
+    border-radius: 12px;
+    background: #091d34;
+    border: 1px solid #1c3b5d;
+  }
+  body.app-workspace--admin .admin-mobile-message-preview strong {
+    color: #cbd9e8;
+    font-size: .8rem;
+    -webkit-line-clamp: 3;
+  }
+  body.app-workspace--admin .admin-mobile-message-preview em {
+    color: #6ea3ff;
+  }
+  body.app-workspace--admin .admin-inquiry-mobile-card .admin-mobile-record-actions {
+    grid-template-columns: minmax(0,1fr) 82px;
+  }
+  body.app-workspace--admin .admin-inquiry-mobile-card .admin-mobile-record-actions select,
+  body.app-workspace--admin .admin-inquiry-mobile-card .admin-mobile-record-actions .button {
+    min-height: 44px;
+    border-radius: 12px;
+  }
+
+  /* Payments: amount-led financial card. */
+  body.app-workspace--admin .admin-payment-mobile-card .admin-payment-mobile-amount {
+    margin-top: 13px;
+    padding: 13px 14px;
+    border-radius: 13px;
+    background: linear-gradient(135deg, #102d4d, #0b223c);
+    border: 1px solid rgba(198,157,54,.30);
+  }
+  body.app-workspace--admin .admin-payment-mobile-card .admin-payment-mobile-amount span {
+    color: #829ab6;
+  }
+  body.app-workspace--admin .admin-payment-mobile-card .admin-payment-mobile-amount strong {
+    color: #f3d16a;
+    font-size: 1.16rem;
+    font-weight: 900;
+  }
+  body.app-workspace--admin .admin-payment-mobile-card .admin-mobile-record-grid > div {
+    min-height: 58px;
+  }
+  body.app-workspace--admin .admin-mobile-review-button {
+    min-height: 45px;
+    border-radius: 12px;
+    background: #12345a;
+    border-color: #315f8f;
+    color: #f4f8fd;
+    font-weight: 800;
+  }
+
+  /* Shared action language. */
+  body.app-workspace--admin .admin-mobile-record-actions .button-danger {
+    background: rgba(154,40,54,.12);
+    border-color: rgba(218,76,91,.48);
+    color: #ff7f8b;
+  }
+
+  /* Search/filter area: one calm mobile control stack. */
+  body.app-workspace--admin .admin-lawyers-directory-head,
+  body.app-workspace--admin .admin-clients-directory-head,
+  body.app-workspace--admin .admin-inquiries-head,
+  body.app-workspace--admin .admin-payments-review-head {
+    gap: 12px;
+  }
+
+  body.app-workspace--admin .admin-lawyers-directory-card form,
+  body.app-workspace--admin .admin-clients-directory-card form,
+  body.app-workspace--admin .admin-inquiries-card form,
+  body.app-workspace--admin .admin-payments-review-card form {
+    gap: 9px;
+  }
+
+  /* Hide duplicate desktop record tables on phones. */
+  body.app-workspace--admin .admin-lawyers-directory-card .table-wrap,
+  body.app-workspace--admin .admin-clients-directory-card .table-wrap,
+  body.app-workspace--admin .admin-inquiries-card .table-wrap,
+  body.app-workspace--admin .admin-payments-review-card .table-wrap {
+    display: none !important;
+  }
+}
+
+@media (max-width: 430px) {
+  body.app-workspace--admin .admin-mobile-record { padding: 14px; border-radius: 16px; }
+  body.app-workspace--admin .admin-mobile-record-grid { grid-template-columns: 1fr 1fr; }
+  body.app-workspace--admin .admin-lawyer-mobile-card .admin-mobile-record-actions,
+  body.app-workspace--admin .admin-inquiry-mobile-card .admin-mobile-record-actions {
+    grid-template-columns: 1fr;
+  }
+  body.app-workspace--admin .admin-client-mobile-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+  body.app-workspace--admin .admin-client-mobile-actions select { grid-column: 1 / -1; }
+}
+
+@media (max-width: 360px) {
+  body.app-workspace--admin .admin-mobile-record-grid { grid-template-columns: 1fr; }
+  body.app-workspace--admin .admin-mobile-record { padding: 12px; }
+}
+
+html[data-theme="light"] body.app-workspace--admin .admin-mobile-record {
+  background: #ffffff;
+  border-color: #d8e2ee;
+  box-shadow: 0 8px 24px rgba(15,23,42,.07);
+}
+html[data-theme="light"] body.app-workspace--admin .admin-mobile-record::before { background: #2563d8; }
+html[data-theme="light"] body.app-workspace--admin .admin-mobile-record-top { border-bottom-color: #e5ebf2; }
+html[data-theme="light"] body.app-workspace--admin .admin-mobile-name,
+html[data-theme="light"] body.app-workspace--admin .admin-mobile-name-text { color: #12243a; }
+html[data-theme="light"] body.app-workspace--admin .admin-mobile-person-copy > span,
+html[data-theme="light"] body.app-workspace--admin .admin-mobile-person-copy > a { color: #647890; }
+html[data-theme="light"] body.app-workspace--admin .admin-mobile-record-grid > div,
+html[data-theme="light"] body.app-workspace--admin .admin-mobile-record-detail,
+html[data-theme="light"] body.app-workspace--admin .admin-inquiry-mobile-card .admin-mobile-inquiry-topic {
+  background: #f5f8fc;
+  border-color: #dfe7f0;
+}
+html[data-theme="light"] body.app-workspace--admin .admin-mobile-record-grid strong,
+html[data-theme="light"] body.app-workspace--admin .admin-mobile-record-detail strong,
+html[data-theme="light"] body.app-workspace--admin .admin-mobile-inquiry-topic strong { color: #24364d; }
+html[data-theme="light"] body.app-workspace--admin .admin-mobile-message-preview { background: #f8fafc; border-color: #dce5ef; }
+html[data-theme="light"] body.app-workspace--admin .admin-mobile-message-preview strong { color: #33465d; }
+html[data-theme="light"] body.app-workspace--admin .admin-payment-mobile-card .admin-payment-mobile-amount { background: #fff9e8; border-color: #ead8a0; }
+html[data-theme="light"] body.app-workspace--admin .admin-payment-mobile-card .admin-payment-mobile-amount strong { color: #9a6b00; }
+
+/* =========================================================
+   Mobile polish pass — client billing, payments & appointments
+   + admin payment review
+   ========================================================= */
+@media (max-width: 720px) {
+  /* Client billing: compact 2 x 2 financial summary. */
+  body:has([data-client-billing-page]) .billing-case-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  body:has([data-client-billing-page]) .billing-case-stat-card {
+    min-width: 0;
+    min-height: 108px;
+    padding: 14px;
+    border-radius: 16px;
+  }
+  body:has([data-client-billing-page]) .billing-case-stat-label {
+    gap: 7px;
+    align-items: center;
+  }
+  body:has([data-client-billing-page]) .billing-case-stat-label em {
+    font-size: .68rem;
+    line-height: 1.2;
+  }
+  body:has([data-client-billing-page]) .billing-case-stat-card strong {
+    margin-top: 10px;
+    font-size: 1.35rem;
+    line-height: 1.05;
+    overflow-wrap: anywhere;
+  }
+
+  body:has([data-client-billing-page]) .billing-case-panel {
+    border-radius: 18px;
+    overflow: hidden;
+  }
+  body:has([data-client-billing-page]) .billing-case-panel-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: center;
+  }
+  body:has([data-client-billing-page]) .billing-case-panel-header > div { min-width: 0; }
+  body:has([data-client-billing-page]) .billing-case-panel-header h2 {
+    font-size: 1.15rem;
+  }
+  body:has([data-client-billing-page]) .billing-case-panel-header .button {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 44px;
+  }
+
+  /* Replace the compressed desktop billing table with readable activity cards. */
+  body:has([data-client-billing-page]) .billing-case-table-wrap { display: none !important; }
+  body:has([data-client-billing-page]) .billing-activity-mobile {
+    display: grid;
+    gap: 10px;
+    padding: 0 14px 14px;
+  }
+  .billing-activity-mobile-card {
+    position: relative;
+    padding: 14px;
+    border: 1px solid #1d3c5c;
+    border-radius: 16px;
+    background: #091d34;
+    overflow: hidden;
+  }
+  .billing-activity-mobile-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: #2e7df6;
+  }
+  .billing-activity-mobile-top {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .billing-activity-mobile-top > div { min-width: 0; }
+  .billing-activity-mobile-top strong,
+  .billing-activity-mobile-top span { display: block; }
+  .billing-activity-mobile-kicker,
+  .billing-activity-mobile-grid span,
+  .billing-activity-mobile-amount span {
+    color: #7892af;
+    font-size: .62rem;
+    font-weight: 800;
+    letter-spacing: .07em;
+  }
+  .billing-activity-mobile-top strong {
+    margin-top: 3px;
+    color: #f2f6fb;
+    font-size: .92rem;
+    overflow-wrap: anywhere;
+  }
+  .billing-activity-mobile-top > div > span:last-child {
+    margin-top: 3px;
+    color: #91a8c3;
+    font-size: .72rem;
+  }
+  .billing-activity-mobile-amount {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 11px 12px;
+    border: 1px solid rgba(198,157,54,.28);
+    border-radius: 12px;
+    background: #102b48;
+  }
+  .billing-activity-mobile-amount strong {
+    color: #f3d16a;
+    font-size: 1.05rem;
+    font-weight: 900;
+    overflow-wrap: anywhere;
+    text-align: right;
+  }
+  .billing-activity-mobile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 9px;
+  }
+  .billing-activity-mobile-grid > div {
+    min-width: 0;
+    padding: 9px 10px;
+    border: 1px solid #1a3653;
+    border-radius: 11px;
+    background: #0d2743;
+  }
+  .billing-activity-mobile-grid strong {
+    display: block;
+    margin-top: 3px;
+    color: #dfe8f2;
+    font-size: .75rem;
+    overflow-wrap: anywhere;
+  }
+  .billing-activity-mobile-empty {
+    display: grid;
+    gap: 5px;
+    padding: 20px 14px;
+    text-align: center;
+    color: #a9bbcf;
+  }
+  .billing-activity-mobile-empty strong { color: #edf3f9; }
+
+  /* Client payment history: app-like records instead of a squeezed table. */
+  body:has(.payment-history-card) .payment-history-wrap { display: none !important; }
+  body:has(.payment-history-card) .client-payment-history-mobile {
+    display: grid;
+    gap: 10px;
+    padding: 0 14px 14px;
+  }
+  .client-payment-mobile-card {
+    position: relative;
+    padding: 14px;
+    border: 1px solid #1d3c5c;
+    border-radius: 16px;
+    background: #091d34;
+    overflow: hidden;
+  }
+  .client-payment-mobile-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: #2e7df6;
+  }
+  .client-payment-mobile-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .client-payment-mobile-title {
+    display: flex;
+    min-width: 0;
+    gap: 10px;
+    align-items: center;
+  }
+  .client-payment-mobile-icon {
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #153b67;
+    color: #7fb2ff;
+    font-weight: 900;
+  }
+  .client-payment-mobile-title strong,
+  .client-payment-mobile-title span { display: block; }
+  .client-payment-mobile-title strong {
+    color: #f0f5fa;
+    font-size: .9rem;
+    overflow-wrap: anywhere;
+  }
+  .client-payment-mobile-title span {
+    margin-top: 2px;
+    color: #8fa6be;
+    font-size: .7rem;
+  }
+  .client-payment-mobile-amount {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 11px 12px;
+    border-radius: 12px;
+    background: #102b48;
+    border: 1px solid rgba(198,157,54,.28);
+  }
+  .client-payment-mobile-amount span,
+  .client-payment-mobile-footer span {
+    color: #7892af;
+    font-size: .62rem;
+    font-weight: 800;
+    letter-spacing: .07em;
+  }
+  .client-payment-mobile-amount strong {
+    color: #f3d16a;
+    font-size: 1.08rem;
+    font-weight: 900;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+  .client-payment-mobile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 9px;
+  }
+  .client-payment-mobile-grid > div,
+  .client-payment-mobile-footer > div {
+    min-width: 0;
+    padding: 9px 10px;
+    border: 1px solid #1a3653;
+    border-radius: 11px;
+    background: #0d2743;
+  }
+  .client-payment-mobile-grid span,
+  .client-payment-mobile-grid strong { display: block; }
+  .client-payment-mobile-grid span {
+    color: #7892af;
+    font-size: .62rem;
+    font-weight: 800;
+  }
+  .client-payment-mobile-grid strong {
+    margin-top: 3px;
+    color: #dfe8f2;
+    font-size: .75rem;
+    overflow-wrap: anywhere;
+  }
+  .client-payment-mobile-footer {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) auto;
+    gap: 8px;
+    margin-top: 9px;
+    align-items: stretch;
+  }
+  .client-payment-mobile-footer strong {
+    display: block;
+    margin-top: 3px;
+    color: #c9d7e6;
+    font-size: .72rem;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+  .client-payment-mobile-footer .button {
+    min-width: 66px;
+    min-height: 44px;
+    align-self: stretch;
+    border-radius: 11px;
+  }
+  .client-payment-mobile-empty {
+    padding: 20px;
+    text-align: center;
+    color: #9db1c7;
+  }
+
+  /* Client appointment requests: compact consultation cards. */
+  body:has([data-client-appointment-page]) .client-appointment-requests-card .table-wrap { display: none !important; }
+  body:has([data-client-appointment-page]) .client-appointment-requests-mobile {
+    display: grid;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .client-appointment-mobile-card {
+    position: relative;
+    padding: 14px;
+    border: 1px solid #1d3c5c;
+    border-radius: 16px;
+    background: #091d34;
+    overflow: hidden;
+  }
+  .client-appointment-mobile-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: #2e7df6;
+  }
+  .client-appointment-mobile-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .client-appointment-mobile-case { min-width: 0; }
+  .client-appointment-mobile-case span,
+  .client-appointment-mobile-lawyer span,
+  .client-appointment-mobile-grid span,
+  .client-appointment-mobile-note span {
+    display: block;
+    color: #7892af;
+    font-size: .62rem;
+    font-weight: 800;
+    letter-spacing: .07em;
+  }
+  .client-appointment-mobile-case strong {
+    display: block;
+    margin-top: 3px;
+    color: #f0f5fa;
+    font-size: .9rem;
+    overflow-wrap: anywhere;
+  }
+  .client-appointment-mobile-case small {
+    display: block;
+    margin-top: 3px;
+    color: #91a8c3;
+    font-size: .7rem;
+    overflow-wrap: anywhere;
+  }
+  .client-appointment-mobile-lawyer {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 12px;
+    padding: 10px;
+    border: 1px solid #1a3653;
+    border-radius: 12px;
+    background: #0d2743;
+  }
+  .client-appointment-mobile-lawyer img,
+  .client-appointment-mobile-lawyer > span {
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: grid;
+    place-items: center;
+    background: #1c4e8a;
+    color: #e9f3ff;
+    font-weight: 900;
+  }
+  .client-appointment-mobile-lawyer strong {
+    display: block;
+    margin-top: 2px;
+    color: #e5edf6;
+    font-size: .8rem;
+    overflow-wrap: anywhere;
+  }
+  .client-appointment-mobile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 9px;
+  }
+  .client-appointment-mobile-grid > div {
+    padding: 9px 10px;
+    border: 1px solid #1a3653;
+    border-radius: 11px;
+    background: #0d2743;
+  }
+  .client-appointment-mobile-grid strong {
+    display: block;
+    margin-top: 3px;
+    color: #e1eaf4;
+    font-size: .75rem;
+    overflow-wrap: anywhere;
+  }
+  .client-appointment-mobile-note {
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto minmax(0,1fr) auto;
+    gap: 9px;
+    align-items: center;
+    margin-top: 9px;
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #1a3653;
+    border-radius: 11px;
+    background: #091d34;
+    color: inherit;
+  }
+  .client-appointment-mobile-note span:first-child { align-self: start; }
+  .client-appointment-mobile-note strong {
+    color: #cbd9e8;
+    font-size: .73rem;
+    overflow-wrap: anywhere;
+  }
+  .client-appointment-mobile-note > span:last-child { color: #6ea3ff; font-size: 1rem; }
+  .client-appointment-mobile-empty {
+    padding: 20px;
+    text-align: center;
+    color: #9db1c7;
+  }
+
+  /* Admin payment review: prioritize decision-making on a phone. */
+  body.app-workspace--admin .payment-admin-hero {
+    padding: 16px;
+    border-radius: 18px;
+  }
+  body.app-workspace--admin .payment-admin-hero .payment-progress {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 7px;
+    margin-top: 12px;
+  }
+  body.app-workspace--admin .payment-admin-hero__actions {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  body.app-workspace--admin .payment-admin-highlight {
+    padding: 13px;
+    border-radius: 14px;
+    background: #102b48;
+    border: 1px solid rgba(198,157,54,.28);
+  }
+  body.app-workspace--admin .payment-admin-highlight strong {
+    display: block;
+    margin: 3px 0 8px;
+    color: #f3d16a;
+    font-size: 1.4rem;
+  }
+  body.app-workspace--admin .payment-admin-hero__actions .inline-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  body.app-workspace--admin .payment-admin-hero__actions .button { min-height: 44px; }
+  body.app-workspace--admin .payment-admin-layout,
+  body.app-workspace--admin .payment-admin-review-grid {
+    display: block;
+  }
+  body.app-workspace--admin .payment-admin-metric-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  body.app-workspace--admin .payment-admin-metric-card {
+    min-width: 0;
+    padding: 11px;
+    border-radius: 12px;
+  }
+  body.app-workspace--admin .payment-admin-metric-card strong,
+  body.app-workspace--admin .payment-admin-metric-card small {
+    overflow-wrap: anywhere;
+  }
+  body.app-workspace--admin .payment-admin-details-list,
+  body.app-workspace--admin .payment-admin-proof-meta,
+  body.app-workspace--admin .payment-side-facts {
+    grid-template-columns: 1fr;
+  }
+  body.app-workspace--admin .payment-admin-panel,
+  body.app-workspace--admin .payment-admin-decision-card,
+  body.app-workspace--admin .payment-admin-side-card,
+  body.app-workspace--admin .payment-admin-checklist-card {
+    border-radius: 16px;
+  }
+  body.app-workspace--admin .payment-admin-proof-stage {
+    min-height: 180px;
+    max-height: 320px;
+    border-radius: 13px;
+    overflow: hidden;
+  }
+  body.app-workspace--admin .payment-admin-proof-preview {
+    max-height: 300px;
+    object-fit: contain;
+  }
+  body.app-workspace--admin .payment-admin-form {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 11px;
+  }
+  body.app-workspace--admin .payment-admin-form .full { grid-column: auto; }
+  body.app-workspace--admin .payment-admin-form select,
+  body.app-workspace--admin .payment-admin-form textarea,
+  body.app-workspace--admin .payment-admin-form .payment-submit-button {
+    width: 100%;
+  }
+  body.app-workspace--admin .payment-submit-button { min-height: 48px; }
+}
+
+@media (max-width: 430px) {
+  body:has([data-client-billing-page]) .billing-case-stats,
+  body.app-workspace--admin .payment-admin-metric-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .billing-activity-mobile-grid,
+  .client-payment-mobile-grid,
+  .client-appointment-mobile-grid {
+    grid-template-columns: 1fr;
+  }
+  body.app-workspace--admin .payment-admin-hero__actions .inline-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Light-theme equivalents for the new mobile cards. */
+@media (max-width: 720px) {
+  html[data-theme="light"] .billing-activity-mobile-card,
+  html[data-theme="light"] .client-payment-mobile-card,
+  html[data-theme="light"] .client-appointment-mobile-card {
+    background: #ffffff;
+    border-color: #d8e2ee;
+    box-shadow: 0 8px 24px rgba(15,23,42,.06);
+  }
+  html[data-theme="light"] .billing-activity-mobile-card::before,
+  html[data-theme="light"] .client-payment-mobile-card::before,
+  html[data-theme="light"] .client-appointment-mobile-card::before { background: #2563d8; }
+  html[data-theme="light"] .billing-activity-mobile-top strong,
+  html[data-theme="light"] .client-payment-mobile-title strong,
+  html[data-theme="light"] .client-appointment-mobile-case strong { color: #12243a; }
+  html[data-theme="light"] .billing-activity-mobile-top > div > span:last-child,
+  html[data-theme="light"] .client-payment-mobile-title span,
+  html[data-theme="light"] .client-appointment-mobile-case small { color: #667b93; }
+  html[data-theme="light"] .billing-activity-mobile-amount,
+  html[data-theme="light"] .client-payment-mobile-amount,
+  html[data-theme="light"] body.app-workspace--admin .payment-admin-highlight {
+    background: #fff9e8;
+    border-color: #ead8a0;
+  }
+  html[data-theme="light"] .billing-activity-mobile-amount strong,
+  html[data-theme="light"] .client-payment-mobile-amount strong,
+  html[data-theme="light"] body.app-workspace--admin .payment-admin-highlight strong { color: #9a6b00; }
+  html[data-theme="light"] .billing-activity-mobile-grid > div,
+  html[data-theme="light"] .client-payment-mobile-grid > div,
+  html[data-theme="light"] .client-payment-mobile-footer > div,
+  html[data-theme="light"] .client-appointment-mobile-lawyer,
+  html[data-theme="light"] .client-appointment-mobile-grid > div,
+  html[data-theme="light"] .client-appointment-mobile-note {
+    background: #f5f8fc;
+    border-color: #dfe7f0;
+  }
+  html[data-theme="light"] .billing-activity-mobile-grid strong,
+  html[data-theme="light"] .client-payment-mobile-grid strong,
+  html[data-theme="light"] .client-payment-mobile-footer strong,
+  html[data-theme="light"] .client-appointment-mobile-lawyer strong,
+  html[data-theme="light"] .client-appointment-mobile-grid strong,
+  html[data-theme="light"] .client-appointment-mobile-note strong { color: #2c4058; }
+}
+
+/* Mobile-only content containers stay hidden on desktop. */
+.client-payment-history-mobile,
+.billing-activity-mobile,
+.client-appointment-requests-mobile { display: none; }
+@media (max-width: 720px) {
+  body:has(.payment-history-card) .client-payment-history-mobile { display: grid; }
+  body:has([data-client-billing-page]) .billing-activity-mobile { display: grid; }
+  body:has([data-client-appointment-page]) .client-appointment-requests-mobile { display: grid; }
+}
+
+
+/* Mobile content redesign v7: admin payment details + lawyer appointments/payments */
+.payment-admin-mobile-details,
+.appointment-mobile-list,
+.lawyer-payment-mobile-list { display: none; }
+
+@media (max-width: 720px) {
+  /* Admin payment details */
+  body.app-workspace--admin .payment-admin-mobile-details { display: block; margin-bottom: 1rem; }
+  body.app-workspace--admin .payment-admin-details-list { display: none; }
+  body.app-workspace--admin .payment-admin-overview { padding: 1rem; }
+  body.app-workspace--admin .payment-admin-overview .payment-card-head h3 { font-size: 1.05rem; }
+  .payment-mobile-primary-detail {
+    padding: 1rem;
+    border: 1px solid rgba(94, 144, 212, .24);
+    border-radius: 16px;
+    background: linear-gradient(145deg, rgba(18, 43, 75, .96), rgba(8, 25, 48, .98));
+    margin-bottom: .7rem;
+  }
+  .payment-mobile-primary-detail span,
+  .payment-mobile-detail-grid span,
+  .payment-mobile-contact-grid span {
+    display: block; color: #8ea4c2; font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: .25rem;
+  }
+  .payment-mobile-primary-detail strong { display: block; font-size: 1.45rem; color: #f4f7fb; line-height: 1.15; }
+  .payment-mobile-primary-detail small { display:block; margin-top:.25rem; color:#9eb0c8; font-size:.8rem; }
+  .payment-mobile-detail-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.6rem; }
+  .payment-mobile-detail-grid > div,
+  .payment-mobile-contact-grid > div {
+    min-width:0; padding:.8rem; border:1px solid rgba(94,144,212,.18); border-radius:13px; background:rgba(13,34,62,.72);
+  }
+  .payment-mobile-detail-grid strong,
+  .payment-mobile-contact-grid strong { display:block; color:#e9eff8; font-size:.86rem; line-height:1.35; overflow-wrap:anywhere; }
+  .payment-mobile-detail-grid small { display:block; color:#849ab7; font-size:.72rem; margin-top:.2rem; overflow-wrap:anywhere; }
+  .payment-mobile-contact-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.6rem; margin-top:.6rem; }
+  body.app-workspace--admin .payment-admin-review-grid { display:block; }
+  body.app-workspace--admin .payment-admin-panel { margin-bottom:.8rem; }
+  body.app-workspace--admin .payment-admin-proof-stage { min-height:0; }
+  body.app-workspace--admin .payment-admin-proof-preview { max-height:56vh; object-fit:contain; }
+  body.app-workspace--admin .payment-admin-decision-card { padding:1rem; }
+  body.app-workspace--admin .payment-admin-form { display:grid; gap:.7rem; }
+  body.app-workspace--admin .payment-admin-form select,
+  body.app-workspace--admin .payment-admin-form textarea,
+  body.app-workspace--admin .payment-admin-form .payment-submit-button { width:100%; min-height:48px; }
+
+  /* Lawyer appointment requests */
+  body.app-workspace:has([data-appointment-board]) .appointment-table-wrap { display:none; }
+  body.app-workspace:has([data-appointment-board]) .appointment-mobile-list { display:grid; gap:.75rem; }
+  .appointment-mobile-card {
+    position:relative; overflow:hidden; border:1px solid rgba(91,139,202,.24); border-radius:17px;
+    background:linear-gradient(145deg, rgba(13,35,63,.98), rgba(7,24,47,.98)); padding:1rem;
+  }
+  .appointment-mobile-card::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:#2f79df; }
+  .appointment-mobile-card__top { display:flex; justify-content:space-between; gap:.7rem; align-items:flex-start; padding-left:.25rem; }
+  .appointment-mobile-card__identity { min-width:0; }
+  .appointment-mobile-card__eyebrow,
+  .appointment-mobile-card__schedule span,
+  .appointment-mobile-card__notes > span { display:block; color:#8198b6; font-size:.68rem; font-weight:800; letter-spacing:.08em; }
+  .appointment-mobile-card__identity strong { display:block; color:#f3f6fb; font-size:1rem; line-height:1.3; margin-top:.18rem; overflow-wrap:anywhere; }
+  .appointment-mobile-card__identity small { display:block; color:#93a7c1; font-size:.76rem; margin-top:.25rem; overflow-wrap:anywhere; }
+  .appointment-mobile-card__schedule { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.45rem; margin-top:.8rem; }
+  .appointment-mobile-card__schedule > div { padding:.65rem; border-radius:11px; background:rgba(21,46,79,.72); border:1px solid rgba(94,144,212,.14); min-width:0; }
+  .appointment-mobile-card__schedule strong { display:block; color:#e8eef7; font-size:.78rem; margin-top:.18rem; overflow-wrap:anywhere; }
+  .appointment-mobile-card__notes { margin-top:.65rem; padding:.7rem; border-radius:11px; background:rgba(9,28,51,.7); }
+  .appointment-mobile-card__notes p { margin:.25rem 0 0; color:#a7b7cc; font-size:.78rem; line-height:1.45; overflow-wrap:anywhere; }
+  .appointment-mobile-card__actions { margin-top:.75rem; padding-top:.75rem; border-top:1px solid rgba(94,144,212,.14); }
+  .appointment-mobile-form-grid { display:grid; grid-template-columns:1fr 1fr; gap:.55rem; }
+  .appointment-mobile-form-grid label { color:#91a5bf; font-size:.72rem; font-weight:800; }
+  .appointment-mobile-form-grid select,
+  .appointment-mobile-form-grid input { width:100%; min-height:45px; margin-top:.28rem; }
+  .appointment-mobile-update-form > button { width:100%; min-height:46px; margin-top:.55rem; }
+  .appointment-mobile-card__actions > form:last-child { margin-top:.45rem; }
+  .appointment-mobile-delete { width:100%; min-height:43px; }
+  .appointment-mobile-empty { padding:1.1rem; border:1px dashed rgba(94,144,212,.28); border-radius:14px; text-align:center; color:#9eb0c8; }
+  .appointment-mobile-empty strong { color:#e7edf6; }
+  .appointment-mobile-empty p { margin:.3rem 0 0; font-size:.8rem; }
+
+  /* Lawyer client payment proofs */
+  body.app-workspace:has(.lawyer-payments-review-card) .table-wrap { display:none; }
+  body.app-workspace:has(.lawyer-payments-review-card) .lawyer-payment-mobile-list { display:grid; gap:.75rem; }
+  .lawyer-payment-mobile-card {
+    border:1px solid rgba(91,139,202,.24); border-radius:17px; padding:1rem;
+    background:linear-gradient(145deg, rgba(13,35,63,.98), rgba(7,24,47,.98));
+  }
+  .lawyer-payment-mobile-top { display:flex; justify-content:space-between; gap:.7rem; align-items:flex-start; }
+  .lawyer-payment-mobile-top > div { min-width:0; }
+  .lawyer-payment-mobile-label,
+  .lawyer-payment-mobile-amount > span,
+  .lawyer-payment-mobile-grid span { display:block; color:#8198b6; font-size:.68rem; font-weight:800; letter-spacing:.08em; }
+  .lawyer-payment-mobile-top strong { display:block; color:#f3f6fb; font-size:1rem; margin-top:.15rem; overflow-wrap:anywhere; }
+  .lawyer-payment-mobile-top small { display:block; color:#8fa4bf; font-size:.75rem; margin-top:.18rem; overflow-wrap:anywhere; }
+  .lawyer-payment-mobile-amount { margin-top:.8rem; padding:.85rem; border-radius:13px; border:1px solid rgba(211,170,54,.22); background:linear-gradient(145deg, rgba(72,55,15,.38), rgba(21,39,62,.65)); }
+  .lawyer-payment-mobile-amount strong { display:block; color:#f4dc82; font-size:1.3rem; margin-top:.18rem; }
+  .lawyer-payment-mobile-amount small { display:block; color:#b6c1d0; font-size:.75rem; margin-top:.18rem; overflow-wrap:anywhere; }
+  .lawyer-payment-mobile-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.55rem; margin-top:.65rem; }
+  .lawyer-payment-mobile-grid > div { min-width:0; padding:.7rem; border-radius:12px; background:rgba(20,44,75,.72); border:1px solid rgba(94,144,212,.14); }
+  .lawyer-payment-mobile-grid strong { display:block; color:#e7edf6; font-size:.78rem; line-height:1.35; margin-top:.18rem; overflow-wrap:anywhere; }
+  .lawyer-payment-mobile-grid small { display:block; color:#8196b2; font-size:.69rem; margin-top:.18rem; overflow-wrap:anywhere; }
+  .lawyer-payment-mobile-proof { display:flex; width:100%; min-height:45px; align-items:center; justify-content:center; margin-top:.7rem; }
+  .lawyer-payment-mobile-decision-form { margin-top:.65rem; padding-top:.7rem; border-top:1px solid rgba(94,144,212,.14); }
+  .lawyer-payment-mobile-decision-form label { color:#91a5bf; font-size:.72rem; font-weight:800; }
+  .lawyer-payment-mobile-decision-form input { width:100%; min-height:45px; margin-top:.28rem; }
+  .lawyer-payment-mobile-actions { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; margin-top:.55rem; }
+  .lawyer-payment-mobile-actions .button { min-height:45px; }
+  .lawyer-payment-mobile-empty { padding:1.1rem; border:1px dashed rgba(94,144,212,.28); border-radius:14px; color:#9eb0c8; text-align:center; }
+
+  html[data-theme="light"] .payment-mobile-primary-detail,
+  html[data-theme="light"] .appointment-mobile-card,
+  html[data-theme="light"] .lawyer-payment-mobile-card { background:#f8fbff; border-color:#d6e1ef; }
+  html[data-theme="light"] .payment-mobile-detail-grid > div,
+  html[data-theme="light"] .payment-mobile-contact-grid > div,
+  html[data-theme="light"] .appointment-mobile-card__schedule > div,
+  html[data-theme="light"] .lawyer-payment-mobile-grid > div { background:#eef4fa; border-color:#d9e4ef; }
+  html[data-theme="light"] .payment-mobile-primary-detail strong,
+  html[data-theme="light"] .appointment-mobile-card__identity strong,
+  html[data-theme="light"] .lawyer-payment-mobile-top strong,
+  html[data-theme="light"] .payment-mobile-detail-grid strong,
+  html[data-theme="light"] .payment-mobile-contact-grid strong,
+  html[data-theme="light"] .appointment-mobile-card__schedule strong,
+  html[data-theme="light"] .lawyer-payment-mobile-grid strong { color:#1b2d43; }
+  html[data-theme="light"] .payment-mobile-primary-detail small,
+  html[data-theme="light"] .payment-mobile-detail-grid small,
+  html[data-theme="light"] .payment-mobile-contact-grid span { color:#657a93; }
+  html[data-theme="light"] .appointment-mobile-card__identity small,
+  html[data-theme="light"] .appointment-mobile-card__notes p,
+  html[data-theme="light"] .lawyer-payment-mobile-top small,
+  html[data-theme="light"] .lawyer-payment-mobile-grid small { color:#667b93; }
+}
+
+@media (max-width: 420px) {
+  .payment-mobile-detail-grid,
+  .payment-mobile-contact-grid { grid-template-columns:1fr; }
+  .appointment-mobile-card__schedule { grid-template-columns:1fr 1fr; }
+  .appointment-mobile-card__schedule > div:last-child { grid-column:1 / -1; }
+  .appointment-mobile-form-grid { grid-template-columns:1fr; }
+  .lawyer-payment-mobile-grid { grid-template-columns:1fr; }
+}
+
+/* ================================================================
+   FINAL MOBILE SIDEBAR + AUTH POLISH
+   - Keep Logout visible at the bottom of the mobile sidebar.
+   - Let only the navigation list scroll when it is too tall.
+   - Show the complete auth artwork on phones instead of cropping it.
+   ================================================================ */
+@media (max-width: 900px) {
+  body.app-workspace .sidebar {
+    height: 100dvh;
+    max-height: 100dvh;
+    box-sizing: border-box;
+    padding-bottom: env(safe-area-inset-bottom);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  body.app-workspace .sidebar-nav {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    padding-bottom: .5rem;
+  }
+
+  body.app-workspace .sidebar-footer {
+    flex: 0 0 auto;
+    margin-top: auto;
+    padding: .55rem .55rem calc(.75rem + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(6,18,37,0) 0%, #061225 18%);
+    position: relative;
+    z-index: 2;
+  }
+
+  body.app-workspace .sidebar-footer .nav-link {
+    min-height: 44px;
+  }
+
+  /* Auth: preserve the entire square artwork on small screens. */
+  body.auth-page {
+    min-height: 100svh;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  body.auth-page .auth-shell {
+    width: 100%;
+    min-height: 100svh;
+    box-sizing: border-box;
+    padding: .65rem;
+  }
+
+  body.auth-page .auth-card,
+  body.auth-page .auth-card-single {
+    width: 100%;
+    max-width: 520px;
+    grid-template-columns: 1fr;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 18px;
+  }
+
+  body.auth-page .auth-copy {
+    min-height: 0;
+    height: 250px;
+    padding: 3.8rem 1.1rem 1.1rem;
+    box-sizing: border-box;
+    align-content: end;
+    background-color: #0a1628;
+  }
+
+  body.auth-page .auth-copy-dark {
+    background:
+      linear-gradient(180deg, rgba(5,14,30,.06) 0%, rgba(7,18,38,.20) 45%, rgba(8,19,39,.78) 100%),
+      url("../assets/lexshield-auth-visual.png") center center / contain no-repeat,
+      linear-gradient(160deg, #0a1628 0%, #13243f 100%);
+  }
+
+  body.auth-page .auth-copy h1 {
+    max-width: 100%;
+    font-size: 1.45rem;
+    line-height: 1.08;
+  }
+
+  body.auth-page .auth-copy p {
+    max-width: 32ch;
+    font-size: .82rem;
+    line-height: 1.4;
+  }
+
+  body.auth-page .auth-panel,
+  body.auth-page .auth-panel-form {
+    min-width: 0;
+    padding: 1rem;
+    box-sizing: border-box;
+  }
+
+  body.auth-page .auth-panel-form h2 {
+    font-size: 1.4rem;
+    line-height: 1.15;
+  }
+
+  body.auth-page .auth-panel-form .button,
+  body.auth-page .auth-submit {
+    width: 100%;
+  }
+
+  body.auth-page .auth-switch {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  body.auth-page .auth-switch__item {
+    min-width: 0;
+    flex: 1 1 0;
+  }
+}
+
+@media (max-width: 380px) {
+  body.app-workspace .sidebar {
+    width: min(86vw, 292px);
+  }
+
+  body.app-workspace .brand-block {
+    padding: .8rem .8rem .55rem;
+  }
+
+  body.app-workspace .sidebar-nav {
+    padding-inline: .4rem;
+  }
+
+  body.app-workspace .sidebar-footer {
+    padding-inline: .4rem;
+  }
+
+  body.auth-page {
+    padding: 0;
+  }
+
+  body.auth-page .auth-shell {
+    padding: .45rem;
+  }
+
+  body.auth-page .auth-card,
+  body.auth-page .auth-card-single {
+    border-radius: 15px;
+  }
+
+  body.auth-page .auth-copy {
+    height: 225px;
+    padding: 3.4rem .9rem .9rem;
+  }
+
+  body.auth-page .auth-copy h1 {
+    font-size: 1.3rem;
+  }
+
+  body.auth-page .auth-panel,
+  body.auth-page .auth-panel-form {
+    padding: .85rem;
+  }
+}
+
+/* ================================================================
+   FINAL MOBILE SIDEBAR + AUTH ARTWORK FIX
+   - Logout is pinned to the bottom of the mobile sidebar.
+   - Only the sidebar navigation scrolls behind it.
+   - Auth artwork is cropped from the top so LEGAL COMPLIANCE remains visible.
+   ================================================================ */
+@media (max-width: 900px) {
+  body.app-workspace .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    right: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
+  }
+
+  body.app-workspace .sidebar-nav {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: 4.8rem !important;
+  }
+
+  body.app-workspace .sidebar-footer {
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+    padding: .55rem .55rem calc(.75rem + env(safe-area-inset-bottom)) !important;
+    background: linear-gradient(180deg, rgba(6,18,37,0) 0%, #061225 24%, #061225 100%) !important;
+    z-index: 10 !important;
+  }
+
+  body.app-workspace .sidebar-footer .nav-link {
+    min-height: 46px !important;
+  }
+
+  /* Mobile login/register artwork: keep the lower part of the square
+     visible so the "LEGAL COMPLIANCE" branding is not cropped away. */
+  body.auth-page .auth-copy-dark {
+    background:
+      linear-gradient(180deg, rgba(5,14,30,.08) 0%, rgba(7,18,38,.18) 48%, rgba(8,19,39,.82) 100%),
+      url("../assets/lexshield-auth-visual.png") center bottom / 100% auto no-repeat,
+      linear-gradient(160deg, #0a1628 0%, #13243f 100%) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  body.auth-page .auth-copy {
+    height: 220px !important;
+    min-height: 220px !important;
+    padding: 3.25rem 1rem .85rem !important;
+  }
+
+  body.auth-page .auth-copy-dark {
+    background-size: 100% auto !important;
+    background-position: center bottom !important;
+  }
+}
+
+@media (max-width: 360px) {
+  body.auth-page .auth-copy {
+    height: 195px !important;
+    min-height: 195px !important;
+    padding: 3rem .85rem .75rem !important;
+  }
+}
+
+/* ================================================================
+   FINAL PHONE FIX — SIDEBAR LOGOUT + LOGIN ARTWORK
+   ================================================================ */
+@media (max-width: 900px) {
+  /* Keep the mobile sidebar locked to the viewport. */
+  html body.app-workspace .sidebar,
+  html body.app-workspace .sidebar.open {
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: auto !important;
+    width: min(82vw, 300px) !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    min-height: 100dvh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    transform: translateX(-105%);
+  }
+
+  html body.app-workspace .sidebar.open {
+    transform: translateX(0) !important;
+  }
+
+  /* The menu is the only part that scrolls. */
+  html body.app-workspace .sidebar-nav {
+    display: grid !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+    padding-bottom: 5.75rem !important;
+  }
+
+  /* Logout is independently anchored to the bottom of the phone sidebar. */
+  html body.app-workspace .sidebar-footer {
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 58px !important;
+    margin: 0 !important;
+    padding: .45rem .55rem calc(.55rem + env(safe-area-inset-bottom)) !important;
+    box-sizing: border-box !important;
+    background: linear-gradient(180deg, rgba(6,18,37,0) 0%, #061225 30%, #061225 100%) !important;
+    z-index: 999 !important;
+  }
+
+  html body.app-workspace .sidebar-footer .nav-link {
+    width: 100% !important;
+    min-height: 46px !important;
+    margin: 0 !important;
+  }
+
+  /* LOGIN ONLY: crop the artwork from the top and keep the
+     LEXSHIELD + LEGAL COMPLIANCE portion visible. */
+  html body.auth-page:has(.auth-forgot-link) .auth-copy-dark {
+    height: 210px !important;
+    min-height: 210px !important;
+    padding: 0 !important;
+    display: block !important;
+    background:
+      linear-gradient(180deg, rgba(5,14,30,.02) 0%, rgba(7,18,38,.10) 55%, rgba(8,19,39,.30) 100%),
+      url("../assets/lexshield-auth-visual.png") center bottom / 100% auto no-repeat,
+      linear-gradient(160deg, #0a1628 0%, #13243f 100%) !important;
+  }
+
+  html body.auth-page:has(.auth-forgot-link) .auth-copy-dark .auth-home-link {
+    top: .75rem !important;
+    left: .75rem !important;
+    z-index: 3 !important;
+  }
+
+  /* Keep the login artwork unobstructed so the legal-compliance branding
+     is actually readable on a phone. */
+  html body.auth-page:has(.auth-forgot-link) .auth-copy-dark > h1,
+  html body.auth-page:has(.auth-forgot-link) .auth-copy-dark > p,
+  html body.auth-page:has(.auth-forgot-link) .auth-copy-dark > .feature-list {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: -1px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  html body.auth-page:has(.auth-forgot-link) .auth-copy-dark {
+    height: 205px !important;
+    min-height: 205px !important;
+    background-size: 100% auto !important;
+    background-position: center bottom !important;
+  }
+}
+
+@media (max-width: 360px) {
+  html body.auth-page:has(.auth-forgot-link) .auth-copy-dark {
+    height: 185px !important;
+    min-height: 185px !important;
+  }
+}
+
+/* ================================================================
+   FINAL MOBILE AUTH GAP FIX
+   The phone layout uses one grid column.  Remove the desktop card's
+   min-height so CSS Grid does not stretch the two rows and create the
+   large empty space between the artwork and the login form.
+   ================================================================ */
+@media (max-width: 720px) {
+  html body.auth-page .auth-card,
+  html body.auth-page .auth-card-split,
+  html body.auth-page .auth-card-single {
+    min-height: 0 !important;
+    height: auto !important;
+    align-content: start !important;
+    grid-template-rows: auto auto !important;
+    row-gap: 0 !important;
+  }
+
+  html body.auth-page .auth-copy,
+  html body.auth-page .auth-panel,
+  html body.auth-page .auth-panel-form {
+    align-self: start !important;
+  }
+}
+
+@media (max-width: 420px) {
+  html body.auth-page .auth-card,
+  html body.auth-page .auth-card-split,
+  html body.auth-page .auth-card-single {
+    min-height: 0 !important;
+    height: auto !important;
+    grid-template-rows: auto auto !important;
+    row-gap: 0 !important;
+  }
+}
+
+/* ================================================================
+   MOBILE LOGIN — SHOW THE COMPLETE LEXSHIELD ARTWORK
+   Keep the artwork panel square so the original square image can be
+   displayed at its natural aspect ratio without cropping the statue,
+   shield, logo, or LEGAL COMPLIANCE text.
+   ================================================================ */
+@media (max-width: 720px) {
+  html body.auth-page:has(.auth-forgot-link) .auth-copy-dark {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    aspect-ratio: 1 / 1 !important;
+    box-sizing: border-box !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-radius: 18px 18px 0 0 !important;
+    background-position: center center !important;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+  }
+
+  html body.auth-page:has(.auth-forgot-link) .auth-copy-dark .auth-home-link {
+    top: .75rem !important;
+    left: .75rem !important;
+  }
+}
+
+@media (max-width: 420px) {
+  html body.auth-page:has(.auth-forgot-link) .auth-copy-dark {
+    aspect-ratio: 1 / 1 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    border-radius: 15px 15px 0 0 !important;
+  }
+}
+
+/* ================================================================
+   MOBILE REGISTER — SHOW THE COMPLETE LEXSHIELD ARTWORK
+   Match the successful login artwork treatment on the register page:
+   preserve the original square artwork so the statue, shield, logo,
+   and LEGAL COMPLIANCE text are all visible without cropping.
+   ================================================================ */
+@media (max-width: 720px) {
+  html body.auth-page:not(:has(.auth-forgot-link)) .auth-copy-dark {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    aspect-ratio: 1 / 1 !important;
+    box-sizing: border-box !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-radius: 18px 18px 0 0 !important;
+    background-position: center center !important;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+  }
+
+  html body.auth-page:not(:has(.auth-forgot-link)) .auth-copy-dark .auth-home-link {
+    top: .75rem !important;
+    left: .75rem !important;
+    z-index: 3 !important;
+  }
+}
+
+@media (max-width: 420px) {
+  html body.auth-page:not(:has(.auth-forgot-link)) .auth-copy-dark {
+    aspect-ratio: 1 / 1 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    border-radius: 15px 15px 0 0 !important;
+  }
+}
+
+/* ================================================================
+   MOBILE REGISTER — HIDE OVERLAY COPY ON THE ARTWORK
+   Keep the full image visible just like Login. The artwork itself
+   remains untouched, including the LEXSHIELD and LEGAL COMPLIANCE text.
+   ================================================================ */
+@media (max-width: 720px) {
+  html body.auth-page:not(:has(.auth-forgot-link)) .auth-copy-dark > h1,
+  html body.auth-page:not(:has(.auth-forgot-link)) .auth-copy-dark > p,
+  html body.auth-page:not(:has(.auth-forgot-link)) .auth-copy-dark > .feature-list {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: -1px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+}
+
+/* ================================================================
+   HOME MOBILE — CENTER PLATFORM SNAPSHOT CONTENT
+   Keeps the LexShield / Legal Compliance artwork and all three
+   progress metrics visually centered on phone screens.
+   ================================================================ */
+@media (max-width: 760px) {
+  html body .hero .glass-card,
+  html body .hero .glass-card[aria-label="Platform snapshot"] {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    text-align: center !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  html body .hero .overview-visual {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin-inline: auto !important;
+    text-align: center !important;
+  }
+
+  html body .hero .overview-visual img {
+    display: block !important;
+    width: min(100%, 430px) !important;
+    max-width: 100% !important;
+    height: auto !important;
+    margin-inline: auto !important;
+    object-fit: contain !important;
+  }
+
+  html body .hero .progress-panel {
+    width: min(100%, 430px) !important;
+    margin: 1rem auto 0 !important;
+    box-sizing: border-box !important;
+    text-align: center !important;
+  }
+
+  html body .hero .progress-row {
+    width: 100% !important;
+    margin-inline: auto !important;
+    text-align: center !important;
+  }
+
+  html body .hero .progress-meta {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: .5rem !important;
+    text-align: center !important;
+  }
+
+  html body .hero .progress-meta span {
+    text-align: center !important;
+  }
+
+  html body .hero .progress-bar {
+    width: 100% !important;
+    margin-inline: auto !important;
+  }
+}
+
+@media (max-width: 420px) {
+  html body .hero .glass-card,
+  html body .hero .glass-card[aria-label="Platform snapshot"] {
+    padding-inline: .75rem !important;
+  }
+
+  html body .hero .overview-visual img {
+    width: 100% !important;
+  }
+
+  html body .hero .progress-panel {
+    width: 100% !important;
+  }
+
+  html body .hero .progress-meta {
+    flex-direction: column !important;
+    gap: .12rem !important;
+  }
+}
+
+
+/* MOBILE CLIENT LAWYERS — FINAL 2 COLUMN OVERRIDE */
+@media (max-width: 680px) {
+  body.app-workspace .client-lawyers-react-card .lawyer-directory-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.65rem !important;
+  }
+
+  body.app-workspace .client-lawyers-react-card .lawyer-card {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    justify-self: stretch !important;
+  }
+}
+
+
+/* Final mobile fix — Case Overview compact hero */
+@media (max-width: 680px) {
+  body:has([data-case-files-app]) .case-compact-hero {
+    width: 100%;
+    min-width: 0;
+    overflow: visible;
+    gap: 0.65rem;
+  }
+
+  body:has([data-case-files-app]) .case-compact-hero .case-hero-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    min-width: 0;
+    gap: 0.55rem;
+  }
+
+  body:has([data-case-files-app]) .case-compact-hero .case-hero-grid h2 {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  body:has([data-case-files-app]) .case-compact-hero .case-hero-actions {
+    width: 100%;
+    align-items: stretch;
+    min-width: 0;
+  }
+
+  body:has([data-case-files-app]) .case-compact-hero .case-search-bar {
+    grid-template-columns: 1fr;
+    width: 100%;
+    min-width: 0;
+    gap: 0.55rem;
+  }
+
+  body:has([data-case-files-app]) .case-compact-hero .case-search-field,
+  body:has([data-case-files-app]) .case-compact-hero .case-search-actions {
+    min-width: 0;
+    width: 100%;
+  }
+
+  body:has([data-case-files-app]) .case-compact-hero .case-search-actions {
+    justify-content: stretch;
+    flex-direction: column;
+  }
+
+  body:has([data-case-files-app]) .case-compact-hero .case-search-actions .button {
+    width: 100%;
+  }
+
+  body:has([data-case-files-app]) .case-compact-hero input,
+  body:has([data-case-files-app]) .case-compact-hero select {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+
+/* Final mobile fix — Case Panel and Case Vault compact panels */
+@media (max-width: 680px) {
+  body:has([data-case-files-app]) .case-panel,
+  body:has([data-case-files-app]) .case-compact-panel,
+  body:has([data-case-files-app]) .case-vault-panel {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  body:has([data-case-files-app]) .case-compact-panel .case-panel-header,
+  body:has([data-case-files-app]) .case-vault-panel .case-vault-panel-header {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    gap: 0.5rem;
+  }
+
+  body:has([data-case-files-app]) .case-compact-panel .case-panel-header,
+  body:has([data-case-files-app]) .case-vault-panel .case-vault-panel-header {
+    flex-wrap: wrap;
+  }
+
+  body:has([data-case-files-app]) .case-compact-panel .case-panel-header h2,
+  body:has([data-case-files-app]) .case-vault-panel .case-vault-panel-header h2 {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  body:has([data-case-files-app]) .case-compact-panel .case-filter-bar,
+  body:has([data-case-files-app]) .case-vault-panel .case-vault-topbar,
+  body:has([data-case-files-app]) .case-vault-panel .case-vault-list-head {
+    min-width: 0;
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+
+  body:has([data-case-files-app]) .case-compact-panel .case-table-wrap,
+  body:has([data-case-files-app]) .case-vault-panel .case-vault-list,
+  body:has([data-case-files-app]) .case-vault-panel .case-vault-folder-section,
+  body:has([data-case-files-app]) .case-vault-panel .case-vault-folder-content {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    box-sizing: border-box;
+  }
+
+  body:has([data-case-files-app]) .case-compact-panel .case-list-table {
+    min-width: 560px;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc,
+  body:has([data-case-files-app]) .case-vault-card,
+  body:has([data-case-files-app]) .case-vault-upload-drop {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-main,
+  body:has([data-case-files-app]) .case-vault-identity-copy {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-main strong,
+  body:has([data-case-files-app]) .case-vault-client-name,
+  body:has([data-case-files-app]) .case-vault-panel-empty {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}
+
+/* Mobile Case Vault stats — keep Folders, Files and Pending horizontal */
+@media (max-width: 680px) {
+  body:has([data-case-files-app]) .case-vault-summary-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    width: 100% !important;
+    min-width: 0;
+    gap: 0.55rem !important;
+    margin-left: 0 !important;
+    justify-content: stretch !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-stat {
+    width: 100%;
+    min-width: 0;
+    min-height: 58px;
+    padding: 0.55rem 0.35rem;
+    box-sizing: border-box;
+    justify-items: center;
+    text-align: center;
+  }
+
+  body:has([data-case-files-app]) .case-vault-stat strong {
+    font-size: 1.15rem;
+  }
+
+  body:has([data-case-files-app]) .case-vault-stat span {
+    font-size: 0.55rem;
+  }
+}
+
+/* Final Case Vault document menu visibility fix — web/mobile */
+body:has([data-case-files-app]) .case-vault-panel,
+body:has([data-case-files-app]) .case-vault-documents,
+body:has([data-case-files-app]) .case-vault-folder-section,
+body:has([data-case-files-app]) .case-vault-folder-content,
+body:has([data-case-files-app]) .case-vault-doc-list {
+  overflow: visible !important;
+}
+
+body:has([data-case-files-app]) .case-vault-doc-list {
+  max-height: none !important;
+}
+
+body:has([data-case-files-app]) .case-vault-doc:has(.case-vault-doc-menu[open]),
+body:has([data-case-files-app]) .case-vault-doc-menu[open] {
+  position: relative;
+  z-index: 1000 !important;
+}
+
+body:has([data-case-files-app]) .case-vault-doc-menu-panel {
+  position: absolute;
+  top: auto !important;
+  right: 0;
+  bottom: calc(100% + 0.35rem) !important;
+  left: auto;
+  z-index: 1001 !important;
+  width: 218px;
+  max-width: min(218px, calc(100vw - 1rem));
+  box-sizing: border-box;
+  overflow: visible !important;
+}
+
+body:has([data-case-files-app]) .case-vault-doc-menu-panel a,
+body:has([data-case-files-app]) .case-vault-doc-menu-panel button {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 680px) {
+  body:has([data-case-files-app]) .case-vault-doc-menu-panel {
+    width: min(218px, calc(100vw - 1rem));
+    max-width: calc(100vw - 1rem);
+    right: 0;
+    bottom: calc(100% + 0.3rem) !important;
+    top: auto !important;
+    padding: 0.4rem;
+    gap: 0.2rem;
+    border-radius: 9px;
+    z-index: 1001 !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-menu-panel a,
+  body:has([data-case-files-app]) .case-vault-doc-menu-panel button {
+    min-height: 40px;
+    padding: 0.55rem 0.65rem;
+    font-size: 0.74rem;
+    line-height: 1.25;
+  }
+
+  body:has([data-case-files-app]) .case-vault-menu-rename,
+  body:has([data-case-files-app]) .case-vault-reject-field {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    gap: 0.4rem;
+    padding: 0.45rem;
+  }
+
+  body:has([data-case-files-app]) .case-vault-menu-rename input,
+  body:has([data-case-files-app]) .case-vault-reject-field textarea {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    font-size: 0.72rem;
+  }
+}

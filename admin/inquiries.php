@@ -266,6 +266,44 @@ lex_page_header('Quick Inquiries', 'inquiries');
       </tbody>
     </table>
   </div>
+
+  <div class="admin-mobile-record-list admin-inquiries-mobile-list" aria-label="Inquiry list on mobile">
+    <?php foreach ($inquiries as $inquiry): ?>
+      <?php
+        $status = (string) ($inquiry['status'] ?? 'new');
+        $email = (string) ($inquiry['email'] ?? '');
+        $name = (string) ($inquiry['full_name'] ?? '');
+        $createdAt = strtotime((string) ($inquiry['created_at'] ?? ''));
+      ?>
+      <article class="admin-mobile-record admin-inquiry-mobile-card">
+        <div class="admin-mobile-record-top">
+          <div class="admin-mobile-person">
+            <span class="admin-inquiries-avatar admin-inquiries-avatar--<?= lex_e(lex_inquiry_tone($name)) ?>" aria-hidden="true"><?= lex_e(lex_inquiry_initials($name)) ?></span>
+            <div class="admin-mobile-person-copy"><strong class="admin-mobile-name-text"><?= lex_e($name !== '' ? $name : 'Unknown sender') ?></strong><a href="mailto:<?= lex_e($email) ?>"><?= lex_e($email) ?></a></div>
+          </div>
+          <span class="pill admin-inquiries-status-pill <?= lex_e(lex_inquiry_status_class($status)) ?>"><?= lex_e(lex_inquiry_status_label($status)) ?></span>
+        </div>
+        <div class="admin-mobile-inquiry-topic"><span>Topic</span><strong><?= lex_e((string) $inquiry['topic']) ?></strong></div>
+        <button class="admin-mobile-message-preview" type="button" data-inquiry-message-open
+          data-inquiry-name="<?= lex_e($name) ?>" data-inquiry-email="<?= lex_e($email) ?>" data-inquiry-phone="<?= lex_e((string) ($inquiry['phone'] ?: 'No phone')) ?>"
+          data-inquiry-topic="<?= lex_e((string) $inquiry['topic']) ?>" data-inquiry-message="<?= lex_e((string) $inquiry['message']) ?>"
+          data-inquiry-date="<?= lex_e($createdAt ? date('M j, Y g:i A', $createdAt) : (string) $inquiry['created_at']) ?>">
+          <span>Message</span><strong><?= lex_e((string) $inquiry['message']) ?></strong><em>Tap to read full message</em>
+        </button>
+        <div class="admin-mobile-record-meta"><?= lex_e($createdAt ? date('M j, Y · g:i A', $createdAt) : (string) $inquiry['created_at']) ?></div>
+        <div class="admin-mobile-record-actions">
+          <form method="post" class="admin-mobile-select-form">
+            <?= lex_csrf_field() ?><input type="hidden" name="action" value="update_status"><input type="hidden" name="inquiry_id" value="<?= (int) $inquiry['id'] ?>">
+            <select name="status" onchange="this.form.submit()"><option value="new"<?= $status === 'new' ? ' selected' : '' ?>>New</option><option value="read"<?= $status === 'read' ? ' selected' : '' ?>>Read</option><option value="replied"<?= $status === 'replied' ? ' selected' : '' ?>>Replied</option><option value="closed"<?= $status === 'closed' ? ' selected' : '' ?>>Closed</option></select>
+          </form>
+          <form method="post" onsubmit="return confirm('Delete this inquiry?');">
+            <?= lex_csrf_field() ?><input type="hidden" name="action" value="delete_inquiry"><input type="hidden" name="inquiry_id" value="<?= (int) $inquiry['id'] ?>"><button class="button button-danger" type="submit">Delete</button>
+          </form>
+        </div>
+      </article>
+    <?php endforeach; ?>
+    <?php if (!$inquiries): ?><div class="admin-mobile-empty">No inquiries found.</div><?php endif; ?>
+  </div>
   <?= lex_admin_pagination('admin/inquiries.php', ['q' => $search, 'status' => $statusFilter], $totalInquiries, $currentPage, $perPage) ?>
 </section>
 

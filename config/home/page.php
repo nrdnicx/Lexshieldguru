@@ -2014,6 +2014,406 @@ $topLawyers = array_slice($lawyers, 0, 4);
         grid-template-columns: 1fr;
       }
     }
+
+    /* ================================================================
+       LEXSHIELD HOME — MOBILE UX POLISH
+       Phone-first adjustments without changing desktop behavior.
+       ================================================================ */
+    @media (max-width: 780px) {
+      html body {
+        overflow-x: hidden;
+      }
+
+      .site-nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .site-nav__inner {
+        min-height: 64px;
+        padding: 8px 0;
+      }
+
+      .brand__mark {
+        width: 40px;
+        height: 40px;
+      }
+
+      .brand__text {
+        font-size: 0.92rem;
+      }
+
+      .page-shell {
+        overflow: hidden;
+      }
+
+      .hero {
+        padding: 14px 0 30px;
+      }
+
+      .hero__grid {
+        gap: 18px;
+      }
+
+      .hero h1 {
+        max-width: none;
+        font-size: clamp(2.25rem, 12.5vw, 3.35rem);
+        line-height: 1.02;
+        letter-spacing: -0.045em;
+      }
+
+      .hero__lead {
+        margin-top: 12px;
+        font-size: 0.93rem;
+        line-height: 1.58;
+      }
+
+      .hero__actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 9px;
+        margin-top: 16px;
+      }
+
+      .hero__actions .button {
+        width: 100%;
+        min-height: 48px;
+      }
+
+      .stat-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 7px;
+        margin-top: 14px;
+      }
+
+      .stat-card {
+        min-width: 0;
+        padding: 12px 8px;
+        text-align: center;
+        border-radius: 12px;
+      }
+
+      .stat-card span {
+        display: block;
+        font-size: 0.62rem;
+        line-height: 1.25;
+      }
+
+      .stat-card strong {
+        margin-top: 4px;
+        font-size: 1rem;
+      }
+
+      .hero > .container > .hero__grid > aside.glass-card {
+        padding: 10px;
+        border-radius: 14px;
+      }
+
+      .overview-visual {
+        min-height: 180px;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      .overview-visual img {
+        width: 100%;
+        height: auto;
+        max-height: 220px;
+        object-fit: contain;
+      }
+
+      .progress-panel {
+        margin-top: 9px;
+        padding: 10px;
+        border-radius: 10px;
+      }
+
+      .progress-row + .progress-row {
+        margin-top: 10px;
+      }
+
+      .progress-meta {
+        font-size: 0.67rem;
+      }
+
+      .section {
+        padding: 44px 0;
+      }
+
+      .section-head {
+        margin-bottom: 16px;
+      }
+
+      .section-kicker {
+        font-size: 0.7rem;
+      }
+
+      .section-title,
+      .cta-panel h2 {
+        font-size: clamp(1.8rem, 9vw, 2.5rem);
+        line-height: 1.08;
+      }
+
+      .section-copy,
+      .feature-card p,
+      .about-panel p,
+      .contact-panel p,
+      .cta-panel p {
+        font-size: 0.9rem;
+        line-height: 1.55;
+      }
+
+      #directory .search-panel {
+        padding: 14px;
+        border-radius: 14px;
+      }
+
+      #directory .search-form {
+        gap: 9px;
+      }
+
+      #directory .field input,
+      #directory .field select,
+      #directory .search-form .button {
+        min-height: 46px;
+      }
+
+      .lawyer-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+      }
+
+      .lawyer-card {
+        min-width: 0;
+        border-radius: 14px;
+        overflow: hidden;
+      }
+
+      .lawyer-card__visual {
+        height: 145px;
+      }
+
+      .lawyer-card__body {
+        padding: 11px;
+      }
+
+      .lawyer-card__top,
+      .lawyer-card__identity,
+      .lawyer-card__footer {
+        gap: 7px;
+      }
+
+      .lawyer-card h3 {
+        font-size: 0.78rem;
+        line-height: 1.2;
+      }
+
+      .lawyer-card__specialization {
+        font-size: 0.64rem;
+      }
+
+      .lawyer-card__meta {
+        font-size: 0.62rem;
+        gap: 4px;
+      }
+
+      .lawyer-card__status {
+        font-size: 0.58rem;
+        padding: 3px 6px;
+      }
+
+      .lawyer-card__actions,
+      .lawyer-actions {
+        width: 100%;
+      }
+
+      .lawyer-card__actions .button,
+      .lawyer-actions .button {
+        width: 100%;
+        min-height: 40px;
+        padding: 7px 8px;
+        font-size: 0.68rem;
+      }
+
+      .feature-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .feature-card,
+      .about-panel,
+      .contact-panel,
+      .cta-panel {
+        padding: 18px;
+        border-radius: 16px;
+      }
+
+      .feature-card h3 {
+        font-size: 1rem;
+      }
+
+      .feature-icon {
+        width: 42px;
+        height: 42px;
+      }
+
+      .about-grid,
+      .contact-grid {
+        gap: 10px;
+      }
+
+      .about-panel h3,
+      .contact-panel h3 {
+        font-size: 1.45rem !important;
+        line-height: 1.12;
+      }
+
+      .about-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .about-stat {
+        padding: 12px;
+        border-radius: 12px;
+      }
+
+      .about-stat strong {
+        font-size: 1.1rem;
+      }
+
+      .contact-stack,
+      .contact-form {
+        gap: 9px;
+        margin-top: 12px;
+      }
+
+      .contact-item {
+        padding: 12px;
+        border-radius: 12px;
+        gap: 9px;
+      }
+
+      .contact-item strong {
+        font-size: 0.82rem;
+      }
+
+      .contact-item span {
+        font-size: 0.68rem;
+        line-height: 1.4;
+      }
+
+      .contact-form__split {
+        grid-template-columns: 1fr;
+        gap: 9px;
+      }
+
+      .contact-form input,
+      .contact-form select,
+      .contact-form textarea {
+        width: 100%;
+        box-sizing: border-box;
+        font-size: 0.88rem;
+      }
+
+      .contact-form textarea {
+        min-height: 120px;
+      }
+
+      .contact-form .button {
+        width: 100%;
+        min-height: 48px;
+      }
+
+      .cta-wrap {
+        padding: 36px 0;
+      }
+
+      .cta-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 9px;
+      }
+
+      .cta-actions .button {
+        width: 100%;
+        min-height: 48px;
+      }
+
+      .site-footer {
+        padding: 24px 0 calc(24px + env(safe-area-inset-bottom));
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .footer-nav,
+      .footer-legal {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px 14px;
+        width: 100%;
+      }
+
+      .footer-nav a,
+      .footer-legal a {
+        min-height: 38px;
+        display: flex;
+        align-items: center;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .container {
+        width: min(var(--container), calc(100% - 18px));
+      }
+
+      .hero h1 {
+        font-size: 2.15rem;
+      }
+
+      .stat-row {
+        gap: 5px;
+      }
+
+      .stat-card {
+        padding-inline: 5px;
+      }
+
+      .stat-card span {
+        font-size: 0.57rem;
+      }
+
+      .stat-card strong {
+        font-size: 0.92rem;
+      }
+
+      .lawyer-grid {
+        gap: 7px;
+      }
+
+      .lawyer-card__visual {
+        height: 125px;
+      }
+
+      .lawyer-card__body {
+        padding: 9px;
+      }
+
+      .lawyer-card h3 {
+        font-size: 0.72rem;
+      }
+
+      .lawyer-card__specialization,
+      .lawyer-card__meta {
+        font-size: 0.58rem;
+      }
+    }
+
   </style>
 </head>
 <body>

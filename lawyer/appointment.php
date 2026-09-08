@@ -100,6 +100,53 @@ function lex_appointment_render_results(array $appointments, array $state, strin
 {
     ob_start();
     ?>
+    <div class="appointment-mobile-list" aria-label="Mobile appointment requests">
+      <?php if ($appointments): ?>
+        <?php foreach ($appointments as $appointment): ?>
+          <?php $mobileNotes = trim((string) ($appointment['notes'] ?? '')); ?>
+          <article class="appointment-mobile-card">
+            <div class="appointment-mobile-card__top">
+              <div class="appointment-mobile-card__identity">
+                <span class="appointment-mobile-card__eyebrow">CASE / CLIENT</span>
+                <strong><?= lex_e((string) ($appointment['title'] ?? 'Appointment')) ?></strong>
+                <small>#<?= lex_e((string) ($appointment['case_number'] ?? '')) ?> &bull; <?= lex_e((string) ($appointment['client_name'] ?? '')) ?></small>
+              </div>
+              <span class="appointment-badge <?= lex_e(lex_appointment_status_class((string) $appointment['status'])) ?>"><?= lex_e(lex_appointment_status_label((string) $appointment['status'])) ?></span>
+            </div>
+            <div class="appointment-mobile-card__schedule">
+              <div><span>DATE</span><strong><?= lex_e(date('M j, Y', strtotime((string) $appointment['scheduled_at']))) ?></strong></div>
+              <div><span>TIME</span><strong><?= lex_e(date('g:i A', strtotime((string) $appointment['scheduled_at']))) ?></strong></div>
+              <div><span>TYPE</span><strong><?= lex_e((string) ($appointment['appointment_type'] ?? 'Consultation')) ?></strong></div>
+            </div>
+            <div class="appointment-mobile-card__notes">
+              <span>NOTES</span>
+              <p><?= lex_e($mobileNotes !== '' ? $mobileNotes : 'No notes were added for this appointment.') ?></p>
+            </div>
+            <div class="appointment-mobile-card__actions">
+              <form method="post" action="<?= lex_e($currentUrl) ?>" class="appointment-mobile-update-form" data-no-loading>
+                <?= lex_csrf_field() ?>
+                <input type="hidden" name="action" value="update">
+                <input type="hidden" name="appointment_id" value="<?= (int) $appointment['id'] ?>">
+                <div class="appointment-mobile-form-grid">
+                  <label>Status<select name="status"><option value="pending"<?= ($appointment['status'] ?? '') === 'pending' ? ' selected' : '' ?>>Pending</option><option value="confirmed"<?= ($appointment['status'] ?? '') === 'confirmed' ? ' selected' : '' ?>>Confirmed</option><option value="cancelled"<?= ($appointment['status'] ?? '') === 'cancelled' ? ' selected' : '' ?>>Cancelled</option></select></label>
+                  <label>Schedule<input type="datetime-local" name="scheduled_at" value="<?= lex_e(date('Y-m-d\TH:i', strtotime((string) $appointment['scheduled_at']))) ?>"></label>
+                </div>
+                <button class="button button-primary" type="submit">Save appointment</button>
+              </form>
+              <form method="post" action="<?= lex_e($currentUrl) ?>" data-no-loading>
+                <?= lex_csrf_field() ?>
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="appointment_id" value="<?= (int) $appointment['id'] ?>">
+                <button class="button button-danger appointment-mobile-delete" type="submit" data-confirm="Delete this appointment request?">Delete</button>
+              </form>
+            </div>
+          </article>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <div class="appointment-mobile-empty"><strong>No results found.</strong><p>Try a different search term or clear the filters.</p></div>
+      <?php endif; ?>
+    </div>
+
     <div class="table-wrap appointment-table-wrap">
       <table class="data-table appointment-table">
         <thead>

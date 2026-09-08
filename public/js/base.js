@@ -110,6 +110,56 @@
     });
   }
 
+
+  // Shared notification dropdown behavior for admin, lawyer, and client.
+  // The bell opens the panel; clicking the bell again, outside the panel,
+  // or pressing Escape closes it. Native <details> behavior remains supported.
+  const notificationMenus = document.querySelectorAll('.notification-menu');
+  notificationMenus.forEach((menu) => {
+    const summary = menu.querySelector(':scope > summary');
+    const panel = menu.querySelector(':scope > .notification-panel');
+    if (!(summary instanceof HTMLElement) || !(panel instanceof HTMLElement)) return;
+
+    summary.addEventListener('click', (event) => {
+      event.preventDefault();
+      menu.open = !menu.open;
+      summary.setAttribute('aria-expanded', menu.open ? 'true' : 'false');
+    });
+
+    menu.addEventListener('toggle', () => {
+      summary.setAttribute('aria-expanded', menu.open ? 'true' : 'false');
+    });
+
+    panel.addEventListener('click', (event) => {
+      event.stopPropagation();
+    });
+  });
+
+  document.addEventListener('click', (event) => {
+    notificationMenus.forEach((menu) => {
+      if (!menu.open) return;
+      if (menu.contains(event.target)) return;
+      menu.open = false;
+      const summary = menu.querySelector(':scope > summary');
+      if (summary instanceof HTMLElement) {
+        summary.setAttribute('aria-expanded', 'false');
+      }
+    });
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    notificationMenus.forEach((menu) => {
+      if (!menu.open) return;
+      menu.open = false;
+      const summary = menu.querySelector(':scope > summary');
+      if (summary instanceof HTMLElement) {
+        summary.setAttribute('aria-expanded', 'false');
+        summary.focus();
+      }
+    });
+  });
+
   if (document.querySelector('[data-appointment-board]') || document.querySelector('[data-system-settings-page]')) {
     document.body.classList.add('toast-upper');
   }

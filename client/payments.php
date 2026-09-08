@@ -357,6 +357,42 @@ lex_page_header('Payments', 'payments', $user);
         </tbody>
       </table>
     </div>
+
+    <div class="client-payment-history-mobile" aria-label="Payment history cards">
+      <?php if ($payments): ?>
+        <?php foreach ($payments as $payment): ?>
+          <article class="client-payment-mobile-card">
+            <div class="client-payment-mobile-top">
+              <div class="client-payment-mobile-title">
+                <span class="client-payment-mobile-icon" aria-hidden="true">₱</span>
+                <div>
+                  <strong><?= lex_e((string) $payment['payment_for']) ?></strong>
+                  <span><?= lex_e(date('M j, Y · g:i A', strtotime((string) $payment['created_at']))) ?></span>
+                </div>
+              </div>
+              <span class="pill payment-status-pill payment-status-<?= lex_e((string) $payment['status']) ?>"><?= lex_e(ucfirst((string) $payment['status'])) ?></span>
+            </div>
+            <div class="client-payment-mobile-amount">
+              <span>AMOUNT</span>
+              <strong>PHP <?= lex_e(number_format((float) $payment['amount'], 2)) ?></strong>
+            </div>
+            <div class="client-payment-mobile-grid">
+              <div><span>LAWYER</span><strong><?= !empty($payment['lawyer_name']) ? lex_e((string) $payment['lawyer_name']) : 'Unassigned' ?></strong></div>
+              <div><span>REFERENCE</span><strong><?= (string) ($payment['reference_number'] ?? '') !== '' ? lex_e((string) $payment['reference_number']) : 'None' ?></strong></div>
+            </div>
+            <div class="client-payment-mobile-footer">
+              <div>
+                <span>REVIEW</span>
+                <strong><?= !empty($payment['admin_notes']) ? lex_e((string) $payment['admin_notes']) : (!empty($payment['reviewed_by_name']) ? 'Reviewed by ' . lex_e((string) $payment['reviewed_by_name']) : 'Waiting for review') ?></strong>
+              </div>
+              <a class="button button-secondary" href="<?= lex_e(lex_app_url('payment_proof.php?id=' . (int) $payment['id'] . '&download=1')) ?>">Proof</a>
+            </div>
+          </article>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <div class="client-payment-mobile-empty">No payments submitted yet.</div>
+      <?php endif; ?>
+    </div>
   </section>
 </section>
 <script>

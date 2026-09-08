@@ -386,6 +386,49 @@ lex_page_header('Manage Clients', 'clients');
         </tbody>
       </table>
     </div>
+
+    <div class="admin-mobile-record-list admin-clients-mobile-list" aria-label="Clients list on mobile">
+      <?php foreach ($clients as $client): ?>
+        <?php
+          $riskClass = lex_client_risk_class((string) ($client['risk_level'] ?? 'low'));
+          $avatarUrl = lex_profile_avatar_url((string) ($client['avatar_stored_name'] ?? ''));
+          $initials = lex_client_initials((string) $client['full_name']);
+          $tone = lex_client_initial_tone((string) $client['full_name']);
+        ?>
+        <article class="admin-mobile-record admin-client-mobile-card">
+          <div class="admin-mobile-record-top">
+            <div class="admin-mobile-person">
+              <?php if ($avatarUrl !== ''): ?><img class="admin-clients-avatar" src="<?= lex_e($avatarUrl) ?>" alt="Avatar for <?= lex_e((string) $client['full_name']) ?>">
+              <?php else: ?><span class="admin-clients-avatar admin-clients-avatar--<?= lex_e($tone) ?>" aria-hidden="true"><?= lex_e($initials) ?></span><?php endif; ?>
+              <div class="admin-mobile-person-copy">
+                <button class="admin-directory-name-button admin-mobile-name" type="button" data-client-profile-open
+                  data-profile-name="<?= lex_e((string) $client['full_name']) ?>" data-profile-user-id="<?= (int) $client['user_id'] ?>"
+                  data-profile-email="<?= lex_e((string) $client['email']) ?>" data-profile-phone="<?= lex_e((string) ($client['contact_number'] ?: 'No phone number')) ?>"
+                  data-profile-address="<?= lex_e((string) ($client['address'] ?: 'No address provided')) ?>" data-profile-risk="<?= lex_e(ucfirst((string) ($client['risk_level'] ?? 'low'))) ?>"
+                  data-profile-risk-class="<?= lex_e($riskClass) ?>" data-profile-avatar="<?= lex_e($avatarUrl) ?>" data-profile-initials="<?= lex_e($initials) ?>" data-profile-tone="<?= lex_e($tone) ?>">
+                  <?= lex_e($client['full_name']) ?>
+                </button>
+                <span><?= lex_e((string) $client['email']) ?></span>
+              </div>
+            </div>
+            <span class="admin-clients-risk-pill <?= lex_e($riskClass) ?>"><?= lex_e(ucfirst((string) $client['risk_level'])) ?></span>
+          </div>
+          <div class="admin-mobile-record-detail"><span>Phone</span><strong><?= lex_e((string) ($client['contact_number'] ?: 'No phone number')) ?></strong></div>
+          <div class="admin-mobile-record-detail"><span>Address</span><strong><?= lex_e((string) ($client['address'] ?: 'No address provided')) ?></strong></div>
+          <form method="post" class="admin-mobile-record-actions admin-client-mobile-actions">
+            <?= lex_csrf_field() ?><input type="hidden" name="action" value="update_risk"><input type="hidden" name="client_id" value="<?= (int) $client['id'] ?>">
+            <select name="risk_level" aria-label="Risk level">
+              <option value="low"<?= ($client['risk_level'] ?? '') === 'low' ? ' selected' : '' ?>>Low risk</option>
+              <option value="medium"<?= ($client['risk_level'] ?? '') === 'medium' ? ' selected' : '' ?>>Medium risk</option>
+              <option value="high"<?= ($client['risk_level'] ?? '') === 'high' ? ' selected' : '' ?>>High risk</option>
+            </select>
+            <button class="button button-secondary" type="submit">Save</button>
+            <button class="button button-danger" type="button" data-client-delete-open data-client-id="<?= (int) $client['id'] ?>" data-client-name="<?= lex_e((string) $client['full_name']) ?>">Delete</button>
+          </form>
+        </article>
+      <?php endforeach; ?>
+      <?php if (!$clients): ?><div class="admin-mobile-empty">No clients matched your current filters.</div><?php endif; ?>
+    </div>
     <?= lex_admin_pagination('admin/manage_clients.php', ['q' => $search, 'risk' => $riskFilter], $totalFilteredClients, $currentPage, $perPage) ?>
   </section>
 

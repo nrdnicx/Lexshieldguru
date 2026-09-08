@@ -129,8 +129,8 @@ lex_page_header('Payments', 'payments');
       <p class="muted payment-section-copy">These totals are based on payments verified in the system. Funds are paid directly to lawyer QR accounts.</p>
     </div>
   </div>
-  <div class="table-wrap">
-    <table class="data-table payment-history-table">
+  <div class="table-wrap admin-earnings-table-wrap">
+    <table class="data-table payment-history-table admin-earnings-table">
       <thead>
         <tr>
           <th>Lawyer</th>
@@ -154,6 +154,32 @@ lex_page_header('Payments', 'payments');
         <?php endif; ?>
       </tbody>
     </table>
+  </div>
+
+  <div class="admin-earnings-mobile-list" aria-label="Reported lawyer earnings on mobile">
+    <?php if ($lawyerEarnings): ?>
+      <?php foreach ($lawyerEarnings as $earning): ?>
+        <article class="admin-earnings-mobile-card">
+          <div class="admin-earnings-mobile-top">
+            <div class="admin-earnings-lawyer-mark" aria-hidden="true"><?= lex_e(lex_admin_payment_initials((string) $earning['lawyer_name'])) ?></div>
+            <div class="admin-earnings-lawyer-copy">
+              <strong><?= lex_e((string) $earning['lawyer_name']) ?></strong>
+              <span>Lawyer earnings report</span>
+            </div>
+          </div>
+          <div class="admin-earnings-total">
+            <span>Verified earnings</span>
+            <strong>PHP <?= lex_e(number_format((float) ($earning['verified_total'] ?? 0), 2)) ?></strong>
+          </div>
+          <div class="admin-earnings-mobile-grid">
+            <div><span>Total records</span><strong><?= (int) ($earning['payment_count'] ?? 0) ?></strong></div>
+            <div><span>Pending review</span><strong><?= (int) ($earning['pending_count'] ?? 0) ?></strong></div>
+          </div>
+        </article>
+      <?php endforeach; ?>
+    <?php else: ?>
+      <div class="admin-mobile-empty">No lawyer earnings have been recorded yet.</div>
+    <?php endif; ?>
   </div>
 </section>
 
@@ -243,6 +269,34 @@ lex_page_header('Payments', 'payments');
         <?php endif; ?>
       </tbody>
     </table>
+  </div>
+
+  <div class="admin-mobile-record-list admin-payments-mobile-list" aria-label="Payments list on mobile">
+    <?php foreach ($payments as $payment): ?>
+      <?php
+        $clientName = (string) $payment['client_name'];
+        $clientAvatarUrl = lex_profile_avatar_url((string) ($payment['client_avatar_stored_name'] ?? ''));
+      ?>
+      <article class="admin-mobile-record admin-payment-mobile-card">
+        <div class="admin-mobile-record-top">
+          <div class="admin-mobile-person">
+            <?php if ($clientAvatarUrl !== ''): ?><img class="admin-payments-client-avatar" src="<?= lex_e($clientAvatarUrl) ?>" alt="Avatar for <?= lex_e($clientName) ?>">
+            <?php else: ?><span class="admin-payments-client-avatar" aria-hidden="true"><?= lex_e(lex_admin_payment_initials($clientName)) ?></span><?php endif; ?>
+            <div class="admin-mobile-person-copy"><strong class="admin-mobile-name-text"><?= lex_e($clientName) ?></strong><span><?= lex_e((string) $payment['client_email']) ?></span></div>
+          </div>
+          <span class="pill payment-status-pill payment-status-<?= lex_e((string) $payment['status']) ?>"><?= lex_e(ucfirst((string) $payment['status'])) ?></span>
+        </div>
+        <div class="admin-payment-mobile-amount"><span>Amount</span><strong>PHP <?= lex_e(number_format((float) $payment['amount'], 2)) ?></strong></div>
+        <div class="admin-mobile-record-grid">
+          <div><span>Lawyer</span><strong><?= !empty($payment['lawyer_name']) ? lex_e((string) $payment['lawyer_name']) : 'Unassigned' ?></strong></div>
+          <div><span>Payment for</span><strong><?= lex_e((string) $payment['payment_for']) ?></strong></div>
+          <div><span>Reference</span><strong><?= ((string) ($payment['reference_number'] ?? '') !== '') ? lex_e((string) $payment['reference_number']) : 'None' ?></strong></div>
+          <div><span>Submitted</span><strong><?= lex_e(date('M j, Y · g:i A', strtotime((string) $payment['created_at']))) ?></strong></div>
+        </div>
+        <a class="button button-secondary admin-mobile-review-button" href="<?= lex_e(lex_app_url('admin/payment_view.php?id=' . (int) $payment['id'])) ?>">Review Payment</a>
+      </article>
+    <?php endforeach; ?>
+    <?php if (!$payments): ?><div class="admin-mobile-empty">No payments matched this filter.</div><?php endif; ?>
   </div>
   <?= lex_admin_pagination('admin/payments.php', ['q' => $search, 'status' => $statusFilter], $totalPayments, $currentPage, $perPage) ?>
 </section>

@@ -136,6 +136,37 @@ lex_page_header('Billing', 'billing', $user);
         </tbody>
       </table>
     </div>
+
+    <div class="billing-activity-mobile" aria-label="Billing activity cards">
+      <?php if ($recentPayments): ?>
+        <?php foreach ($recentPayments as $payment): ?>
+          <article class="billing-activity-mobile-card">
+            <div class="billing-activity-mobile-top">
+              <div>
+                <span class="billing-activity-mobile-kicker">PAYMENT ACTIVITY</span>
+                <strong><?= lex_e((string) $payment['payment_for']) ?></strong>
+                <span><?= lex_e(date('M j, Y · g:i A', strtotime((string) $payment['created_at']))) ?></span>
+              </div>
+              <span class="pill payment-status-pill payment-status-<?= lex_e((string) $payment['status']) ?>"><?= lex_e(ucfirst((string) $payment['status'])) ?></span>
+            </div>
+            <div class="billing-activity-mobile-amount">
+              <span>AMOUNT</span>
+              <strong>PHP <?= lex_e(number_format((float) $payment['amount'], 2)) ?></strong>
+            </div>
+            <div class="billing-activity-mobile-grid">
+              <div><span>LAWYER</span><strong><?= !empty($payment['lawyer_name']) ? lex_e((string) $payment['lawyer_name']) : 'Unassigned' ?></strong></div>
+              <div><span>REFERENCE</span><strong><?= (string) ($payment['reference_number'] ?? '') !== '' ? lex_e((string) $payment['reference_number']) : 'None' ?></strong></div>
+              <div><span>REVIEWED</span><strong><?= !empty($payment['reviewed_at']) ? lex_e(date('M j, Y · g:i A', strtotime((string) $payment['reviewed_at']))) : 'Pending' ?></strong></div>
+            </div>
+          </article>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <div class="billing-activity-mobile-empty">
+          <strong>No billing records yet.</strong>
+          <span>Submitted payment proofs will appear here for review tracking.</span>
+        </div>
+      <?php endif; ?>
+    </div>
   </section>
 </section>
 <?php lex_page_footer(); ?>

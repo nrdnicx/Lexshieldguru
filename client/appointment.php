@@ -442,6 +442,47 @@ lex_page_header('Appointments', 'appointments', $user);
       </tbody>
     </table>
   </div>
+
+  <div class="client-appointment-requests-mobile" aria-label="Appointment request cards">
+    <?php if ($appointments): ?>
+      <?php foreach ($appointments as $appointment): ?>
+        <?php
+          $lawyerName = (string) ($appointment['lawyer_name'] ?? 'Lawyer');
+          $lawyerAvatarUrl = lex_profile_avatar_url((string) ($appointment['lawyer_avatar_stored_name'] ?? ''));
+          $appointmentNotes = trim((string) ($appointment['notes'] ?? ''));
+        ?>
+        <article class="client-appointment-mobile-card">
+          <div class="client-appointment-mobile-top">
+            <div class="client-appointment-mobile-case">
+              <span>CASE / CONSULTATION</span>
+              <strong><?= lex_e((string) $appointment['appointment_title']) ?></strong>
+              <small><?= lex_e((string) $appointment['case_number']) ?></small>
+            </div>
+            <span class="appointment-badge <?= lex_e($appointmentStatusClass((string) $appointment['status'])) ?>"><?= lex_e($appointmentStatusLabel((string) $appointment['status'])) ?></span>
+          </div>
+          <div class="client-appointment-mobile-lawyer">
+            <?php if ($lawyerAvatarUrl !== ''): ?>
+              <img src="<?= lex_e($lawyerAvatarUrl) ?>" alt="">
+            <?php else: ?>
+              <span aria-hidden="true"><?= lex_e(strtoupper(substr($lawyerName, 0, 1))) ?></span>
+            <?php endif; ?>
+            <div><span>LAWYER</span><strong><?= lex_e($lawyerName) ?></strong></div>
+          </div>
+          <div class="client-appointment-mobile-grid">
+            <div><span>DATE</span><strong><?= lex_e($formatAppointmentDate((string) $appointment['scheduled_at'])) ?></strong></div>
+            <div><span>TIME</span><strong><?= lex_e($formatAppointmentTime((string) $appointment['scheduled_at'])) ?></strong></div>
+          </div>
+          <button class="client-appointment-mobile-note" type="button" data-client-note-open data-note="<?= lex_e($appointmentNotes !== '' ? $appointmentNotes : 'No notes were added for this appointment.') ?>">
+            <span>NOTES</span>
+            <strong><?= $appointmentNotes !== '' ? 'View appointment notes' : 'No notes added' ?></strong>
+            <span aria-hidden="true">›</span>
+          </button>
+        </article>
+      <?php endforeach; ?>
+    <?php else: ?>
+      <div class="client-appointment-mobile-empty">No appointment requests yet.</div>
+    <?php endif; ?>
+  </div>
 </section>
 
 <div class="modal-overlay client-appointment-picker-modal" data-appointment-picker-modal aria-hidden="true">

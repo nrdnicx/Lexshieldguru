@@ -134,6 +134,47 @@ lex_page_header('Payments', 'payments', $user);
       </div>
     </div>
 
+    <div class="lawyer-payment-mobile-list" aria-label="Client payment proofs">
+      <?php if ($payments): ?>
+        <?php foreach ($payments as $payment): ?>
+          <article class="lawyer-payment-mobile-card">
+            <div class="lawyer-payment-mobile-top">
+              <div>
+                <span class="lawyer-payment-mobile-label">CLIENT</span>
+                <strong><?= lex_e((string) $payment['client_name']) ?></strong>
+                <small><?= lex_e((string) $payment['client_email']) ?></small>
+              </div>
+              <span class="pill payment-status-pill payment-status-<?= lex_e((string) $payment['status']) ?>"><?= lex_e(ucfirst((string) $payment['status'])) ?></span>
+            </div>
+            <div class="lawyer-payment-mobile-amount">
+              <span>AMOUNT</span>
+              <strong>PHP <?= lex_e(number_format((float) $payment['amount'], 2)) ?></strong>
+              <small><?= lex_e((string) $payment['payment_for']) ?></small>
+            </div>
+            <div class="lawyer-payment-mobile-grid">
+              <div><span>SUBMITTED</span><strong><?= lex_e(date('M j, Y', strtotime((string) $payment['created_at']))) ?></strong><small><?= lex_e(date('g:i A', strtotime((string) $payment['created_at']))) ?></small></div>
+              <div><span>REFERENCE</span><strong><?= !empty($payment['reference_number']) ? lex_e((string) $payment['reference_number']) : 'None' ?></strong><small>Payment reference</small></div>
+              <div><span>PROOF</span><strong><?= lex_e((string) ($payment['proof_original_name'] ?? 'Uploaded proof')) ?></strong><small>Tap open to inspect</small></div>
+              <div><span>DECISION</span><strong><?= ucfirst((string) $payment['status']) ?></strong><small><?= !empty($payment['reviewed_at']) ? 'Reviewed ' . lex_e(date('M j, Y', strtotime((string) $payment['reviewed_at']))) : 'Awaiting review' ?></small></div>
+            </div>
+            <a class="button button-secondary lawyer-payment-mobile-proof" href="<?= lex_e(lex_app_url('payment_proof.php?id=' . (int) $payment['id'])) ?>" target="_blank" rel="noopener">Open payment proof</a>
+            <form method="post" class="lawyer-payment-mobile-decision-form">
+              <?= lex_csrf_field() ?>
+              <input type="hidden" name="payment_id" value="<?= (int) $payment['id'] ?>">
+              <input type="hidden" name="decision" value="verified" data-payment-decision-mobile>
+              <label>Review note<input type="text" name="review_notes" value="<?= lex_e((string) ($payment['admin_notes'] ?? '')) ?>" placeholder="Optional note"></label>
+              <div class="lawyer-payment-mobile-actions">
+                <button class="button button-primary" type="submit" name="verify_payment" value="1" onclick="this.form.querySelector('[data-payment-decision-mobile]').value='verified'">Verify</button>
+                <button class="button button-secondary" type="submit" name="reject_payment" value="1" onclick="this.form.querySelector('[data-payment-decision-mobile]').value='rejected'">Reject</button>
+              </div>
+            </form>
+          </article>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <div class="lawyer-payment-mobile-empty">No client payment proofs have been submitted to you yet.</div>
+      <?php endif; ?>
+    </div>
+
     <div class="table-wrap">
       <table class="data-table payment-history-table">
         <thead>

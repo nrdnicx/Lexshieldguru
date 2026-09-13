@@ -10,6 +10,8 @@ $selectedLawyerId = lex_sanitize_int($_GET['lawyer_id'] ?? 0);
 $selectedDate = '';
 $selectedTime = '';
 $selectedAppointmentType = 'Client Intake Consultation';
+$selectedAppointmentTypeChoice = 'Client Intake Consultation';
+$selectedCustomAppointmentType = '';
 $selectedNotes = '';
 
 $formatAppointmentDate = static function (?string $value): string {
@@ -130,6 +132,17 @@ if (isset($_GET['availability']) && $_GET['availability'] === '1') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_token'] ?? null)) {
+    $bookingLimit = lex_rate_limit_hit(
+        'appointment_booking',
+        lex_rate_limit_key(lex_rate_limit_client_ip(), (string) $clientId),
+        10,
+        900,
+        900,
+        (string) $clientId
+    );
+    if (!$bookingLimit['allowed']) {
+        $error = lex_rate_limit_message((int) $bookingLimit['retry_after']);
+    }
     $lawyerId = lex_sanitize_int($_POST['lawyer_id'] ?? 0);
     $selectedLawyerId = $lawyerId;
     $scheduledDate = lex_sanitize_text($_POST['scheduled_date'] ?? '');
@@ -137,10 +150,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_toke
     $selectedDate = $scheduledDate;
     $selectedTime = $scheduledTime;
     $scheduledAt = ($scheduledDate !== '' && $scheduledTime !== '') ? $scheduledDate . ' ' . $scheduledTime : '';
-    $appointmentType = lex_sanitize_text($_POST['appointment_type'] ?? 'Client Intake Consultation');
-    $allowedAppointmentTypes = ['Client Intake Consultation', 'Document Review', 'Case Follow-up', 'Legal Advice'];
-    if (!in_array($appointmentType, $allowedAppointmentTypes, true)) {
+    $appointmentTypeChoice = lex_sanitize_text($_POST['appointment_type'] ?? 'Client Intake Consultation');
+    $customAppointmentType = lex_sanitize_text($_POST['custom_appointment_type'] ?? '');
+    $allowedAppointmentTypes = ['Client Intake Consultation', 'Document Review', 'Case Follow-up', 'Legal Advice', 'Notary Appointment'];
+    if ($appointmentTypeChoice === 'Other / Custom') {
+        $selectedAppointmentTypeChoice = 'Other / Custom';
+        $selectedCustomAppointmentType = $customAppointmentType;
+        if ($customAppointmentType === '') {
+            $error = 'Please enter the type of appointment you need.';
+        } elseif (function_exists('mb_strlen') ? mb_strlen($customAppointmentType) > 120 : strlen($customAppointmentType) > 120) {
+            $error = 'Custom appointment type must be 120 characters or fewer.';
+        }
+        $appointmentType = $customAppointmentType;
+    } elseif (in_array($appointmentTypeChoice, $allowedAppointmentTypes, true)) {
+        $appointmentType = $appointmentTypeChoice;
+        $selectedAppointmentTypeChoice = $appointmentTypeChoice;
+        $selectedCustomAppointmentType = '';
+    } else {
         $appointmentType = 'Client Intake Consultation';
+        $selectedAppointmentTypeChoice = 'Client Intake Consultation';
+        $selectedCustomAppointmentType = '';
     }
     $selectedAppointmentType = $appointmentType;
     $notes = lex_sanitize_multiline_text($_POST['notes'] ?? '');
@@ -168,7 +197,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_toke
         }
     }
 
-    if (!$lawyerExists) {
+    if ($error !== '') {
+        // Keep CSRF/rate-limit/appointment type validation errors.
+    } elseif (!$lawyerExists) {
         $error = 'Select an available lawyer.';
     } elseif (!$scheduledDateTime) {
         $error = 'Select a valid appointment date and time.';
@@ -214,19 +245,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_toke
             $sessionStart = substr((string) $schedule[$session . '_start'], 0, 8);
             $sessionEnd = substr((string) $schedule[$session . '_end'], 0, 8);
             $sessionCapacity = max(0, (int) $schedule[$session . '_capacity']);
-            $stmt = $pdo->prepare('SELECT COUNT(*) FROM appointments WHERE lawyer_id = :lawyer_id AND DATE(scheduled_at) = :date AND TIME(scheduled_at) = :scheduled_time AND status IN ("pending", "confirmed")');
-            $stmt->execute(['lawyer_id' => $lawyerId, 'date' => $scheduledDate, 'scheduled_time' => $scheduledTime . ':00']);
-            $slotTaken = (int) $stmt->fetchColumn() > 0;
-            $stmt = $pdo->prepare('SELECT COUNT(*) FROM appointments WHERE lawyer_id = :lawyer_id AND DATE(scheduled_at) = :date AND TIME(scheduled_at) >= :session_start AND TIME(scheduled_at) < :session_end AND status IN ("pending", "confirmed")');
-            $stmt->execute(['lawyer_id' => $lawyerId, 'date' => $scheduledDate, 'session_start' => $sessionStart, 'session_end' => $sessionEnd]);
-            $sessionCount = (int) $stmt->fetchColumn();
-            if ($slotTaken) {
-                $error = 'That time slot was just booked. Please choose another time.';
-            } elseif ($sessionCapacity <= 0 || $sessionCount >= $sessionCapacity) {
-                $error = ucfirst($session) . ' consultation capacity is full for this date. Please choose another session or date.';
-            } else {
-        $pdo->beginTransaction();
-        try {
+            $appointmentLockAcquired = false;
+            try {
+                $appointmentLockAcquired = lex_appointment_session_lock($pdo, $lawyerId, $scheduledDate, $session);
+                if (!$appointmentLockAcquired) {
+                    throw new LexAppointmentBookingException('The appointment system is busy. Please try again.');
+                }
+
+                $pdo->beginTransaction();
+                // Lock the lawyer row so concurrent booking requests for the same lawyer are serialized at the database level.
+                $lockStmt = $pdo->prepare('SELECT id FROM lawyers WHERE id = :lawyer_id FOR UPDATE');
+                $lockStmt->execute(['lawyer_id' => $lawyerId]);
+                if (!$lockStmt->fetchColumn()) {
+                    throw new LexAppointmentBookingException('The selected lawyer is no longer available. Please choose another lawyer.');
+                }
+                $stmt = $pdo->prepare('SELECT COUNT(*) FROM appointments WHERE lawyer_id = :lawyer_id AND DATE(scheduled_at) = :date AND TIME(scheduled_at) = :scheduled_time AND status IN ("pending", "confirmed")');
+                $stmt->execute(['lawyer_id' => $lawyerId, 'date' => $scheduledDate, 'scheduled_time' => $scheduledTime . ':00']);
+                $slotTaken = (int) $stmt->fetchColumn() > 0;
+                $stmt = $pdo->prepare('SELECT COUNT(*) FROM appointments WHERE lawyer_id = :lawyer_id AND DATE(scheduled_at) = :date AND TIME(scheduled_at) >= :session_start AND TIME(scheduled_at) < :session_end AND status IN ("pending", "confirmed")');
+                $stmt->execute(['lawyer_id' => $lawyerId, 'date' => $scheduledDate, 'session_start' => $sessionStart, 'session_end' => $sessionEnd]);
+                $sessionCount = (int) $stmt->fetchColumn();
+                if ($slotTaken) {
+                    throw new LexAppointmentBookingException('That time slot was just booked. Please choose another time.');
+                }
+                if ($sessionCapacity <= 0 || $sessionCount >= $sessionCapacity) {
+                    throw new LexAppointmentBookingException(ucfirst($session) . ' consultation capacity is full for this date. Please choose another session or date.');
+                }
             $stmt = $pdo->prepare('
                 SELECT id
                 FROM cases
@@ -275,22 +319,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_toke
             $appointmentId = (string) $pdo->lastInsertId();
             lex_audit('book_appointment', 'appointments', $appointmentId);
             $pdo->commit();
+            lex_appointment_session_unlock($pdo, $lawyerId, $scheduledDate, $session);
+            $appointmentLockAcquired = false;
             lex_notify((int) ($lawyerRow['lawyer_user_id'] ?? 0), 'appointment', 'New appointment request from ' . (string) ($user['full_name'] ?? 'a client') . '.');
             $message = 'Appointment request submitted. Your lawyer will review it and confirm the schedule.';
             $selectedDate = '';
             $selectedTime = '';
             $selectedAppointmentType = 'Client Intake Consultation';
+            $selectedAppointmentTypeChoice = 'Client Intake Consultation';
+            $selectedCustomAppointmentType = '';
             $selectedNotes = '';
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) {
                 $pdo->rollBack();
             }
+            if ($appointmentLockAcquired) {
+                lex_appointment_session_unlock($pdo, $lawyerId, $scheduledDate, $session);
+                $appointmentLockAcquired = false;
+            }
             error_log('Client appointment booking failed: ' . $e->getMessage());
-            $error = 'Unable to book the appointment. Please try again.';
+            $error = $e instanceof LexAppointmentBookingException
+                ? $e->getMessage()
+                : 'Unable to book the appointment. Please try again later.';
         }
         }
     }
-}
 }
 
 $appointments = lex_recent(
@@ -354,10 +407,16 @@ lex_page_header('Appointments', 'appointments', $user);
               <svg viewBox="0 0 24 24" focusable="false"><path d="M6.75 4h10.5A1.75 1.75 0 0 1 19 5.75v12.5A1.75 1.75 0 0 1 17.25 20H6.75A1.75 1.75 0 0 1 5 18.25V5.75A1.75 1.75 0 0 1 6.75 4Zm2 4.25a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm0 4a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Z" fill="currentColor"/></svg>
             </span>
             <select name="appointment_type" required data-appointment-type>
-              <?php foreach (['Client Intake Consultation', 'Document Review', 'Case Follow-up', 'Legal Advice'] as $type): ?>
-                <option value="<?= lex_e($type) ?>"<?= $selectedAppointmentType === $type ? ' selected' : '' ?>><?= lex_e($type) ?></option>
+              <?php foreach (['Client Intake Consultation', 'Document Review', 'Case Follow-up', 'Legal Advice', 'Notary Appointment'] as $type): ?>
+                <option value="<?= lex_e($type) ?>"<?= $selectedAppointmentTypeChoice === $type ? ' selected' : '' ?>><?= lex_e($type) ?></option>
               <?php endforeach; ?>
+              <option value="Other / Custom"<?= $selectedAppointmentTypeChoice === 'Other / Custom' ? ' selected' : '' ?>>Other / Custom</option>
             </select>
+          </span>
+        </label>
+        <label class="client-appointment-field client-appointment-field--full" data-custom-appointment-type-field hidden>Custom appointment type
+          <span class="client-appointment-control">
+            <input type="text" name="custom_appointment_type" value="<?= lex_e($selectedCustomAppointmentType) ?>" maxlength="120" placeholder="e.g. Affidavit signing, contract review, document notarization..." data-custom-appointment-type>
           </span>
         </label>
       </div>

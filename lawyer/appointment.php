@@ -362,7 +362,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_toke
     } elseif ($action === 'update') {
         $status = (string) ($_POST['status'] ?? 'pending');
         $stmt = $pdo->prepare(
-            'SELECT a.id, c.user_id AS client_user_id
+            'SELECT a.id, a.scheduled_at, c.user_id AS client_user_id
              FROM appointments a
              JOIN clients c ON c.id = a.client_id
              WHERE a.id = :id AND a.lawyer_id = :lawyer_id
@@ -371,22 +371,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_toke
         $stmt->execute(['id' => $appointmentId, 'lawyer_id' => $lawyerId]);
         $appointment = $stmt->fetch();
         if ($appointment) {
-            if (in_array($status, ['pending', 'confirmed', 'cancelled'], true)) {
-                $pdo->prepare('UPDATE appointments SET status = :status, scheduled_at = COALESCE(NULLIF(:scheduled_at, ""), scheduled_at), notes = COALESCE(NULLIF(:notes, ""), notes) WHERE id = :id AND lawyer_id = :lawyer_id')->execute([
+            if (!in_array($status, ['pending', 'confirmed', 'cancelled'], true)) {
+                lex_flash_set('error', 'Choose a valid status.');
+                header('Location: ' . $returnUrl);
+                exit;
+            }
+
+            $effectiveScheduledAt = $scheduledAt !== ''
+                ? $scheduledAt
+                : date('Y-m-d H:i', strtotime((string) $appointment['scheduled_at']));
+            $lockSession = null;
+            $lockDate = '';
+            $lockAcquired = false;
+            try {
+                if ($status !== 'cancelled') {
+                    $validation = lex_validate_appointment_schedule($pdo, $lawyerId, $effectiveScheduledAt, $appointmentId);
+                    if (!$validation['ok']) {
+                        throw new LexAppointmentBookingException((string) $validation['error']);
+                    }
+                    $lockSession = (string) $validation['session'];
+                    $lockDate = (string) $validation['date'];
+                    $lockAcquired = lex_appointment_session_lock($pdo, $lawyerId, $lockDate, $lockSession);
+                    if (!$lockAcquired) {
+                        throw new LexAppointmentBookingException('The appointment system is busy. Please try again.');
+                    }
+                    $validation = lex_validate_appointment_schedule($pdo, $lawyerId, $effectiveScheduledAt, $appointmentId);
+                    if (!$validation['ok']) {
+                        throw new LexAppointmentBookingException((string) $validation['error']);
+                    }
+                }
+
+                $pdo->beginTransaction();
+                // Lock the lawyer row so concurrent client bookings and lawyer reschedules cannot race this update.
+                $lockStmt = $pdo->prepare('SELECT id FROM lawyers WHERE id = :lawyer_id FOR UPDATE');
+                $lockStmt->execute(['lawyer_id' => $lawyerId]);
+                if (!$lockStmt->fetchColumn()) {
+                    throw new LexAppointmentBookingException('The lawyer account is no longer available.');
+                }
+                if ($status !== 'cancelled') {
+                    $validation = lex_validate_appointment_schedule($pdo, $lawyerId, $effectiveScheduledAt, $appointmentId);
+                    if (!$validation['ok']) {
+                        throw new LexAppointmentBookingException((string) $validation['error']);
+                    }
+                }
+                $pdo->prepare('UPDATE appointments SET status = :status, scheduled_at = CASE WHEN :scheduled_at_value <> "" THEN :scheduled_at_value ELSE scheduled_at END, notes = CASE WHEN :notes_value <> "" THEN :notes_value ELSE notes END WHERE id = :id AND lawyer_id = :lawyer_id')->execute([
                     'status' => $status,
-                    'scheduled_at' => $scheduledAt,
-                    'notes' => $notes,
+                    'scheduled_at_value' => $scheduledAt,
+                    'notes_value' => $notes,
                     'id' => $appointmentId,
                     'lawyer_id' => $lawyerId,
                 ]);
+                $pdo->commit();
+                if ($lockAcquired) {
+                    lex_appointment_session_unlock($pdo, $lawyerId, $lockDate, $lockSession);
+                    $lockAcquired = false;
+                }
                 lex_audit('update_appointment', 'appointments', (string) $appointmentId);
                 $message = $status === 'confirmed' ? 'Appointment approved.' : ($status === 'cancelled' ? 'Appointment cancelled.' : 'Appointment updated.');
                 lex_notify((int) $appointment['client_user_id'], 'appointment', $message);
                 lex_flash_set('success', $message);
                 header('Location: ' . $returnUrl);
                 exit;
-            } else {
-                lex_flash_set('error', 'Choose a valid status.');
+            } catch (Throwable $e) {
+                if ($pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
+                if ($lockAcquired) {
+                    lex_appointment_session_unlock($pdo, $lawyerId, $lockDate, $lockSession);
+                }
+                error_log('Lawyer appointment update failed: ' . $e->getMessage());
+                lex_flash_set('error', $e instanceof LexAppointmentBookingException ? $e->getMessage() : 'Unable to update the appointment. Please try again later.');
                 header('Location: ' . $returnUrl);
                 exit;
             }

@@ -10,6 +10,7 @@ $inquiryValues = [
     'email' => '',
     'phone' => '',
     'topic' => '',
+    'custom_topic' => '',
     'message' => '',
 ];
 unset($_SESSION['quick_inquiry_status']);
@@ -57,11 +58,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string) ($_POST['action'] ?? '') =
         'email' => lex_sanitize_email($_POST['email'] ?? ''),
         'phone' => lex_sanitize_text($_POST['phone'] ?? ''),
         'topic' => lex_sanitize_text($_POST['topic'] ?? ''),
+        'custom_topic' => lex_sanitize_text($_POST['custom_topic'] ?? ''),
         'message' => trim((string) ($_POST['message'] ?? '')),
     ];
     $allowedTopics = ['Family Law', 'Corporate Law', 'Labor Law', 'Criminal Defense', 'General Inquiry'];
-    if (!in_array($inquiryValues['topic'], $allowedTopics, true)) {
+    if ($inquiryValues['topic'] === 'Other / Custom') {
+        $inquiryValues['custom_topic'] = trim($inquiryValues['custom_topic']);
+        if ($inquiryValues['custom_topic'] === '') {
+            $inquiryValues['topic'] = 'Other / Custom';
+            $inquiryStatus = 'Please enter your custom topic.';
+        } elseif (function_exists('mb_strlen') ? mb_strlen($inquiryValues['custom_topic']) > 120 : strlen($inquiryValues['custom_topic']) > 120) {
+            $inquiryStatus = 'Custom topic must be 120 characters or fewer.';
+        } else {
+            $inquiryValues['topic'] = $inquiryValues['custom_topic'];
+        }
+    } elseif (!in_array($inquiryValues['topic'], $allowedTopics, true)) {
         $inquiryValues['topic'] = 'General Inquiry';
+        $inquiryValues['custom_topic'] = '';
     }
 
     if (!lex_csrf_validate($_POST['csrf_token'] ?? null)) {
@@ -78,6 +91,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string) ($_POST['action'] ?? '') =
         );
         if (!$limit['allowed']) {
             $inquiryStatus = lex_rate_limit_message((int) $limit['retry_after']);
+        } elseif ($inquiryStatus !== '') {
+            // Keep custom topic validation errors.
         } elseif ($inquiryValues['first_name'] === '' || $inquiryValues['last_name'] === '' || $inquiryValues['email'] === '' || $inquiryValues['message'] === '') {
             $inquiryStatus = 'Please complete your name, email, and message.';
         } elseif (!filter_var($inquiryValues['email'], FILTER_VALIDATE_EMAIL)) {
@@ -2843,7 +2858,9 @@ $topLawyers = array_slice($lawyers, 0, 4);
                 <?php foreach (['Family Law', 'Corporate Law', 'Labor Law', 'Criminal Defense', 'General Inquiry'] as $topic): ?>
                   <option value="<?= lex_e($topic) ?>"<?= $inquiryValues['topic'] === $topic ? ' selected' : '' ?>><?= lex_e($topic) ?></option>
                 <?php endforeach; ?>
+                <option value="Other / Custom"<?= $inquiryValues['topic'] === 'Other / Custom' ? ' selected' : '' ?>>Other / Custom</option>
                 </select>
+              <input type="text" name="custom_topic" value="<?= lex_e($inquiryValues['custom_topic']) ?>" maxlength="120" placeholder="Enter your topic" data-quick-inquiry-custom-topic hidden>
               <textarea name="message" required placeholder="Tell us what you need help with."><?= lex_e($inquiryValues['message']) ?></textarea>
               <button class="button button--gold" type="submit" data-quick-inquiry-submit>
                 <span class="button__spinner" aria-hidden="true"></span>
@@ -3008,6 +3025,18 @@ $topLawyers = array_slice($lawyers, 0, 4);
       const inquirySubmit = document.querySelector('[data-quick-inquiry-submit]');
       const inquirySubmitLabel = document.querySelector('[data-quick-inquiry-submit-label]');
       const inquirySuccess = document.querySelector('.quick-inquiry-success');
+      const inquiryTopic = inquiryForm?.querySelector('[name="topic"]');
+      const inquiryCustomTopic = inquiryForm?.querySelector('[data-quick-inquiry-custom-topic]');
+
+      const syncQuickInquiryTopic = () => {
+        const isCustom = inquiryTopic?.value === 'Other / Custom';
+        if (inquiryCustomTopic) {
+          inquiryCustomTopic.hidden = !isCustom;
+          inquiryCustomTopic.required = isCustom;
+        }
+      };
+      inquiryTopic?.addEventListener('change', syncQuickInquiryTopic);
+      syncQuickInquiryTopic();
 
       if (inquiryForm?.dataset.inquirySent === 'true' && inquirySubmit && inquirySubmitLabel) {
         inquirySubmit.classList.add('is-sent');

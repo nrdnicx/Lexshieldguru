@@ -175,17 +175,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_toke
         header('Location: ' . lex_app_url('admin/messages.php?thread=' . urlencode('lawyer:' . $postCaseId)));
         exit;
     }
+    if (!empty($_POST['restore_conversation_submit'])) {
+        $postCaseId = lex_sanitize_int($_POST['case_id'] ?? 0);
+        $postPartnerId = lex_sanitize_int($_POST['partner_user_id'] ?? 0);
+        if ($postCaseId > 0 && isset($caseMap[$postCaseId])) {
+            $postPartnerId = (int) $caseMap[$postCaseId]['lawyer_user_id'];
+        }
+        if ($postPartnerId > 0) {
+            $restored = lex_message_thread_set_archived((int) $user['id'], $postCaseId, $postPartnerId, false);
+            lex_flash_set($restored > 0 ? 'success' : 'error', $restored > 0 ? 'Conversation restored.' : 'Unable to restore this conversation.');
+        } else {
+            lex_flash_set('error', 'That conversation is not available.');
+        }
+        header('Location: ' . lex_app_url('admin/messages.php?filter=archived'));
+        exit;
+    }
+    if (!empty($_POST['archive_conversation_submit'])) {
+        $postCaseId = lex_sanitize_int($_POST['case_id'] ?? 0);
+        $postPartnerId = lex_sanitize_int($_POST['partner_user_id'] ?? 0);
+        if ($postCaseId > 0 && isset($caseMap[$postCaseId])) {
+            $postPartnerId = (int) $caseMap[$postCaseId]['lawyer_user_id'];
+        }
+        if ($postPartnerId > 0) {
+            $archivedCount = lex_message_thread_set_archived((int) $user['id'], $postCaseId, $postPartnerId, true);
+            lex_flash_set($archivedCount > 0 ? 'success' : 'error', $archivedCount > 0 ? 'Conversation archived.' : 'Unable to archive this conversation.');
+        } else {
+            lex_flash_set('error', 'That conversation is not available.');
+        }
+        header('Location: ' . lex_app_url('admin/messages.php?filter=archived'));
+        exit;
+    }
     if (!empty($_POST['delete_conversation_submit'])) {
         $postCaseId = lex_sanitize_int($_POST['case_id'] ?? 0);
-        if ($postCaseId && isset($caseMap[$postCaseId])) {
-            $caseRow = $caseMap[$postCaseId];
-            $partnerUserId = (int) $caseRow['lawyer_user_id'];
-            $deletedCount = lex_messages_delete_conversation_for_user($postCaseId, (int) $user['id'], $partnerUserId);
-            if ($deletedCount > 0) {
-                lex_flash_set('success', 'Conversation deleted for your view.');
-            } else {
-                lex_flash_set('error', 'No matching conversation was found to delete.');
-            }
+        $postThreadKind = (string) ($_POST['thread_kind'] ?? 'lawyer');
+        $postPartnerId = lex_sanitize_int($_POST['partner_user_id'] ?? 0);
+        if ($postPartnerId <= 0 && $postCaseId > 0 && isset($caseMap[$postCaseId])) {
+            $postPartnerId = (int) $caseMap[$postCaseId]['lawyer_user_id'];
+        }
+        if ($postPartnerId > 0) {
+            $deletedCount = lex_messages_delete_conversation_for_user($postCaseId, (int) $user['id'], $postPartnerId);
+            lex_flash_set($deletedCount > 0 ? 'success' : 'error', $deletedCount > 0 ? 'Conversation deleted from your view.' : 'Unable to delete this conversation.');
+        } else {
+            lex_flash_set('error', 'That conversation is not available.');
         }
         header('Location: ' . lex_app_url('admin/messages.php'));
         exit;
@@ -284,6 +315,7 @@ $sidebarGroups = ['Lawyers' => []];
 foreach ($cases as $case) {
     $caseId = (int) $case['case_id'];
     $conversationPreferences = lex_message_thread_preferences((int) $user['id'], $caseId);
+    $conversationArchived = lex_message_thread_is_archived((int) $user['id'], $caseId, (int) $case['lawyer_user_id']);
     $unread = lex_stats(
         'SELECT COUNT(*) FROM messages WHERE case_id = :case_id AND sender_id = :sender_id AND receiver_id = :receiver_id AND is_read = 0 AND NOT EXISTS (SELECT 1 FROM message_deletions md WHERE md.message_id = messages.id AND md.user_id = :viewer_id)',
         ['case_id' => $caseId, 'sender_id' => (int) $case['lawyer_user_id'], 'receiver_id' => (int) $user['id'], 'viewer_id' => (int) $user['id']]
@@ -309,7 +341,10 @@ $lastRow = $last[0] ?? null;
         'preview' => $preview,
         'time' => $time,
         'important' => !empty($conversationPreferences['is_important']) ? '1' : '0',
+        'archived' => $conversationArchived ? '1' : '0',
         'case_id' => $caseId,
+        'thread_kind' => 'lawyer',
+        'partner_user_id' => (int) $case['lawyer_user_id'],
     ];
 }
 foreach ($directLawyerConversations as $lawyer) {
@@ -340,6 +375,9 @@ foreach ($directLawyerConversations as $lawyer) {
         'important' => '0',
         'case_id' => 0,
         'lawyer_user_id' => $lawyerUserId,
+        'thread_kind' => 'lawyer_user',
+        'partner_user_id' => $lawyerUserId,
+        'archived' => lex_message_thread_is_archived((int) $user['id'], 0, $lawyerUserId) ? '1' : '0',
     ];
 }
 
@@ -415,14 +453,17 @@ $casePriority = $caseInfo['priority'] ?? 'normal';
 $sendDisabled = !$partnerId || (!$selectedCaseId && !$selectedDirectLawyerId);
 $threadPreferences = $selectedCaseId
     ? lex_message_thread_preferences((int) $user['id'], $selectedCaseId)
-    : ['is_important' => false, 'is_muted' => false];
+    : ['is_important' => false, 'is_muted' => false, 'is_archived' => false];
 $isThreadImportant = (bool) ($threadPreferences['is_important'] ?? false);
 $isThreadMuted = (bool) ($threadPreferences['is_muted'] ?? false);
+$isThreadArchived = $selectedCaseId && $partnerId
+    ? lex_message_thread_is_archived((int) $user['id'], $selectedCaseId, $partnerId)
+    : false;
 $canUseThreadPreferences = $selectedCaseId > 0;
 
 lex_page_header('Messages', 'messages', $user);
 ?>
-<section class="messages-page admin-messages-page" data-chat-shell data-partner-name="<?= lex_e($threadLabel) ?>">
+<section class="messages-page admin-messages-page" data-chat-shell data-initial-filter="<?= lex_e((string) ($_GET['filter'] ?? 'all')) ?>" data-partner-name="<?= lex_e($threadLabel) ?>">
   <div class="messages-layout admin-messages-layout">
     <aside class="chat-sidebar admin-messages-sidebar">
       <div class="card-head admin-messages-head">
@@ -434,13 +475,14 @@ lex_page_header('Messages', 'messages', $user);
         <button class="filter-tab is-active" type="button" data-filter-tab="all">All</button>
         <button class="filter-tab" type="button" data-filter-tab="unread">Unread</button>
         <button class="filter-tab" type="button" data-filter-tab="important">Important</button>
+        <button class="filter-tab" type="button" data-filter-tab="archived">Archived</button>
       </div>
       <div class="conversation-list-scroll" data-conversation-list>
       <?php foreach ($sidebarGroups as $groupName => $items): ?>
         <div class="conversation-group">
           <h3><?= lex_e($groupName) ?></h3>
           <?php foreach ($items as $item): ?>
-            <div class="conversation-item<?= $activeThread === $item['key'] ? ' is-active' : '' ?>" data-conversation-item data-unread="<?= (int) ($item['unread'] > 0 ? 1 : 0) ?>" data-important="<?= lex_e($item['important']) ?>">
+            <div class="conversation-item<?= $activeThread === $item['key'] ? ' is-active' : '' ?>" data-conversation-item data-unread="<?= (int) ($item['unread'] > 0 ? 1 : 0) ?>" data-important="<?= lex_e($item['important']) ?>" data-archived="<?= lex_e((string) ($item['archived'] ?? '0')) ?>">
               <a class="conversation-item-link" href="?thread=<?= urlencode($item['key']) ?>">
               <div class="conversation-item-top">
                 <div class="conversation-item-title">
@@ -458,13 +500,34 @@ lex_page_header('Messages', 'messages', $user);
               </div>
               <small><?= lex_e($item['preview']) ?></small>
               </a>
-                <form method="post" class="conversation-delete-form" data-no-loading>
-                <?= lex_csrf_field() ?>
-                <input type="hidden" name="delete_conversation_submit" value="1">
-                <input type="hidden" name="case_id" value="<?= (int) $item['case_id'] ?>">
-                <input type="hidden" name="thread_kind" value="lawyer">
-                <button class="conversation-delete-button" type="submit" aria-label="Delete conversation" data-confirm="Delete this conversation?">&times;</button>
-              </form>
+              <div class="conversation-more-menu" data-conversation-more>
+                <button class="conversation-more-toggle" type="button" aria-label="Conversation actions" aria-expanded="false" data-conversation-more-toggle>
+                  <span aria-hidden="true">&#8942;</span>
+                </button>
+                <div class="conversation-more-dropdown" data-conversation-more-menu hidden>
+                  <form method="post" class="conversation-menu-form" data-no-loading>
+                    <?= lex_csrf_field() ?>
+                    <input type="hidden" name="<?= ((string) ($item['archived'] ?? '0') === '1') ? 'restore_conversation_submit' : 'archive_conversation_submit' ?>" value="1">
+                    <input type="hidden" name="case_id" value="<?= (int) $item['case_id'] ?>">
+                    <?php if (isset($item['thread_kind'])): ?><input type="hidden" name="thread_kind" value="<?= lex_e((string) $item['thread_kind']) ?>"><?php endif; ?>
+                    <button class="conversation-menu-item" type="submit">
+                      <span class="conversation-menu-icon archive" aria-hidden="true"><?= ((string) ($item['archived'] ?? '0') === '1') ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h5l2 2h11v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 11v6"/><path d="m9 14 3 3 3-3"/></svg>' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h5l2 2h11v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 17v-6"/><path d="m9 14 3-3 3 3"/></svg>' ?></span>
+                      <span><strong><?= ((string) ($item['archived'] ?? '0') === '1') ? 'Unarchive conversation' : 'Archive conversation' ?></strong><small><?= ((string) ($item['archived'] ?? '0') === '1') ? 'Restore to your main list' : 'Hide from your main list' ?></small></span>
+                    </button>
+                  </form>
+                  <form method="post" class="conversation-menu-form conversation-delete-form" data-no-loading>
+                    <?= lex_csrf_field() ?>
+                    <input type="hidden" name="delete_conversation_submit" value="1">
+                    <input type="hidden" name="case_id" value="<?= (int) $item['case_id'] ?>">
+                    <?php if (isset($item['thread_kind'])): ?><input type="hidden" name="thread_kind" value="<?= lex_e((string) $item['thread_kind']) ?>"><?php endif; ?>
+                    <?php if (isset($item['partner_user_id'])): ?><input type="hidden" name="partner_user_id" value="<?= (int) $item['partner_user_id'] ?>"><?php endif; ?>
+                    <button class="conversation-menu-item is-danger" type="submit">
+                      <span class="conversation-menu-icon delete" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/></svg></span>
+                      <span><strong>Delete conversation</strong><small>Remove it from your view</small></span>
+                    </button>
+                  </form>
+                </div>
+              </div>
             </div>
           <?php endforeach; ?>
         </div>
@@ -508,6 +571,12 @@ lex_page_header('Messages', 'messages', $user);
           <?php foreach ($threadMessages as $msg): ?>
             <?php
               $plain = $msg['is_encrypted'] ? lex_decrypt_string((string) $msg['message_text']) : (string) $msg['message_text'];
+              $displayMime = strtolower((string) ($msg['attachment_mime_type'] ?? ''));
+              $displayExt = strtolower(pathinfo((string) ($msg['attachment_original_name'] ?? ''), PATHINFO_EXTENSION));
+              $isVoiceDisplay = str_starts_with($displayMime, 'audio/') || in_array($displayExt, ['mp3', 'wav', 'webm', 'ogg', 'm4a'], true);
+              if ($isVoiceDisplay) {
+                $plain = 'Voice message';
+              }
               $plain = trim($plain);
               if ($plain === '' && !empty($msg['attachment_original_name'])) {
                 $plain = 'Attachment: ' . (string) $msg['attachment_original_name'];
@@ -535,10 +604,25 @@ lex_page_header('Messages', 'messages', $user);
                 </div>
                 <p class="bubble-text"><?= lex_e($plain) ?></p>
                 <?php if (!empty($msg['attachment_stored_name'])): ?>
-                  <div class="attachment-card">
-                    <strong><?= lex_e((string) ($msg['attachment_original_name'] ?? $msg['attachment_stored_name'])) ?></strong>
- <span class="muted"><?= lex_e(lex_human_file_size((int) ($msg['attachment_size'] ?? 0))) ?> &middot; Downloadable file</span>
-                    <a class="button button-secondary" href="<?= lex_e(lex_app_url('message_attachment.php?id=' . (int) $msg['id'])) ?>">Download</a>
+                  <?php
+                    $attachmentMime = strtolower((string) ($msg['attachment_mime_type'] ?? ''));
+                    $attachmentExtension = strtolower(pathinfo((string) ($msg['attachment_original_name'] ?? ''), PATHINFO_EXTENSION));
+                    $isAudioAttachment = str_starts_with($attachmentMime, 'audio/') || in_array($attachmentExtension, ['mp3', 'wav', 'webm', 'ogg', 'm4a'], true);
+                    $attachmentViewUrl = lex_app_url('message_attachment.php?id=' . (int) $msg['id'] . '&view=1');
+                    $attachmentDownloadUrl = lex_app_url('message_attachment.php?id=' . (int) $msg['id']);
+                  ?>
+                  <div class="attachment-card<?= $isAudioAttachment ? ' voice-message-card' : '' ?>">
+                    <?php if ($isAudioAttachment): ?>
+                      <div class="voice-message-label"><span class="voice-message-icon" aria-hidden="true">🎙</span><strong>Voice message</strong></div>
+                      <audio class="voice-message-player" controls preload="metadata" src="<?= lex_e($attachmentViewUrl) ?>">Your browser does not support audio playback.</audio>
+                    <?php else: ?>
+                      <strong><?= lex_e((string) ($msg['attachment_original_name'] ?? $msg['attachment_stored_name'])) ?></strong>
+                      <span class="muted"><?= lex_e(lex_human_file_size((int) ($msg['attachment_size'] ?? 0))) ?> &middot; Attached file</span>
+                    <?php endif; ?>
+                    <div class="attachment-card-actions">
+                      <?php if (!$isAudioAttachment): ?><a class="button button-primary" href="<?= lex_e($attachmentViewUrl) ?>" target="_blank" rel="noopener">View File</a><?php endif; ?>
+                      <a class="button button-secondary" href="<?= lex_e($attachmentDownloadUrl) ?>">Download</a>
+                    </div>
                   </div>
                 <?php endif; ?>
                 <div class="bubble-meta">
@@ -575,7 +659,7 @@ lex_page_header('Messages', 'messages', $user);
             <div class="composer-tools">
               <label class="icon-button ghost" style="display:inline-flex;align-items:center;gap:0.35rem;cursor:pointer;">
                 📎
-                <input type="file" hidden accept=".pdf,.docx,.png,.jpg,.jpeg,.webp" data-attachment-input name="message_attachment">
+                <input type="file" hidden accept=".pdf,.docx,.png,.jpg,.jpeg,.webp,.mp3,.wav,.webm,.ogg,.m4a" data-attachment-input name="message_attachment">
               </label>
             </div>
             <textarea class="composer-input" name="message_text" rows="3" placeholder="<?= $sendDisabled ? 'Select a conversation first' : 'Write a secure message...' ?>" <?= $sendDisabled ? 'disabled' : '' ?> data-chat-input></textarea>
@@ -632,7 +716,7 @@ lex_page_header('Messages', 'messages', $user);
         </label>
         <div>
           <label class="button button-secondary file-button" data-modal-attachment-button for="adminNewMessageAttachment">Attach File</label>
-          <input id="adminNewMessageAttachment" type="file" hidden accept=".pdf,.docx,.png,.jpg,.jpeg,.webp" data-modal-attachment-input name="new_attachment">
+          <input id="adminNewMessageAttachment" type="file" hidden accept=".pdf,.docx,.png,.jpg,.jpeg,.webp,.mp3,.wav,.webm,.ogg,.m4a" data-modal-attachment-input name="new_attachment">
           <div class="attachment-preview" data-modal-attachment-name>No file selected</div>
         </div>
         <div class="modal-actions">
@@ -695,6 +779,13 @@ lex_page_header('Messages', 'messages', $user);
           <input type="hidden" name="toggle_important_submit" value="1">
           <input type="hidden" name="case_id" value="<?= (int) $selectedCaseId ?>">
           <button class="button button-secondary" type="submit" <?= !$canUseThreadPreferences ? 'disabled' : '' ?>><?= $isThreadImportant ? 'Remove Important' : 'Mark as Important' ?></button>
+        </form>
+        <form method="post" data-no-loading class="conversation-action-form conversation-archive-action-form">
+          <?= lex_csrf_field() ?>
+          <input type="hidden" name="<?= $isThreadArchived ? 'restore_conversation_submit' : 'archive_conversation_submit' ?>" value="1">
+          <input type="hidden" name="case_id" value="<?= (int) $selectedCaseId ?>">
+          <input type="hidden" name="thread_kind" value="lawyer">
+          <button class="button button-secondary conversation-archive-action" type="submit" <?= !$canUseThreadPreferences ? 'disabled' : '' ?> data-confirm="<?= $isThreadArchived ? 'Restore this conversation?' : 'Archive this conversation?' ?>">&#128230; <?= $isThreadArchived ? 'Restore Conversation' : 'Archive Conversation' ?></button>
         </form>
         <form method="post" data-no-loading>
           <?= lex_csrf_field() ?>

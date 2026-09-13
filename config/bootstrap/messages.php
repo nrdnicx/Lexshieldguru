@@ -87,6 +87,9 @@ function lex_message_thread_preferences_table_ensure(): void
             if (!in_array('is_unread', $columns, true)) {
                 $pdo->exec('ALTER TABLE `message_thread_preferences` ADD COLUMN `is_unread` TINYINT(1) NOT NULL DEFAULT 0 AFTER `is_muted`');
             }
+            if (!in_array('is_archived', $columns, true)) {
+                $pdo->exec('ALTER TABLE `message_thread_preferences` ADD COLUMN `is_archived` TINYINT(1) NOT NULL DEFAULT 0 AFTER `is_unread`');
+            }
             $done = true;
             return;
         }
@@ -97,6 +100,7 @@ function lex_message_thread_preferences_table_ensure(): void
                 `is_important` TINYINT(1) NOT NULL DEFAULT 0,
                 `is_muted` TINYINT(1) NOT NULL DEFAULT 0,
                 `is_unread` TINYINT(1) NOT NULL DEFAULT 0,
+                `is_archived` TINYINT(1) NOT NULL DEFAULT 0,
                 `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 PRIMARY KEY (`user_id`, `case_id`),
@@ -122,7 +126,7 @@ function lex_message_thread_preferences(int $userId, int $caseId): array
 
     $result = lex_db_retry(static function () use ($userId, $caseId): array {
         $stmt = lex_pdo()->prepare(
-            'SELECT is_important, is_muted, is_unread
+            'SELECT is_important, is_muted, is_unread, is_archived
              FROM message_thread_preferences
              WHERE user_id = :user_id AND case_id = :case_id
              LIMIT 1'
@@ -137,6 +141,7 @@ function lex_message_thread_preferences(int $userId, int $caseId): array
                 'is_important' => false,
                 'is_muted' => false,
                 'is_unread' => false,
+                'is_archived' => false,
             ];
         }
 
@@ -144,11 +149,13 @@ function lex_message_thread_preferences(int $userId, int $caseId): array
             'is_important' => (bool) ($row['is_important'] ?? false),
             'is_muted' => (bool) ($row['is_muted'] ?? false),
             'is_unread' => (bool) ($row['is_unread'] ?? false),
+            'is_archived' => (bool) ($row['is_archived'] ?? false),
         ];
     }, [
         'is_important' => false,
         'is_muted' => false,
         'is_unread' => false,
+        'is_archived' => false,
     ]);
 
     return is_array($result) ? $result : ['is_important' => false, 'is_muted' => false, 'is_unread' => false];

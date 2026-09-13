@@ -1,6 +1,154 @@
 <?php
 declare(strict_types=1);
 
+function lex_storage_assert_child_path(string $baseDir, string $storedName): string
+{
+    $storedName = trim($storedName);
+    if ($storedName === '' || basename($storedName) !== $storedName || str_contains($storedName, "\\0")) {
+        throw new RuntimeException('Invalid stored file name.');
+    }
+
+    $base = realpath($baseDir);
+    if ($base === false) {
+        throw new RuntimeException('Storage directory is unavailable.');
+    }
+
+    $path = $base . DIRECTORY_SEPARATOR . $storedName;
+    $parent = realpath(dirname($path));
+    if ($parent === false) {
+        throw new RuntimeException('Storage path is unavailable.');
+    }
+
+    $basePrefix = rtrim($base, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+    if ($parent !== $base && strncmp($parent . DIRECTORY_SEPARATOR, $basePrefix, strlen($basePrefix)) !== 0) {
+        throw new RuntimeException('Invalid storage path.');
+    }
+
+    return $path;
+}
+
+class LexAppointmentBookingException extends Exception
+{
+}
+
+function lex_appointment_session_lock(PDO $pdo, int $lawyerId, string $date, string $session): bool
+{
+    if ($lawyerId <= 0 || !preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $date) || !in_array($session, ['morning', 'afternoon'], true)) {
+        return false;
+    }
+
+    $name = 'lexshield_appt_' . $lawyerId . '_' . str_replace('-', '', $date) . '_' . $session;
+    $name = substr($name, 0, 64);
+    $stmt = $pdo->prepare('SELECT GET_LOCK(:lock_name, 5)');
+    $stmt->execute(['lock_name' => $name]);
+    return (int) $stmt->fetchColumn() === 1;
+}
+
+function lex_appointment_session_unlock(PDO $pdo, int $lawyerId, string $date, string $session): void
+{
+    if ($lawyerId <= 0 || !preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $date) || !in_array($session, ['morning', 'afternoon'], true)) {
+        return;
+    }
+
+    $name = 'lexshield_appt_' . $lawyerId . '_' . str_replace('-', '', $date) . '_' . $session;
+    $name = substr($name, 0, 64);
+    try {
+        $stmt = $pdo->prepare('SELECT RELEASE_LOCK(:lock_name)');
+        $stmt->execute(['lock_name' => $name]);
+    } catch (Throwable $e) {
+        error_log('[APPOINTMENT_LOCK] Failed to release lock: ' . $e->getMessage());
+    }
+}
+
+function lex_validate_appointment_schedule(PDO $pdo, int $lawyerId, string $scheduledAt, int $excludeAppointmentId = 0): array
+{
+    try {
+        $dateTime = DateTimeImmutable::createFromFormat('!Y-m-d H:i', $scheduledAt);
+        $errors = DateTimeImmutable::getLastErrors();
+        if (!$dateTime || (is_array($errors) && ($errors['warning_count'] > 0 || $errors['error_count'] > 0))) {
+            return ['ok' => false, 'error' => 'Choose a valid appointment date and time.', 'session' => null];
+        }
+    } catch (Throwable $e) {
+        return ['ok' => false, 'error' => 'Choose a valid appointment date and time.', 'session' => null];
+    }
+
+    if ($dateTime <= new DateTimeImmutable()) {
+        return ['ok' => false, 'error' => 'Choose a future date and time.', 'session' => null];
+    }
+
+    $date = $dateTime->format('Y-m-d');
+    $time = $dateTime->format('H:i');
+    $weekday = (int) $dateTime->format('w');
+
+    $stmt = $pdo->prepare('SELECT morning_start, morning_end, afternoon_start, afternoon_end, morning_capacity, afternoon_capacity FROM lawyer_availability WHERE lawyer_id = :lawyer_id AND day_of_week = :day_of_week AND is_available = 1 LIMIT 1');
+    $stmt->execute(['lawyer_id' => $lawyerId, 'day_of_week' => $weekday]);
+    $schedule = $stmt->fetch();
+    if (!$schedule) {
+        return ['ok' => false, 'error' => 'The lawyer is not available on this day.', 'session' => null];
+    }
+
+    $stmt = $pdo->prepare('SELECT 1 FROM lawyer_unavailable_dates WHERE lawyer_id = :lawyer_id AND unavailable_date = :unavailable_date LIMIT 1');
+    $stmt->execute(['lawyer_id' => $lawyerId, 'unavailable_date' => $date]);
+    if ($stmt->fetchColumn()) {
+        return ['ok' => false, 'error' => 'The lawyer is unavailable on this date. Please choose another date.', 'session' => null];
+    }
+
+    $toMinutes = static function (string $value): int {
+        [$hours, $minutes] = array_map('intval', explode(':', substr($value, 0, 5)));
+        return ($hours * 60) + $minutes;
+    };
+    $selectedMinutes = $toMinutes($time);
+    $session = null;
+    foreach (['morning', 'afternoon'] as $candidate) {
+        $start = $schedule[$candidate . '_start'] ?? null;
+        $end = $schedule[$candidate . '_end'] ?? null;
+        if ($start && $end) {
+            $startMinutes = $toMinutes((string) $start);
+            $endMinutes = $toMinutes((string) $end);
+            if ($selectedMinutes >= $startMinutes && $selectedMinutes < $endMinutes && (($selectedMinutes - $startMinutes) % 30 === 0)) {
+                $session = $candidate;
+                break;
+            }
+        }
+    }
+    if ($session === null) {
+        return ['ok' => false, 'error' => 'Choose a consultation time within the lawyer\'s available hours at a 30-minute interval.', 'session' => null];
+    }
+
+    $sessionStart = substr((string) $schedule[$session . '_start'], 0, 8);
+    $sessionEnd = substr((string) $schedule[$session . '_end'], 0, 8);
+    $capacity = max(0, (int) $schedule[$session . '_capacity']);
+    $params = ['lawyer_id' => $lawyerId, 'date' => $date, 'start' => $sessionStart, 'end' => $sessionEnd];
+    $excludeSql = '';
+    if ($excludeAppointmentId > 0) {
+        $excludeSql = ' AND a.id <> :exclude_id';
+        $params['exclude_id'] = $excludeAppointmentId;
+    }
+
+    $stmt = $pdo->prepare('SELECT COUNT(*) FROM appointments a WHERE a.lawyer_id = :lawyer_id AND DATE(a.scheduled_at) = :date AND TIME(a.scheduled_at) >= :start AND TIME(a.scheduled_at) < :end AND a.status IN ("pending", "confirmed")' . $excludeSql);
+    $stmt->execute($params);
+    $sessionCount = (int) $stmt->fetchColumn();
+
+    $slotParams = ['lawyer_id' => $lawyerId, 'date' => $date, 'time' => $time . ':00'];
+    $slotExcludeSql = '';
+    if ($excludeAppointmentId > 0) {
+        $slotExcludeSql = ' AND a.id <> :exclude_id';
+        $slotParams['exclude_id'] = $excludeAppointmentId;
+    }
+    $stmt = $pdo->prepare('SELECT COUNT(*) FROM appointments a WHERE a.lawyer_id = :lawyer_id AND DATE(a.scheduled_at) = :date AND TIME(a.scheduled_at) = :time AND a.status IN ("pending", "confirmed")' . $slotExcludeSql);
+    $stmt->execute($slotParams);
+    $slotTaken = (int) $stmt->fetchColumn() > 0;
+
+    if ($slotTaken) {
+        return ['ok' => false, 'error' => 'That time slot is already booked. Please choose another time.', 'session' => $session];
+    }
+    if ($capacity <= 0 || $sessionCount >= $capacity) {
+        return ['ok' => false, 'error' => ucfirst($session) . ' consultation capacity is full for this date. Please choose another session or date.', 'session' => $session];
+    }
+
+    return ['ok' => true, 'error' => '', 'session' => $session, 'date' => $date, 'time' => $time, 'session_start' => $sessionStart, 'session_end' => $sessionEnd, 'capacity' => $capacity];
+}
+
 function lex_audit(string $action, string $table, ?string $targetId = null, ?int $userId = null): void
 {
     try {

@@ -44,11 +44,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_toke
                 $ae = trim((string) ($_POST['afternoon_end'][$day] ?? '')) ?: null;
                 $mc = max(0, min(100, (int) ($_POST['morning_capacity'][$day] ?? 10)));
                 $ac = max(0, min(100, (int) ($_POST['afternoon_capacity'][$day] ?? 10)));
-                $validTime = static fn($v) => $v === null || preg_match('/^\d{2}:\d{2}$/', $v);
+                $validTime = static function ($value): bool {
+                    if ($value === null) {
+                        return true;
+                    }
+                    if (!preg_match('/^\d{2}:\d{2}$/', $value)) {
+                        return false;
+                    }
+                    [$hours, $minutes] = array_map('intval', explode(':', $value));
+                    return $hours >= 0 && $hours <= 23 && $minutes >= 0 && $minutes <= 59;
+                };
                 if (!$validTime($ms) || !$validTime($me) || !$validTime($as) || !$validTime($ae)) throw new RuntimeException('Enter valid times for every day.');
                 if ($enabled && $mc === 0 && $ac === 0) throw new RuntimeException($label . ' must have at least one consultation capacity.');
+                if ($enabled && (($ms === null || $me === null) && ($as === null || $ae === null))) throw new RuntimeException($label . ' must have at least one complete consultation session.');
                 if ($ms !== null && $me !== null && $me <= $ms) throw new RuntimeException($label . ' morning end time must be after the start time.');
                 if ($as !== null && $ae !== null && $ae <= $as) throw new RuntimeException($label . ' afternoon end time must be after the start time.');
+                if ($ms !== null && $me !== null && $as !== null && $ae !== null && $as < $me) throw new RuntimeException($label . ' afternoon session cannot overlap the morning session.');
                 $upsert->execute(['lawyer_id'=>$lawyerId,'day_of_week'=>$day,'is_available'=>$enabled,'morning_start'=>$ms,'morning_end'=>$me,'afternoon_start'=>$as,'afternoon_end'=>$ae,'morning_capacity'=>$mc,'afternoon_capacity'=>$ac]);
             }
             $pdo->commit();
@@ -57,6 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_toke
             $date = lex_sanitize_text($_POST['unavailable_date'] ?? '');
             $reason = lex_sanitize_text($_POST['reason'] ?? '');
             if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) throw new RuntimeException('Choose a valid unavailable date.');
+            if ($date < date('Y-m-d')) throw new RuntimeException('Unavailable dates cannot be in the past.');
             $pdo->prepare('INSERT INTO lawyer_unavailable_dates (lawyer_id, unavailable_date, reason) VALUES (:lawyer_id, :date, :reason) ON DUPLICATE KEY UPDATE reason=VALUES(reason)')->execute(['lawyer_id'=>$lawyerId,'date'=>$date,'reason'=>$reason !== '' ? $reason : null]);
             $message = 'Unavailable date added.';
         } elseif ($action === 'remove_block') {

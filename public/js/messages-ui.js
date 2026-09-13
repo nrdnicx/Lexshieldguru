@@ -1,4 +1,4 @@
-﻿(() => {
+(() => {
   const setModalInertSiblings = (modal, enabled) => {
     if (!(modal instanceof HTMLElement)) return;
     let current = modal;
@@ -26,6 +26,106 @@
   };
 
   const chatShell = document.querySelector('[data-chat-shell]');
+  const closeChatMoreMenus = (except = null) => {
+    document.querySelectorAll('[data-chat-more-menu]').forEach((menu) => {
+      if (!(menu instanceof HTMLElement) || menu === except) return;
+      menu.hidden = true;
+      const toggle = menu.parentElement?.querySelector('[data-chat-more-toggle]');
+      if (toggle instanceof HTMLElement) toggle.setAttribute('aria-expanded', 'false');
+    });
+  };
+
+  document.addEventListener('click', (event) => {
+    const toggle = event.target.closest('[data-chat-more-toggle]');
+    if (toggle) {
+      event.preventDefault();
+      event.stopPropagation();
+      const wrapper = toggle.closest('.chat-header-more');
+      const menu = wrapper?.querySelector('[data-chat-more-menu]');
+      if (!(menu instanceof HTMLElement)) return;
+      const willOpen = menu.hidden;
+      closeChatMoreMenus(willOpen ? menu : null);
+      menu.hidden = !willOpen;
+      toggle.setAttribute('aria-expanded', String(willOpen));
+      return;
+    }
+    if (event.target.closest('.chat-more-item')) { closeChatMoreMenus(); return; }
+    if (!event.target.closest('.chat-header-more')) closeChatMoreMenus();
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeChatMoreMenus();
+  });
+
+  const closeConversationActionMenus = (except = null) => {
+    document.querySelectorAll('[data-conversation-more-menu]').forEach((menu) => {
+      if (!(menu instanceof HTMLElement) || menu === except) return;
+      menu.hidden = true;
+      const toggle = menu.parentElement?.querySelector('[data-conversation-more-toggle]');
+      if (toggle instanceof HTMLElement) toggle.setAttribute('aria-expanded', 'false');
+    });
+  };
+
+  document.addEventListener('click', (event) => {
+    const toggle = event.target.closest('[data-conversation-more-toggle]');
+    if (toggle) {
+      event.preventDefault();
+      event.stopPropagation();
+      const wrapper = toggle.closest('[data-conversation-more]');
+      const menu = wrapper?.querySelector('[data-conversation-more-menu]');
+      if (!(menu instanceof HTMLElement)) return;
+      const willOpen = menu.hidden;
+      closeConversationActionMenus(willOpen ? menu : null);
+      menu.hidden = !willOpen;
+      toggle.setAttribute('aria-expanded', String(willOpen));
+      return;
+    }
+
+    const deleteForm = event.target.closest('.conversation-delete-form');
+    if (deleteForm && event.target.closest('button')) {
+      const confirmed = window.confirm('Delete this conversation from your view? This cannot be undone.');
+      if (!confirmed) {
+        event.preventDefault();
+        event.stopPropagation();
+        closeConversationActionMenus();
+      }
+      return;
+    }
+
+    if (!event.target.closest('[data-conversation-more]')) closeConversationActionMenus();
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeConversationActionMenus();
+  });
+
+  document.querySelectorAll('.messages-layout, .admin-messages-layout').forEach((layout) => {
+    if (window.matchMedia('(max-width: 767px)').matches) {
+      const hasActiveConversation = !!layout.querySelector('.conversation-item.is-active');
+      layout.classList.toggle('chat-mobile-show-conversation', hasActiveConversation);
+      layout.classList.toggle('chat-mobile-show-list', !hasActiveConversation);
+    }
+  });
+
+  document.querySelectorAll('[data-conversation-item] .conversation-item-link').forEach((link) => {
+    link.addEventListener('click', () => {
+      const layout = link.closest('.messages-layout, .admin-messages-layout');
+      if (layout && window.matchMedia('(max-width: 767px)').matches) {
+        layout.classList.remove('chat-mobile-show-list');
+        layout.classList.add('chat-mobile-show-conversation');
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-mobile-conversation-back]').forEach((button) => {
+    button.addEventListener('click', () => {
+      document.querySelectorAll('.messages-layout, .admin-messages-layout').forEach((layout) => {
+        layout.classList.remove('chat-mobile-show-conversation');
+        layout.classList.add('chat-mobile-show-list');
+      });
+    });
+  });
+
   let genericModalReturnFocus = null;
   let phishingScanController = null;
   const openModal = (modal) => {
@@ -218,7 +318,17 @@
       items.forEach((item) => {
         const unread = item.dataset.unread === '1';
         const important = item.dataset.important === '1';
-        const show = filter === 'all' || (filter === 'unread' && unread) || (filter === 'important' && important);
+        const archived = item.dataset.archived === '1';
+        const show =
+          filter === 'all'
+            ? !archived
+            : filter === 'unread'
+              ? unread && !archived
+              : filter === 'important'
+                ? important && !archived
+                : filter === 'archived'
+                  ? archived
+                  : true;
         if (searchInput && searchInput.value.trim() !== '') {
           const query = searchInput.value.trim().toLowerCase();
           item.hidden = !show || !item.textContent.toLowerCase().includes(query);
@@ -251,7 +361,7 @@
         });
       });
       const requestedFilter = new URLSearchParams(window.location.search).get('filter') || 'all';
-      const activeFilter = ['all', 'unread', 'important'].includes(requestedFilter) ? requestedFilter : 'all';
+      const activeFilter = ['all', 'unread', 'important', 'archived'].includes(requestedFilter) ? requestedFilter : 'all';
       tabs.forEach((tab) => tab.classList.toggle('is-active', (tab.dataset.filterTab || 'all') === activeFilter));
       applyFilter(activeFilter);
     }
@@ -563,6 +673,247 @@
 
   const attachmentInput = chatShell.querySelector('[data-attachment-input]');
   const attachmentPreview = chatShell.querySelector('[data-attachment-preview]');
+
+  // Voice-message recorder. Uses the existing attachment field so the normal
+  // CSRF, validation, malware scanning, access control, and send flow remain intact.
+  const setupVoiceRecorder = (shell) => {
+    const form = shell?.querySelector('[data-chat-composer]');
+    const tools = form?.querySelector('.composer-tools');
+    const audioInput = form?.querySelector('[data-attachment-input]');
+    const sendButton = form?.querySelector('button[type="submit"]');
+    const composerRow = form?.querySelector('.composer-row');
+    if (!form || !tools || !audioInput || tools.querySelector('[data-voice-record]')) return;
+
+    const recordButton = document.createElement('button');
+    recordButton.type = 'button';
+    recordButton.className = 'icon-button ghost voice-record-button';
+    recordButton.setAttribute('data-voice-record', '1');
+    recordButton.setAttribute('aria-label', 'Record voice message');
+    recordButton.title = 'Record voice message';
+    recordButton.innerHTML = '<span class="voice-mic-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0h-2a7 7 0 0 0 6 6.92V21H8v2h8v-2h-3v-3.08A7 7 0 0 0 19 11h-2Z"/></svg></span>';
+    tools.appendChild(recordButton);
+
+    const panel = document.createElement('div');
+    panel.className = 'voice-recording-panel';
+    panel.hidden = true;
+    panel.setAttribute('role', 'status');
+    panel.setAttribute('aria-live', 'polite');
+    panel.innerHTML = `
+      <div class="voice-live-main">
+        <span class="voice-recording-dot" aria-hidden="true"></span>
+        <div class="voice-live-copy">
+          <strong data-voice-status>Recording</strong>
+          <span>Voice message in progress</span>
+        </div>
+      </div>
+      <div class="voice-wave" data-voice-wave aria-hidden="true">
+        <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      </div>
+      <div class="voice-live-time" data-voice-timer>00:00</div>
+      <div class="voice-recording-actions">
+        <button class="button button-secondary voice-cancel-button" type="button" data-voice-cancel>Cancel</button>
+        <button class="button button-danger voice-stop-button" type="button" data-voice-stop><span aria-hidden="true"></span> Stop</button>
+      </div>`;
+    if (composerRow) composerRow.parentNode.insertBefore(panel, composerRow);
+    else form.appendChild(panel);
+
+    let recorder = null;
+    let stream = null;
+    let chunks = [];
+    let timerId = null;
+    let startedAt = 0;
+    let cancelled = false;
+    let recordedSeconds = 0;
+    const maxSeconds = 180;
+
+    const formatTime = (seconds) => {
+      const safe = Math.max(0, Math.floor(seconds));
+      return `${String(Math.floor(safe / 60)).padStart(2, '0')}:${String(safe % 60).padStart(2, '0')}`;
+    };
+
+    const cleanupStream = () => {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+        stream = null;
+      }
+      if (timerId) {
+        window.clearInterval(timerId);
+        timerId = null;
+      }
+    };
+
+    const resetRecordingUI = () => {
+      cleanupStream();
+      panel.hidden = true;
+      form.classList.remove('is-recording-active');
+      if (composerRow) composerRow.hidden = false;
+      recordButton.disabled = false;
+      recordButton.classList.remove('is-recording');
+      recordButton.setAttribute('aria-label', 'Record voice message');
+      recordButton.title = 'Record voice message';
+      if (sendButton) sendButton.disabled = false;
+    };
+
+    const clearVoiceAttachment = () => {
+      audioInput.value = '';
+      if (attachmentPreview) {
+        attachmentPreview.hidden = true;
+        attachmentPreview.innerHTML = '';
+      }
+    };
+
+    const showVoiceAttachment = (blob, file) => {
+      if (!attachmentPreview) return;
+      attachmentPreview.innerHTML = '';
+      const item = document.createElement('div');
+      item.className = 'attachment-chip voice-attachment-chip';
+      item.innerHTML = `
+        <span class="voice-attachment-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0h-2a7 7 0 0 0 6 6.92V21H8v2h8v-2h-3v-3.08A7 7 0 0 0 19 11h-2Z"/></svg>
+        </span>
+        <span class="voice-attachment-copy">
+          <strong>Voice message</strong>
+          <span>${formatTime(recordedSeconds)} • ${Math.max(1, Math.round(blob.size / 1024))} KB</span>
+        </span>
+        <button type="button" class="voice-attachment-remove" aria-label="Remove voice message" title="Remove voice message">×</button>`;
+      item.querySelector('.voice-attachment-remove')?.addEventListener('click', (event) => {
+        event.preventDefault();
+        clearVoiceAttachment();
+      });
+      attachmentPreview.appendChild(item);
+      attachmentPreview.hidden = false;
+    };
+
+    const finishRecording = () => {
+      cleanupStream();
+      resetRecordingUI();
+
+      if (cancelled || !chunks.length) {
+        chunks = [];
+        return;
+      }
+
+      const mimeType = recorder?.mimeType || chunks[0]?.type || 'audio/webm';
+      const extension = mimeType.includes('mp4') ? 'm4a' : mimeType.includes('ogg') ? 'ogg' : mimeType.includes('mpeg') ? 'mp3' : mimeType.includes('wav') ? 'wav' : 'webm';
+      const blob = new Blob(chunks, { type: mimeType });
+      recordedSeconds = Math.max(1, Math.floor((Date.now() - startedAt) / 1000));
+      chunks = [];
+
+      try {
+        const transfer = new DataTransfer();
+        const file = new File([blob], `voice-message-${Date.now()}.${extension}`, { type: mimeType, lastModified: Date.now() });
+        transfer.items.add(file);
+        audioInput.files = transfer.files;
+        showVoiceAttachment(blob, file);
+      } catch (error) {
+        showVoiceError('Your browser could not prepare the voice message. Please try again.');
+      }
+    };
+
+    const stopRecording = (discard = false) => {
+      cancelled = discard;
+      if (recorder && recorder.state !== 'inactive') {
+        recorder.stop();
+      } else {
+        resetRecordingUI();
+      }
+    };
+
+    const showVoiceError = (message) => {
+      let notice = form.querySelector('[data-voice-error]');
+      if (!(notice instanceof HTMLElement)) {
+        notice = document.createElement('div');
+        notice.className = 'voice-recording-error';
+        notice.setAttribute('data-voice-error', '1');
+        notice.setAttribute('role', 'alert');
+        panel.parentNode.insertBefore(notice, panel.nextSibling);
+      }
+      notice.textContent = message;
+      notice.hidden = false;
+      window.setTimeout(() => { if (notice) notice.hidden = true; }, 6500);
+    };
+
+    recordButton.addEventListener('click', async () => {
+      if (recorder && recorder.state === 'recording') return;
+      if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+        showVoiceError('Voice recording is not supported by this browser. Please use a recent browser.');
+        return;
+      }
+
+      clearVoiceAttachment();
+      cancelled = false;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const preferredTypes = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'];
+        const supported = preferredTypes.find((type) => MediaRecorder.isTypeSupported?.(type));
+        recorder = supported ? new MediaRecorder(stream, { mimeType: supported }) : new MediaRecorder(stream);
+        chunks = [];
+        recorder.ondataavailable = (event) => { if (event.data?.size) chunks.push(event.data); };
+        recorder.onstop = finishRecording;
+        recorder.onerror = () => {
+          cancelled = true;
+          showVoiceError('The recording could not be completed. Please try again.');
+          resetRecordingUI();
+        };
+        recorder.start(250);
+        startedAt = Date.now();
+        panel.hidden = false;
+        form.classList.add('is-recording-active');
+        if (composerRow) composerRow.hidden = true;
+        recordButton.disabled = true;
+        recordButton.classList.add('is-recording');
+        recordButton.setAttribute('aria-label', 'Recording voice message');
+        recordButton.title = 'Recording voice message';
+        if (sendButton) sendButton.disabled = true;
+        const timer = panel.querySelector('[data-voice-timer]');
+        if (timer) timer.textContent = '00:00';
+        timerId = window.setInterval(() => {
+          const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+          if (timer) timer.textContent = formatTime(elapsed);
+          if (elapsed >= maxSeconds) stopRecording(false);
+        }, 250);
+      } catch (error) {
+        cleanupStream();
+        panel.hidden = true;
+        form.classList.remove('is-recording-active');
+        if (composerRow) composerRow.hidden = false;
+        recordButton.disabled = false;
+        recordButton.classList.remove('is-recording');
+        recordButton.setAttribute('aria-label', 'Record voice message');
+        recordButton.title = 'Record voice message';
+        if (sendButton) sendButton.disabled = false;
+
+        let message = 'Microphone access could not be started. Please check your browser microphone permission and try again.';
+        switch (error?.name) {
+          case 'NotAllowedError':
+            message = 'Microphone access was blocked. Allow microphone access for this site, then reload the page.';
+            break;
+          case 'NotFoundError':
+            message = 'No microphone was found. Connect or enable a microphone, then try again.';
+            break;
+          case 'NotReadableError':
+            message = 'Your microphone is already being used by another application.';
+            break;
+          case 'SecurityError':
+            message = 'Microphone access was blocked for security reasons. Make sure the site uses HTTPS.';
+            break;
+        }
+        showVoiceError(message);
+      }
+    });
+
+    panel.querySelector('[data-voice-stop]')?.addEventListener('click', () => stopRecording(false));
+    panel.querySelector('[data-voice-cancel]')?.addEventListener('click', () => stopRecording(true));
+
+    form.addEventListener('submit', (event) => {
+      if (recorder && recorder.state === 'recording') {
+        event.preventDefault();
+        showVoiceError('Stop the recording before sending it.');
+      }
+    });
+  };
+
+  setupVoiceRecorder(chatShell);
   if (attachmentInput && attachmentPreview) {
     attachmentInput.addEventListener('change', () => {
       attachmentPreview.innerHTML = '';

@@ -72,87 +72,102 @@ function lex_rate_limit_hit(string $action, string $identifier, int $maxAttempts
 
     return lex_db_retry(static function () use ($action, $identifierHash, $label, $maxAttempts, $windowSeconds, $blockSeconds, $now, $nowSql, $expiresAt): array {
         $pdo = lex_pdo();
-        $stmt = $pdo->prepare(
-            'SELECT *
-             FROM rate_limits
-             WHERE action = :action AND identifier_hash = :identifier_hash
-             LIMIT 1'
-        );
-        $stmt->execute([
-            'action' => $action,
-            'identifier_hash' => $identifierHash,
-        ]);
-        $row = $stmt->fetch();
+        $pdo->beginTransaction();
+        try {
+            $stmt = $pdo->prepare(
+                'SELECT *
+                 FROM rate_limits
+                 WHERE action = :action AND identifier_hash = :identifier_hash
+                 LIMIT 1
+                 FOR UPDATE'
+            );
+            $stmt->execute([
+                'action' => $action,
+                'identifier_hash' => $identifierHash,
+            ]);
+            $row = $stmt->fetch();
+            $result = null;
 
-        if ($row) {
-            $blockedUntil = !empty($row['blocked_until']) ? strtotime((string) $row['blocked_until']) : 0;
-            if ($blockedUntil > $now) {
-                return [
-                    'allowed' => false,
-                    'retry_after' => max(1, $blockedUntil - $now),
-                    'attempts' => (int) $row['attempts'],
-                ];
+            if ($row) {
+                $blockedUntil = !empty($row['blocked_until']) ? strtotime((string) $row['blocked_until']) : 0;
+                if ($blockedUntil > $now) {
+                    $result = [
+                        'allowed' => false,
+                        'retry_after' => max(1, $blockedUntil - $now),
+                        'attempts' => (int) $row['attempts'],
+                    ];
+                } else {
+                    $windowExpires = strtotime((string) $row['expires_at']);
+                    if ($windowExpires > $now) {
+                        $attempts = (int) $row['attempts'] + 1;
+                        $blockedUntilSql = null;
+                        $retryAfter = max(1, $windowExpires - $now);
+                        if ($attempts > $maxAttempts) {
+                            $blockUntil = $now + ($blockSeconds > 0 ? $blockSeconds : $retryAfter);
+                            $blockedUntilSql = date('Y-m-d H:i:s', $blockUntil);
+                            $retryAfter = max(1, $blockUntil - $now);
+                        }
+
+                        $update = $pdo->prepare(
+                            'UPDATE rate_limits
+                             SET attempts = :attempts,
+                                 identifier_label = :identifier_label,
+                                 blocked_until = :blocked_until
+                             WHERE id = :id'
+                        );
+                        $update->execute([
+                            'attempts' => $attempts,
+                            'identifier_label' => $label,
+                            'blocked_until' => $blockedUntilSql,
+                            'id' => (int) $row['id'],
+                        ]);
+
+                        $result = [
+                            'allowed' => $attempts <= $maxAttempts,
+                            'retry_after' => $attempts <= $maxAttempts ? 0 : $retryAfter,
+                            'attempts' => $attempts,
+                        ];
+                    }
+                }
             }
 
-            $windowExpires = strtotime((string) $row['expires_at']);
-            if ($windowExpires > $now) {
-                $attempts = (int) $row['attempts'] + 1;
-                $blockedUntilSql = null;
-                $retryAfter = max(1, $windowExpires - $now);
-                if ($attempts > $maxAttempts) {
-                    $blockUntil = $now + ($blockSeconds > 0 ? $blockSeconds : $retryAfter);
-                    $blockedUntilSql = date('Y-m-d H:i:s', $blockUntil);
-                    $retryAfter = max(1, $blockUntil - $now);
-                }
-
-                $update = $pdo->prepare(
-                    'UPDATE rate_limits
-                     SET attempts = :attempts,
-                         identifier_label = :identifier_label,
-                         blocked_until = :blocked_until
-                     WHERE id = :id'
-                );
-                $update->execute([
-                    'attempts' => $attempts,
+            if ($result === null) {
+                $pdo->prepare(
+                    'INSERT INTO rate_limits (action, identifier_hash, identifier_label, attempts, window_started_at, expires_at, blocked_until)
+                     VALUES (:action, :identifier_hash, :identifier_label, 1, :window_started_at, :expires_at, NULL)
+                     ON DUPLICATE KEY UPDATE
+                        identifier_label = VALUES(identifier_label),
+                        attempts = 1,
+                        window_started_at = VALUES(window_started_at),
+                        expires_at = VALUES(expires_at),
+                        blocked_until = NULL'
+                )->execute([
+                    'action' => $action,
+                    'identifier_hash' => $identifierHash,
                     'identifier_label' => $label,
-                    'blocked_until' => $blockedUntilSql,
-                    'id' => (int) $row['id'],
+                    'window_started_at' => $nowSql,
+                    'expires_at' => $expiresAt,
                 ]);
 
-                return [
-                    'allowed' => $attempts <= $maxAttempts,
-                    'retry_after' => $attempts <= $maxAttempts ? 0 : $retryAfter,
-                    'attempts' => $attempts,
+                $result = [
+                    'allowed' => true,
+                    'retry_after' => 0,
+                    'attempts' => 1,
                 ];
             }
+
+            if (random_int(1, 100) === 1) {
+                $pdo->exec('DELETE FROM rate_limits WHERE expires_at < DATE_SUB(NOW(), INTERVAL 1 DAY) AND (blocked_until IS NULL OR blocked_until < NOW())');
+            }
+
+            $pdo->commit();
+            return $result;
+        } catch (Throwable $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            throw $e;
         }
-
-        $pdo->prepare(
-            'INSERT INTO rate_limits (action, identifier_hash, identifier_label, attempts, window_started_at, expires_at, blocked_until)
-             VALUES (:action, :identifier_hash, :identifier_label, 1, :window_started_at, :expires_at, NULL)
-             ON DUPLICATE KEY UPDATE
-                identifier_label = VALUES(identifier_label),
-                attempts = 1,
-                window_started_at = VALUES(window_started_at),
-                expires_at = VALUES(expires_at),
-                blocked_until = NULL'
-        )->execute([
-            'action' => $action,
-            'identifier_hash' => $identifierHash,
-            'identifier_label' => $label,
-            'window_started_at' => $nowSql,
-            'expires_at' => $expiresAt,
-        ]);
-
-        if (random_int(1, 100) === 1) {
-            $pdo->exec('DELETE FROM rate_limits WHERE expires_at < DATE_SUB(NOW(), INTERVAL 1 DAY) AND (blocked_until IS NULL OR blocked_until < NOW())');
-        }
-
-        return [
-            'allowed' => true,
-            'retry_after' => 0,
-            'attempts' => 1,
-        ];
     }, [
         'allowed' => true,
         'retry_after' => 0,

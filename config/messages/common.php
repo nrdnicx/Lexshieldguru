@@ -13,11 +13,133 @@ function lex_messages_delete_attachment_file(array $message): void
 
 function lex_messages_delete_conversation_for_user(int $caseId, int $currentUserId, int $partnerUserId): int
 {
-    $deletedCount = lex_mark_conversation_deleted_for_user($caseId, $currentUserId, $partnerUserId);
-    if ($deletedCount > 0) {
-        lex_audit('delete_conversation', 'messages', (string) $caseId);
+    $pdo = lex_pdo();
+    if ($currentUserId <= 0 || $partnerUserId <= 0 || $currentUserId === $partnerUserId) {
+        return 0;
     }
-    return $deletedCount;
+    $whereCase = $caseId > 0 ? 'm.case_id = :case_id' : 'm.case_id IS NULL';
+    $params = [
+        'me1' => $currentUserId,
+        'partner1' => $partnerUserId,
+        'partner2' => $partnerUserId,
+        'me2' => $currentUserId,
+    ];
+    if ($caseId > 0) {
+        $params['case_id'] = $caseId;
+    }
+    $stmt = $pdo->prepare(
+        'SELECT m.id
+         FROM messages m
+         WHERE ' . $whereCase . '
+           AND ((m.sender_id = :me1 AND m.receiver_id = :partner1) OR (m.sender_id = :partner2 AND m.receiver_id = :me2))'
+    );
+    $stmt->execute($params);
+    $ids = array_map(static fn ($row) => (int) $row['id'], $stmt->fetchAll());
+    if (!$ids) {
+        return 0;
+    }
+    $insert = $pdo->prepare(
+        'INSERT IGNORE INTO message_deletions (message_id, user_id)
+         VALUES (:message_id, :user_id)'
+    );
+    foreach ($ids as $messageId) {
+        $insert->execute([
+            'message_id' => $messageId,
+            'user_id' => $currentUserId,
+        ]);
+    }
+    lex_audit('delete_conversation', 'messages', $caseId . ':' . $partnerUserId);
+    return count($ids);
+}
+
+
+function lex_message_conversation_archive_table_ensure(): void
+{
+    static $done = false;
+    if ($done) {
+        return;
+    }
+    lex_db_retry(static function () use (&$done): void {
+        $pdo = lex_pdo();
+        $pdo->exec(
+            'CREATE TABLE IF NOT EXISTS `message_conversation_archives_v2` (
+                `user_id` INT UNSIGNED NOT NULL,
+                `conversation_key` VARCHAR(120) NOT NULL,
+                `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (`user_id`, `conversation_key`),
+                KEY `idx_message_conversation_archives_v2_key` (`conversation_key`),
+                CONSTRAINT `fk_message_conversation_archives_v2_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+            ) ENGINE=InnoDB'
+        );
+        // Preserve archive choices created by the earlier case/partner table when it exists.
+        $legacyTable = $pdo->query("SHOW TABLES LIKE 'message_conversation_archives'")->fetchColumn();
+        if ($legacyTable) {
+            $pdo->exec(
+                "INSERT IGNORE INTO message_conversation_archives_v2 (user_id, conversation_key, created_at, updated_at)
+                 SELECT user_id, CONCAT('case:', case_id, ':partner:', partner_user_id), created_at, updated_at
+                 FROM message_conversation_archives"
+            );
+        }
+        $done = true;
+    });
+}
+
+function lex_message_conversation_archive_key(int $caseId, int $partnerUserId): string
+{
+    return $caseId > 0
+        ? 'case:' . $caseId . ':partner:' . $partnerUserId
+        : 'direct:partner:' . $partnerUserId;
+}
+
+function lex_message_thread_is_archived(int $userId, int $caseId, int $partnerUserId): bool
+{
+    if ($userId <= 0 || $partnerUserId <= 0) {
+        return false;
+    }
+    lex_message_conversation_archive_table_ensure();
+    $conversationKey = lex_message_conversation_archive_key($caseId, $partnerUserId);
+    return (bool) lex_db_retry(static function () use ($userId, $conversationKey): bool {
+        $stmt = lex_pdo()->prepare(
+            'SELECT 1 FROM message_conversation_archives_v2
+             WHERE user_id = :user_id AND conversation_key = :conversation_key
+             LIMIT 1'
+        );
+        $stmt->execute([
+            'user_id' => $userId,
+            'conversation_key' => $conversationKey,
+        ]);
+        return (bool) $stmt->fetchColumn();
+    });
+}
+
+function lex_message_thread_set_archived(int $userId, int $caseId, int $partnerUserId, bool $isArchived): int
+{
+    if ($userId <= 0 || $partnerUserId <= 0 || $userId === $partnerUserId) {
+        return 0;
+    }
+    lex_message_conversation_archive_table_ensure();
+    $conversationKey = lex_message_conversation_archive_key($caseId, $partnerUserId);
+    if ($isArchived) {
+        lex_pdo()->prepare(
+            'INSERT INTO message_conversation_archives_v2 (user_id, conversation_key)
+             VALUES (:user_id, :conversation_key)
+             ON DUPLICATE KEY UPDATE updated_at = CURRENT_TIMESTAMP'
+        )->execute([
+            'user_id' => $userId,
+            'conversation_key' => $conversationKey,
+        ]);
+    } else {
+        lex_pdo()->prepare(
+            'DELETE FROM message_conversation_archives_v2
+             WHERE user_id = :user_id AND conversation_key = :conversation_key'
+        )->execute([
+            'user_id' => $userId,
+            'conversation_key' => $conversationKey,
+        ]);
+    }
+    lex_audit($isArchived ? 'archive_conversation' : 'restore_conversation', 'messages', $caseId . ':' . $partnerUserId);
+    return 1;
 }
 
 function lex_messages_find_owned_message(PDO $pdo, int $messageId, int $caseId, int $senderId, int $viewerId): ?array

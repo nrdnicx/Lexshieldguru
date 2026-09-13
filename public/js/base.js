@@ -559,6 +559,8 @@
     const dateInput = appointmentForm.querySelector('[data-appointment-date]');
     const timeInput = appointmentForm.querySelector('[data-appointment-time]');
     const typeInput = appointmentForm.querySelector('[data-appointment-type]');
+    const customTypeField = appointmentForm.querySelector('[data-custom-appointment-type-field]');
+    const customTypeInput = appointmentForm.querySelector('[data-custom-appointment-type]');
     const summaryLawyer = appointmentForm.querySelector('[data-appointment-summary-lawyer]');
     const summaryMeta = appointmentForm.querySelector('[data-appointment-summary-meta]');
     const pickerModal = page?.querySelector('[data-appointment-picker-modal]');
@@ -597,7 +599,7 @@
       const lawyerLabel = selectedOption && selectedOption.value ? selectedOption.textContent.trim() : 'Choose a lawyer';
       const specialization = selectedOption?.dataset?.specialization || 'General Practice';
       const dateLabel = formatShortDate(dateInput?.value || ''); const timeLabel = formatTime(timeInput?.value || '');
-      const typeLabel = typeInput?.value || 'Consultation';
+      const typeLabel = typeInput?.value === 'Other / Custom' ? (customTypeInput?.value.trim() || 'Custom appointment') : (typeInput?.value || 'Consultation');
       if (summaryLawyer) summaryLawyer.textContent = lawyerLabel;
       if (summaryMeta) summaryMeta.textContent = dateLabel && timeLabel ? `${typeLabel} with ${specialization} on ${dateLabel} at ${timeLabel}. The request will stay pending until the lawyer confirms it.` : 'Select a date and time to preview this request.';
       if (pickerLabel) pickerLabel.textContent = dateLabel && timeLabel ? `${dateLabel} at ${timeLabel}` : 'Choose date and time';
@@ -655,7 +657,13 @@
     prevMonth?.addEventListener('click',async()=>{calendarCursor=new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()-1,1);await renderCalendar();}); nextMonth?.addEventListener('click',async()=>{calendarCursor=new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()+1,1);await renderCalendar();});
     sessionButtons.forEach(button=>button.addEventListener('click',()=>{if(button.disabled)return;selectedSession=button.dataset.session||'';timeInput.value='';updateSessionCards();renderTimes();}));
     lawyerSelect?.addEventListener('change',async()=>{dateInput.value='';timeInput.value='';selectedSession='';if(sessionArea)sessionArea.hidden=true;if(timeArea)timeArea.hidden=true;await fetchMonthAvailability();updateAppointmentSummary();});
-    typeInput?.addEventListener('change',updateAppointmentSummary); typeInput?.addEventListener('input',updateAppointmentSummary); updateAppointmentSummary();
+    const syncCustomAppointmentType = () => {
+      const isCustom = typeInput?.value === 'Other / Custom';
+      if (customTypeField) customTypeField.hidden = !isCustom;
+      if (customTypeInput) customTypeInput.required = isCustom;
+      updateAppointmentSummary();
+    };
+    typeInput?.addEventListener('change',syncCustomAppointmentType); typeInput?.addEventListener('input',syncCustomAppointmentType); customTypeInput?.addEventListener('input',updateAppointmentSummary); syncCustomAppointmentType();
   }
 
   const apiBase = document.body.dataset.apiBase;

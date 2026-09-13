@@ -35,10 +35,14 @@ if (!$record) {
 
 $currentUserId = (int) $user['id'];
 $userRole = (string) ($user['role'] ?? '');
-$isClientOwner = $userRole === 'client' && $currentUserId === (int) $record['client_user_id'];
-$isLawyerOwner = $userRole === 'lawyer' && $currentUserId === (int) $record['created_by_user_id'];
+$caseAccess = lex_case_file_vault_access([
+    'id' => (int) $record['id'],
+    'client_user_id' => (int) $record['client_user_id'],
+    'assigned_lawyer_user_id' => (int) $record['assigned_lawyer_user_id'],
+    'created_by_user_id' => (int) $record['created_by_user_id'],
+], $user);
 
-if (!$isClientOwner && !$isLawyerOwner) {
+if ($caseAccess === 'none') {
     lex_audit('denied_case_file_attachment_access', 'case_files', (string) $caseFileId);
     http_response_code(403);
     exit('Access denied.');
@@ -65,7 +69,8 @@ if (!in_array($category, $allowedCategories, true)) {
 
 $originalName = trim((string) ($attachment['name'] ?? 'Attachment'));
 $originalName = $originalName !== '' ? $originalName : 'Attachment';
-$path = lex_case_files_folder_path((string) $record['folder_name']) . DIRECTORY_SEPARATOR . $category . DIRECTORY_SEPARATOR . $storedName;
+$folderPath = lex_case_files_folder_path((string) $record['folder_name']);
+$path = lex_storage_assert_child_path($folderPath . DIRECTORY_SEPARATOR . $category, $storedName);
 
 if (!is_file($path)) {
     lex_audit('missing_case_file_attachment', 'case_files', (string) $caseFileId);

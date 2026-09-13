@@ -28848,3 +28848,3122 @@ body:has([data-case-files-app]) .case-vault-doc-menu-panel button {
     font-size: 0.72rem;
   }
 }
+
+/* ================================================================
+   LexShield — Final mobile Case Vault polish
+   Scope: Case Files / Case Vault only, <= 680px.
+   Keeps desktop layout and all PHP/JS behavior unchanged.
+   ================================================================ */
+@media (max-width: 680px) {
+  body:has([data-case-files-app]) .case-vault-documents {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Compact folder browser */
+  body:has([data-case-files-app]) .case-vault-folder-section {
+    display: block;
+    margin: 0;
+    padding: 0;
+    border-radius: 12px;
+    overflow: visible;
+    background: #08182e;
+    border: 1px solid rgba(70, 98, 138, 0.26);
+    box-shadow: none;
+  }
+
+  body:has([data-case-files-app]) .case-vault-folder-section + .case-vault-folder-section {
+    margin-top: 0.55rem;
+  }
+
+  body:has([data-case-files-app]) .case-vault-folder-section > summary.case-vault-section-head {
+    min-height: 66px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+    padding: 0.65rem 0.72rem;
+    border-radius: 12px;
+  }
+
+  body:has([data-case-files-app]) .case-vault-section-summary {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex: 1 1 auto;
+  }
+
+  body:has([data-case-files-app]) .case-vault-section-summary > div {
+    min-width: 0;
+  }
+
+  body:has([data-case-files-app]) .case-vault-section-folder-icon {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    border-radius: 10px;
+  }
+
+  body:has([data-case-files-app]) .case-vault-section-head h4 {
+    margin: 0;
+    overflow: hidden;
+    font-size: 0.86rem;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  body:has([data-case-files-app]) .case-vault-section-head .muted {
+    display: none;
+  }
+
+  body:has([data-case-files-app]) .case-vault-folder-count {
+    flex: 0 0 auto;
+    min-height: 28px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.64rem;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  body:has([data-case-files-app]) .case-vault-folder-content {
+    padding: 0 0.65rem 0.65rem;
+    background: transparent;
+  }
+
+  body:has([data-case-files-app]) .case-vault-folder-tools {
+    padding: 0 0 0.45rem;
+  }
+
+  body:has([data-case-files-app]) .case-vault-folder-tools .button {
+    min-height: 32px;
+    padding: 0.38rem 0.62rem;
+    font-size: 0.68rem;
+  }
+
+  /* Remove the desktop table heading on phones. */
+  body:has([data-case-files-app]) .case-vault-doc-table-head {
+    display: none !important;
+  }
+
+  /* Compact, touch-friendly document cards. */
+  body:has([data-case-files-app]) .case-vault-doc-list {
+    display: grid;
+    gap: 0.45rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    overflow: visible !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc {
+    display: grid;
+    grid-template-columns: 58px minmax(0, 1fr) 34px;
+    grid-template-rows: auto auto auto;
+    align-items: center;
+    column-gap: 0.62rem;
+    row-gap: 0.08rem;
+    min-height: 82px;
+    padding: 0.62rem;
+    box-sizing: border-box;
+    border: 1px solid rgba(70, 98, 138, 0.24);
+    border-radius: 11px;
+    background: #08182e;
+    box-shadow: none;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-thumb {
+    grid-column: 1;
+    grid-row: 1 / 4;
+    width: 58px;
+    height: 58px;
+    border-radius: 9px;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-thumb .case-vault-doc-icon {
+    width: 25px;
+    height: 25px;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-main {
+    grid-column: 2;
+    grid-row: 1;
+    width: 100%;
+    min-width: 0;
+    align-self: end;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-main strong {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 0.77rem;
+    line-height: 1.25;
+    white-space: normal;
+    text-overflow: clip;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  body:has([data-case-files-app]) .case-vault-rejection-reason {
+    margin-top: 0.16rem;
+    font-size: 0.61rem;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-owner {
+    grid-column: 2;
+    grid-row: 2;
+    width: 100%;
+    min-width: 0;
+    gap: 0.3rem;
+    overflow: hidden;
+    font-size: 0.64rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  body:has([data-case-files-app]) .case-vault-owner-icon {
+    width: 13px;
+    height: 13px;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-date {
+    grid-column: 2;
+    grid-row: 3;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    color: #96a8bf;
+    font-size: 0.6rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-date strong {
+    color: #96a8bf;
+    font-size: 0.6rem;
+    font-weight: 700;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-date span {
+    display: none;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-size {
+    position: absolute;
+    right: 2.9rem;
+    bottom: 0.7rem;
+    color: #7f93ad;
+    font-size: 0.58rem;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-actions {
+    grid-column: 3;
+    grid-row: 1 / 4;
+    width: 34px;
+    min-width: 34px;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-menu summary {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-menu summary span {
+    width: 3px;
+    height: 3px;
+  }
+
+  /* Keep action menus fully visible and inside the phone viewport. */
+  body:has([data-case-files-app]) .case-vault-doc-menu-panel {
+    right: -0.1rem;
+    bottom: calc(100% + 0.35rem) !important;
+    top: auto !important;
+    width: min(220px, calc(100vw - 1.25rem));
+    max-width: calc(100vw - 1.25rem);
+    max-height: min(70vh, 420px);
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    padding: 0.38rem;
+    border-radius: 10px;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-menu-panel a,
+  body:has([data-case-files-app]) .case-vault-doc-menu-panel button {
+    min-height: 42px;
+    padding: 0.58rem 0.65rem;
+    border-radius: 7px;
+    font-size: 0.72rem;
+  }
+
+  body:has([data-case-files-app]) .case-vault-menu-rename,
+  body:has([data-case-files-app]) .case-vault-reject-field {
+    padding: 0.48rem;
+    border-radius: 8px;
+  }
+
+  body:has([data-case-files-app]) .case-vault-menu-rename input,
+  body:has([data-case-files-app]) .case-vault-reject-field textarea {
+    min-height: 38px;
+    font-size: 0.7rem;
+  }
+
+  /* Compact empty-folder state. */
+  body:has([data-case-files-app]) .case-vault-folder-content .case-subempty {
+    margin: 0;
+    padding: 0.7rem;
+    border-radius: 9px;
+  }
+
+  body:has([data-case-files-app]) .case-vault-folder-content .case-subempty strong {
+    font-size: 0.72rem;
+  }
+
+  body:has([data-case-files-app]) .case-vault-folder-content .case-subempty p {
+    margin-top: 0.18rem;
+    font-size: 0.62rem;
+  }
+}
+
+@media (max-width: 390px) {
+  body:has([data-case-files-app]) .case-vault-doc {
+    grid-template-columns: 52px minmax(0, 1fr) 32px;
+    column-gap: 0.52rem;
+    min-height: 78px;
+    padding: 0.55rem;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-thumb {
+    width: 52px;
+    height: 52px;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-main strong {
+    font-size: 0.72rem;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-owner {
+    font-size: 0.6rem;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-size {
+    right: 2.65rem;
+  }
+
+  body:has([data-case-files-app]) .case-vault-section-folder-icon {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+
+  body:has([data-case-files-app]) .case-vault-folder-count {
+    padding-left: 0.45rem;
+    padding-right: 0.45rem;
+    font-size: 0.6rem;
+  }
+}
+
+/* ================================================================
+   LexShield — Case Vault mobile refinement v3
+   Scope: Case Files / Case Vault only, <= 680px.
+   Purpose: tighter folder rows, cleaner document cards, and a
+   contained touch-friendly action menu.
+   ================================================================ */
+@media (max-width: 680px) {
+  body:has([data-case-files-app]) .case-vault-panel-header {
+    padding: 0.8rem 0.9rem;
+  }
+
+  body:has([data-case-files-app]) .case-vault-topbar {
+    padding: 0.85rem 0.9rem 0;
+  }
+
+  body:has([data-case-files-app]) .case-vault-grid {
+    padding: 0 0.9rem 0.9rem;
+    gap: 0.7rem;
+  }
+
+  /* Compact horizontal folder row. */
+  body:has([data-case-files-app]) .case-vault-folder-section {
+    margin: 0 !important;
+    padding: 0;
+    border-radius: 13px;
+    background: #ffffff;
+    border: 1px solid #dbe4ef;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.045);
+  }
+
+  body:has([data-case-files-app]) .case-vault-folder-section + .case-vault-folder-section {
+    margin-top: 0.45rem !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-folder-section > summary.case-vault-section-head {
+    min-height: 62px;
+    padding: 0.58rem 0.65rem;
+    border-radius: 13px;
+  }
+
+  body:has([data-case-files-app]) .case-vault-section-summary {
+    gap: 0.58rem;
+  }
+
+  body:has([data-case-files-app]) .case-vault-section-folder-icon {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+    border-radius: 10px;
+  }
+
+  body:has([data-case-files-app]) .case-vault-section-head h4 {
+    font-size: 0.9rem;
+    font-weight: 800;
+  }
+
+  body:has([data-case-files-app]) .case-vault-folder-count {
+    min-height: 27px;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.62rem;
+  }
+
+  /* Don't waste a full-width area on folder tools unless they exist. */
+  body:has([data-case-files-app]) .case-vault-folder-content {
+    padding: 0 0.55rem 0.55rem;
+    gap: 0.4rem;
+    background: #ffffff;
+  }
+
+  body:has([data-case-files-app]) .case-vault-folder-tools {
+    padding: 0 0 0.35rem;
+  }
+
+  /* Document list sits visually inside the folder, but remains compact. */
+  body:has([data-case-files-app]) .case-vault-doc-list {
+    gap: 0.4rem;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc {
+    position: relative;
+    grid-template-columns: 54px minmax(0, 1fr) 38px;
+    grid-template-rows: auto auto auto;
+    min-height: 76px;
+    padding: 0.55rem;
+    column-gap: 0.6rem;
+    row-gap: 0.06rem;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid #dbe4ef;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.035);
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-thumb {
+    width: 54px;
+    height: 54px;
+    border-radius: 9px;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-main {
+    align-self: center;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-main strong {
+    font-size: 0.78rem;
+    line-height: 1.2;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-owner {
+    font-size: 0.62rem;
+    color: #64748b;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-date,
+  body:has([data-case-files-app]) .case-vault-doc-date strong {
+    font-size: 0.59rem;
+    color: #64748b;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-size {
+    right: 3rem;
+    bottom: 0.62rem;
+    font-size: 0.58rem;
+    color: #64748b;
+  }
+
+  /* Make the overflow control look like a deliberate button. */
+  body:has([data-case-files-app]) .case-vault-doc-actions {
+    width: 38px;
+    min-width: 38px;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-menu summary {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #dbe4ef;
+    border-radius: 10px;
+    background: #f8fafc;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-menu summary span {
+    width: 3px;
+    height: 3px;
+  }
+
+  /* Menu opens above the card and stays inside the viewport. */
+  body:has([data-case-files-app]) .case-vault-doc-menu-panel {
+    right: 0;
+    bottom: calc(100% + 0.45rem) !important;
+    width: min(228px, calc(100vw - 1.5rem));
+    max-width: calc(100vw - 1.5rem);
+    max-height: min(68vh, 390px);
+    padding: 0.42rem;
+    border-radius: 12px;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.18);
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-menu-panel a,
+  body:has([data-case-files-app]) .case-vault-doc-menu-panel button {
+    min-height: 42px;
+    padding: 0.58rem 0.7rem;
+    font-size: 0.72rem;
+  }
+
+  /* Compact empty-folder state. */
+  body:has([data-case-files-app]) .case-vault-folder-content .case-subempty {
+    padding: 0.58rem 0.65rem;
+    border-radius: 9px;
+  }
+}
+
+/* Light-theme finishing touches. */
+@media (max-width: 680px) {
+  html[data-theme="light"] body:has([data-case-files-app]) .case-vault-folder-section,
+  html[data-theme="light"] body:has([data-case-files-app]) .case-vault-folder-content,
+  html[data-theme="light"] body:has([data-case-files-app]) .case-vault-doc {
+    background: #ffffff;
+  }
+
+  html[data-theme="light"] body:has([data-case-files-app]) .case-vault-doc-menu summary {
+    background: #f8fafc;
+    color: #475569;
+  }
+}
+
+/* Dark-theme counterpart so the mobile refinement remains consistent. */
+@media (max-width: 680px) {
+  html[data-theme="dark"] body:has([data-case-files-app]) .case-vault-folder-section,
+  html[data-theme="dark"] body:has([data-case-files-app]) .case-vault-folder-content,
+  html[data-theme="dark"] body:has([data-case-files-app]) .case-vault-doc {
+    background: #08182e;
+    border-color: rgba(70, 98, 138, 0.28);
+  }
+
+  html[data-theme="dark"] body:has([data-case-files-app]) .case-vault-doc-menu summary {
+    background: #0a1b31;
+    border-color: rgba(70, 98, 138, 0.3);
+    color: #b7c7db;
+  }
+}
+
+/* ================================================================
+   LexShield — Case Vault mobile refinement v4
+   Fix: force compact horizontal folder headers and prevent mobile
+   flex wrapping from turning folder cards into tall stacked cards.
+   ================================================================ */
+@media (max-width: 680px) {
+  body:has([data-case-files-app]) .case-vault-documents {
+    padding: 0.65rem !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-list-head {
+    min-height: 44px !important;
+    margin-bottom: 0.5rem !important;
+    padding: 0 0.2rem !important;
+    flex-wrap: nowrap !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-list-head h4 {
+    font-size: 0.88rem !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-list-head span {
+    font-size: 0.58rem !important;
+    white-space: nowrap !important;
+  }
+
+  /* Folder header: one compact row, never a vertical stack. */
+  body:has([data-case-files-app]) .case-vault-folder-section {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-folder-section > summary.case-vault-section-head {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    min-height: 64px !important;
+    height: 64px !important;
+    box-sizing: border-box !important;
+    padding: 0.55rem 0.7rem !important;
+    gap: 0.55rem !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-section-summary {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    width: auto !important;
+    grid-template-columns: none !important;
+    align-items: center !important;
+    gap: 0.55rem !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-section-summary > div {
+    min-width: 0 !important;
+    display: block !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-section-folder-icon {
+    width: 38px !important;
+    height: 38px !important;
+    flex: 0 0 38px !important;
+    margin: 0 !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-section-head h4 {
+    margin: 0 !important;
+    font-size: 0.88rem !important;
+    line-height: 1.15 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* Keep the description available only as a tiny secondary line. */
+  body:has([data-case-files-app]) .case-vault-section-head .muted {
+    display: none !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-folder-count {
+    flex: 0 0 auto !important;
+    min-width: 52px !important;
+    min-height: 28px !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+  }
+
+  /* Only expanded folders reveal their document area. */
+  body:has([data-case-files-app]) .case-vault-folder-section[open] > .case-vault-folder-content {
+    display: grid !important;
+    padding: 0.45rem !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-folder-section:not([open]) > .case-vault-folder-content {
+    display: none !important;
+  }
+
+  /* Compact document row. */
+  body:has([data-case-files-app]) .case-vault-doc {
+    min-height: 72px !important;
+    padding: 0.5rem !important;
+    grid-template-columns: 52px minmax(0, 1fr) 36px !important;
+    column-gap: 0.55rem !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-thumb {
+    width: 52px !important;
+    height: 52px !important;
+    grid-row: 1 / span 3 !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-main strong {
+    font-size: 0.76rem !important;
+    line-height: 1.15 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-owner {
+    font-size: 0.6rem !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-date {
+    font-size: 0.58rem !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-size {
+    right: 2.8rem !important;
+    bottom: 0.5rem !important;
+    font-size: 0.56rem !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-actions {
+    width: 36px !important;
+    min-width: 36px !important;
+    align-self: center !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-doc-menu summary {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 9px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  body:has([data-case-files-app]) .case-vault-folder-section > summary.case-vault-section-head {
+    min-height: 60px !important;
+    height: 60px !important;
+    padding-inline: 0.58rem !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-section-folder-icon {
+    width: 36px !important;
+    height: 36px !important;
+    flex-basis: 36px !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-section-head h4 {
+    font-size: 0.82rem !important;
+  }
+
+  body:has([data-case-files-app]) .case-vault-folder-count {
+    min-width: 48px !important;
+    font-size: 0.58rem !important;
+  }
+}
+
+/* ================================================================
+   CASE FILE LIST + DETAILS MOBILE POLISH v5
+   Mobile-only refinement. Preserves existing markup and behavior.
+   ================================================================ */
+@media (max-width: 760px) {
+  body.app-workspace:has([data-case-files-app]) .case-list-panel {
+    padding: .55rem;
+    border-radius: 16px;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-panel .case-panel-header {
+    padding: .45rem .35rem .55rem;
+    margin-bottom: .1rem;
+    border-bottom: 1px solid rgba(148, 163, 184, .16);
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-panel .case-panel-header h2 {
+    font-size: 1.02rem;
+    line-height: 1.2;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-panel .case-panel-header .pill {
+    padding: .32rem .58rem;
+    font-size: .68rem;
+    white-space: nowrap;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody {
+    gap: .5rem;
+  }
+
+  /* Compact case card: identity first, metadata second, actions last. */
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    padding: .2rem .65rem .55rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, .04);
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td {
+    padding: .48rem .05rem;
+  }
+
+  /* Client + case title become the visual heading of the card. */
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(1) {
+    padding-top: .58rem;
+    padding-bottom: .25rem;
+    border-bottom: 0;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(1)::before {
+    margin-bottom: .08rem;
+    font-size: .58rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(1) .case-folder-link {
+    font-size: .98rem;
+    font-weight: 800;
+    line-height: 1.25;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(2) {
+    padding-top: .08rem;
+    padding-bottom: .52rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(2)::before {
+    display: none;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-file-cell {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .18rem .4rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-file-cell strong {
+    font-size: .92rem;
+    line-height: 1.3;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-file-cell .muted {
+    font-size: .68rem;
+    line-height: 1.25;
+  }
+
+  /* Metadata is deliberately compact instead of six tall sections. */
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(3),
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(4),
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(5) {
+    display: grid;
+    grid-template-columns: 6.9rem minmax(0, 1fr);
+    align-items: center;
+    gap: .35rem;
+    min-height: 34px;
+    padding: .36rem .05rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(3)::before,
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(4)::before,
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(5)::before {
+    margin: 0;
+    font-size: .56rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(4),
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(5) {
+    font-size: .78rem;
+  }
+
+  /* Actions become labeled, compact controls instead of two huge icon bars. */
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(6) {
+    padding-top: .58rem;
+    border-bottom: 0;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(6)::before {
+    margin-bottom: .32rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-row-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: stretch;
+    gap: .4rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-row-actions .button,
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-row-actions form {
+    min-width: 0;
+    width: 100%;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-select-button,
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-delete-button {
+    min-height: 42px;
+    height: 42px;
+    padding: .45rem .7rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .35rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-select-button::after {
+    content: "Open case";
+    font-size: .72rem;
+    font-weight: 800;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-delete-button {
+    width: 42px;
+    min-width: 42px;
+    padding: 0;
+  }
+
+  /* Keep the destructive action icon-only and clearly secondary. */
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-delete-button::after {
+    display: none;
+  }
+
+  /* Details modal: use the phone as a real bottom-sheet-like workspace. */
+  body.app-workspace:has([data-case-files-app]) .case-detail-modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-detail-modal {
+    width: 100%;
+    max-width: 100%;
+    max-height: 92dvh;
+    margin: 0;
+    border-radius: 22px 22px 0 0;
+    overflow: hidden;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-detail-modal .modal-header {
+    padding: .8rem .9rem .62rem;
+    gap: .55rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-detail-modal .modal-header h2 {
+    font-size: 1.08rem;
+    line-height: 1.2;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-detail-modal .modal-note {
+    max-width: 30rem;
+    font-size: .68rem;
+    line-height: 1.3;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-detail-modal .close-button {
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+    min-height: 38px;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-detail-modal-body {
+    max-height: calc(92dvh - 78px);
+    padding: .72rem .78rem .9rem;
+    gap: .5rem;
+    overscroll-behavior: contain;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-detail-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: .55rem;
+    padding: .1rem .05rem .15rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-detail-head h3 {
+    margin: .05rem 0 .12rem;
+    font-size: 1.12rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-detail-head > div:first-child > .muted {
+    margin: 0;
+    font-size: .82rem;
+    line-height: 1.3;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-detail-head-actions {
+    justify-content: flex-start;
+    gap: .35rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-detail-head-actions .button-secondary {
+    min-height: 40px;
+    padding: .45rem .72rem;
+    font-size: .74rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-detail-head-actions .status-pill {
+    padding: .32rem .62rem;
+    font-size: .7rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-accordion {
+    border-radius: 14px;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-accordion summary {
+    padding: .58rem .68rem;
+    font-size: .8rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-detail-grid {
+    grid-template-columns: 1fr;
+    gap: .34rem;
+    padding: 0 .62rem .62rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-info-card {
+    display: grid;
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+    align-items: center;
+    gap: .45rem;
+    min-width: 0;
+    padding: .52rem .58rem;
+    border-radius: 11px;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-info-card span {
+    font-size: .64rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-info-card strong {
+    min-width: 0;
+    font-size: .82rem;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-body-copy {
+    padding: .05rem .65rem .68rem;
+    font-size: .82rem;
+    line-height: 1.45;
+  }
+
+  /* Recent Activity: shorter cards and clearer hierarchy. */
+  body.app-workspace:has([data-case-files-app]) .case-activity-card {
+    padding: .65rem;
+    border-radius: 16px;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-activity-card .case-panel-header {
+    min-height: 0;
+    padding: .25rem .15rem .55rem;
+    margin-bottom: .38rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-activity-card .case-panel-header h2 {
+    font-size: 1rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-activity-note {
+    max-width: 18rem;
+    font-size: .66rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-activity-feed {
+    gap: .38rem;
+    padding: 0;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-activity-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .45rem;
+    padding: .58rem .62rem;
+    border-radius: 12px;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-activity-item strong {
+    display: block;
+    font-size: .8rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-activity-item span {
+    margin-top: .08rem;
+    font-size: .68rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-activity-meta {
+    gap: .18rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-activity-item small {
+    font-size: .58rem;
+    white-space: nowrap;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-pagination {
+    padding: .55rem .2rem .2rem;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-pagination-bar {
+    gap: .45rem;
+    padding-top: .55rem;
+  }
+}
+
+@media (max-width: 390px) {
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(3),
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(4),
+  body.app-workspace:has([data-case-files-app]) .case-list-table tbody td:nth-child(5) {
+    grid-template-columns: 6.2rem minmax(0, 1fr);
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-info-card {
+    grid-template-columns: 5.9rem minmax(0, 1fr);
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-select-button::after {
+    content: "Open";
+  }
+}
+
+/* ================================================================
+   FINAL CASE FILE MOBILE ACTIONS OVERRIDE
+   Uses the existing Case Files markup and wins over earlier rules.
+   ================================================================ */
+@media (max-width: 720px) {
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-row-actions {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 112px !important;
+    align-items: stretch !important;
+    gap: .5rem !important;
+    width: 100% !important;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-row-actions > form,
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-row-actions .case-inline-delete-form {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-row-actions .case-select-button,
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-row-actions .case-delete-button {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    padding: .5rem .75rem !important;
+    border-radius: 12px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: .42rem !important;
+    font-size: .78rem !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-row-actions .case-select-button::after {
+    content: "Open case" !important;
+    font-size: .78rem !important;
+    font-weight: 800 !important;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-row-actions .case-delete-button::after {
+    content: "Delete" !important;
+    display: inline !important;
+    font-size: .76rem !important;
+    font-weight: 800 !important;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-row-actions .case-delete-button {
+    background: rgba(184, 77, 87, .10) !important;
+    border-color: rgba(184, 77, 87, .34) !important;
+    color: #b84d57 !important;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-row-actions .case-delete-button:hover,
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-row-actions .case-delete-button:focus-visible {
+    background: rgba(184, 77, 87, .16) !important;
+  }
+
+  html[data-theme="dark"] body.app-workspace:has([data-case-files-app]) .case-list-table .case-row-actions .case-delete-button {
+    background: rgba(255, 82, 105, .10) !important;
+    border-color: rgba(255, 82, 105, .38) !important;
+    color: #ff6d7f !important;
+  }
+}
+
+@media (max-width: 390px) {
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-row-actions {
+    grid-template-columns: minmax(0, 1fr) 100px !important;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-row-actions .case-select-button,
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-row-actions .case-delete-button {
+    padding-inline: .55rem !important;
+    font-size: .72rem !important;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-list-table .case-row-actions .case-delete-button::after {
+    font-size: .7rem !important;
+  }
+}
+
+/* ================================================================
+   LEXSHIELD MOBILE DASHBOARD REFINEMENT V1
+   Client + Lawyer + Admin
+   Phone-first layout; desktop behavior remains unchanged.
+   ================================================================ */
+
+@media (max-width: 760px) {
+  /* --------------------------------------------------------------
+     CLIENT + LAWYER: compact dashboard rhythm
+     -------------------------------------------------------------- */
+  body.app-workspace .client-dashboard-shell,
+  body.app-workspace .lawyer-dashboard-shell {
+    gap: .7rem;
+    padding: .55rem .45rem calc(1rem + env(safe-area-inset-bottom));
+  }
+
+  body.app-workspace .client-dashboard-metrics,
+  body.app-workspace .lawyer-dashboard-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: .55rem !important;
+  }
+
+  body.app-workspace .client-metric-card,
+  body.app-workspace .lawyer-metric-card {
+    min-height: 102px !important;
+    padding: .7rem .72rem !important;
+    border-radius: 16px !important;
+    gap: .12rem;
+  }
+
+  body.app-workspace .client-metric-icon,
+  body.app-workspace .lawyer-metric-icon {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+  }
+
+  body.app-workspace .client-metric-label,
+  body.app-workspace .lawyer-metric-label {
+    font-size: .73rem;
+    line-height: 1.25;
+  }
+
+  body.app-workspace .client-metric-value,
+  body.app-workspace .lawyer-metric-value {
+    font-size: 1.45rem !important;
+    line-height: 1.05;
+  }
+
+  body.app-workspace .client-metric-meta,
+  body.app-workspace .lawyer-metric-meta {
+    font-size: .66rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  body.app-workspace .client-dashboard-grid,
+  body.app-workspace .lawyer-dashboard-grid {
+    grid-template-columns: 1fr !important;
+    gap: .7rem !important;
+  }
+
+  body.app-workspace .client-dashboard-card,
+  body.app-workspace .lawyer-dashboard-card,
+  body.app-workspace .client-dashboard-next,
+  body.app-workspace .lawyer-dashboard-next {
+    padding: .82rem !important;
+    border-radius: 17px !important;
+  }
+
+  /* Keep section title and action on one compact row. */
+  body.app-workspace .client-dashboard-card-head,
+  body.app-workspace .lawyer-dashboard-card-head {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: .55rem !important;
+    margin-bottom: .55rem !important;
+  }
+
+  body.app-workspace .client-dashboard-card-head > div,
+  body.app-workspace .lawyer-dashboard-card-head > div {
+    min-width: 0;
+  }
+
+  body.app-workspace .client-dashboard-card h3,
+  body.app-workspace .lawyer-dashboard-card h3 {
+    font-size: .95rem !important;
+    line-height: 1.2;
+  }
+
+  body.app-workspace .client-dashboard-card-kicker,
+  body.app-workspace .lawyer-dashboard-card-kicker {
+    font-size: .61rem !important;
+    margin-bottom: .12rem !important;
+  }
+
+  body.app-workspace .client-dashboard-cta,
+  body.app-workspace .lawyer-dashboard-cta {
+    flex: 0 0 auto;
+    width: auto !important;
+    min-height: 34px !important;
+    padding: .35rem .6rem !important;
+    border-radius: 9px !important;
+    font-size: .7rem !important;
+    white-space: nowrap;
+  }
+
+  /* Assigned lawyer / lawyer profile: compact identity row. */
+  body.app-workspace .client-dashboard-profile-row,
+  body.app-workspace .lawyer-dashboard-profile-row {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: .65rem !important;
+  }
+
+  body.app-workspace .client-dashboard-avatar,
+  body.app-workspace .lawyer-dashboard-avatar {
+    width: 42px !important;
+    min-width: 42px !important;
+    max-width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+  }
+
+  body.app-workspace .client-dashboard-profile-meta,
+  body.app-workspace .lawyer-dashboard-profile-meta {
+    min-width: 0;
+    flex: 1 1 auto;
+    margin-right: 0 !important;
+  }
+
+  body.app-workspace .client-dashboard-profile-meta strong,
+  body.app-workspace .lawyer-dashboard-profile-meta strong {
+    display: block;
+    font-size: .94rem;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  body.app-workspace .client-dashboard-profile-meta span,
+  body.app-workspace .lawyer-dashboard-profile-meta span {
+    display: block;
+    margin-top: .15rem;
+    font-size: .68rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  body.app-workspace .client-dashboard-profile-row > .pill,
+  body.app-workspace .lawyer-dashboard-profile-row > .pill {
+    flex: 0 0 auto;
+    font-size: .67rem;
+    padding: .22rem .48rem;
+  }
+
+  /* Details become compact two-column key/value rows. */
+  body.app-workspace .client-dashboard-detail-list,
+  body.app-workspace .lawyer-dashboard-detail-list {
+    margin-top: .5rem;
+  }
+
+  body.app-workspace .client-dashboard-detail-row,
+  body.app-workspace .lawyer-dashboard-detail-row {
+    display: grid !important;
+    grid-template-columns: minmax(76px, .36fr) minmax(0, 1fr) !important;
+    align-items: start !important;
+    gap: .55rem !important;
+    padding: .55rem 0 !important;
+  }
+
+  body.app-workspace .client-dashboard-detail-row span,
+  body.app-workspace .lawyer-dashboard-detail-row span {
+    font-size: .67rem;
+    line-height: 1.25;
+  }
+
+  body.app-workspace .client-dashboard-detail-row strong,
+  body.app-workspace .lawyer-dashboard-detail-row strong {
+    font-size: .77rem;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+
+  /* Appointment lists: one-line identity + compact schedule column. */
+  body.app-workspace .client-dashboard-appointment-row,
+  body.app-workspace .lawyer-dashboard-appointment-row {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: .6rem !important;
+    padding: .62rem 0 !important;
+  }
+
+  body.app-workspace .client-dashboard-appointment-main,
+  body.app-workspace .lawyer-dashboard-appointment-main {
+    min-width: 0;
+  }
+
+  body.app-workspace .client-dashboard-appointment-main strong,
+  body.app-workspace .lawyer-dashboard-appointment-main strong {
+    display: block;
+    font-size: .8rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  body.app-workspace .client-dashboard-appointment-main span,
+  body.app-workspace .lawyer-dashboard-appointment-main span {
+    display: block;
+    margin-top: .14rem;
+    font-size: .67rem;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  body.app-workspace .client-dashboard-appointment-side,
+  body.app-workspace .lawyer-dashboard-appointment-side {
+    display: grid !important;
+    justify-items: end !important;
+    gap: .15rem !important;
+    text-align: right !important;
+    min-width: 92px;
+  }
+
+  body.app-workspace .client-dashboard-appointment-side strong,
+  body.app-workspace .lawyer-dashboard-appointment-side strong {
+    font-size: .7rem;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  body.app-workspace .client-dashboard-appointment-side span,
+  body.app-workspace .lawyer-dashboard-appointment-side span {
+    font-size: .65rem;
+  }
+
+  body.app-workspace .client-dashboard-appointment-side .pill,
+  body.app-workspace .lawyer-dashboard-appointment-side .pill {
+    font-size: .62rem;
+    padding: .18rem .4rem;
+  }
+
+  /* Next appointment: readable summary without the oversized blue block. */
+  body.app-workspace .client-dashboard-next,
+  body.app-workspace .lawyer-dashboard-next {
+    padding: .85rem !important;
+  }
+
+  body.app-workspace .client-dashboard-next-label,
+  body.app-workspace .lawyer-dashboard-next-label {
+    font-size: .61rem !important;
+    margin-bottom: .2rem;
+  }
+
+  body.app-workspace .client-dashboard-next h3,
+  body.app-workspace .lawyer-dashboard-next h3 {
+    font-size: 1rem !important;
+    line-height: 1.2;
+    margin-bottom: .5rem;
+  }
+
+  body.app-workspace .client-dashboard-next-details,
+  body.app-workspace .lawyer-dashboard-next-details {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: .45rem !important;
+  }
+
+  body.app-workspace .client-dashboard-next-details > div,
+  body.app-workspace .lawyer-dashboard-next-details > div {
+    min-width: 0;
+    padding: .5rem .55rem;
+    border-radius: 10px;
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.09);
+  }
+
+  body.app-workspace .client-dashboard-next-details span,
+  body.app-workspace .lawyer-dashboard-next-details span {
+    display: block;
+    font-size: .61rem;
+    line-height: 1.2;
+  }
+
+  body.app-workspace .client-dashboard-next-details strong,
+  body.app-workspace .lawyer-dashboard-next-details strong {
+    display: block;
+    margin-top: .18rem;
+    font-size: .72rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  body.app-workspace .client-dashboard-next-actions,
+  body.app-workspace .lawyer-dashboard-next-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: .45rem !important;
+    margin-top: .6rem !important;
+  }
+
+  body.app-workspace .client-dashboard-next-actions .button,
+  body.app-workspace .lawyer-dashboard-next-actions .button {
+    width: 100% !important;
+    min-height: 42px !important;
+    padding: .55rem .45rem !important;
+    font-size: .7rem !important;
+  }
+
+  body.app-workspace .client-dashboard-empty,
+  body.app-workspace .lawyer-dashboard-empty {
+    padding: .7rem 0;
+  }
+}
+
+@media (max-width: 390px) {
+  body.app-workspace .client-dashboard-shell,
+  body.app-workspace .lawyer-dashboard-shell {
+    padding-inline: .3rem;
+  }
+
+  body.app-workspace .client-dashboard-card,
+  body.app-workspace .lawyer-dashboard-card,
+  body.app-workspace .client-dashboard-next,
+  body.app-workspace .lawyer-dashboard-next {
+    padding: .72rem !important;
+  }
+
+  body.app-workspace .client-dashboard-card-head,
+  body.app-workspace .lawyer-dashboard-card-head {
+    align-items: flex-start !important;
+  }
+
+  body.app-workspace .client-dashboard-cta,
+  body.app-workspace .lawyer-dashboard-cta {
+    min-height: 32px !important;
+    font-size: .66rem !important;
+    padding-inline: .5rem !important;
+  }
+
+  body.app-workspace .client-dashboard-profile-row > .pill,
+  body.app-workspace .lawyer-dashboard-profile-row > .pill {
+    font-size: .6rem;
+    padding-inline: .4rem;
+  }
+
+  body.app-workspace .client-dashboard-appointment-row,
+  body.app-workspace .lawyer-dashboard-appointment-row {
+    grid-template-columns: minmax(0, 1fr) 82px !important;
+  }
+
+  body.app-workspace .client-dashboard-next-details,
+  body.app-workspace .lawyer-dashboard-next-details {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  body.app-workspace .client-dashboard-next-actions,
+  body.app-workspace .lawyer-dashboard-next-actions {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* --------------------------------------------------------------
+   ADMIN DASHBOARD: compact 2x2 metrics + focused workbench
+   -------------------------------------------------------------- */
+@media (max-width: 760px) {
+  body.app-workspace--admin .admin-dashboard-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: .55rem !important;
+  }
+
+  body.app-workspace--admin .admin-dashboard-stat-card {
+    min-height: 96px !important;
+    padding: .72rem !important;
+    border-radius: 16px !important;
+    gap: .55rem !important;
+  }
+
+  body.app-workspace--admin .admin-dashboard-stat-icon {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
+  }
+
+  body.app-workspace--admin .admin-dashboard-stat-copy {
+    min-width: 0;
+  }
+
+  body.app-workspace--admin .admin-dashboard-stat-copy span {
+    font-size: .68rem;
+    line-height: 1.2;
+  }
+
+  body.app-workspace--admin .admin-dashboard-stat-copy strong {
+    font-size: 1.25rem;
+    line-height: 1.05;
+  }
+
+  body.app-workspace--admin .admin-dashboard-workbench {
+    grid-template-columns: 1fr !important;
+    gap: .65rem !important;
+  }
+
+  body.app-workspace--admin .admin-dashboard-card {
+    padding: .8rem !important;
+    border-radius: 17px !important;
+  }
+
+  body.app-workspace--admin .admin-dashboard-card .card-head {
+    gap: .45rem;
+    margin-bottom: .6rem;
+  }
+
+  body.app-workspace--admin .admin-dashboard-card .card-head h2 {
+    font-size: .98rem;
+    line-height: 1.2;
+  }
+
+  body.app-workspace--admin .admin-dashboard-kicker {
+    font-size: .61rem;
+  }
+
+  body.app-workspace--admin .admin-risk-layout {
+    grid-template-columns: 1fr !important;
+    gap: .55rem !important;
+  }
+
+  body.app-workspace--admin .admin-risk-chart {
+    min-height: 145px;
+  }
+
+  body.app-workspace--admin .admin-security-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: .45rem !important;
+  }
+
+  body.app-workspace--admin .admin-security-metric {
+    min-width: 0;
+    padding: .55rem !important;
+    border-radius: 10px;
+  }
+
+  body.app-workspace--admin .admin-security-metric:last-child {
+    grid-column: 1 / -1;
+  }
+
+  body.app-workspace--admin .admin-security-metric span,
+  body.app-workspace--admin .admin-security-metric small {
+    font-size: .63rem;
+    line-height: 1.2;
+  }
+
+  body.app-workspace--admin .admin-security-metric strong {
+    display: block;
+    margin-top: .15rem;
+    font-size: .78rem;
+    overflow-wrap: anywhere;
+  }
+
+  body.app-workspace--admin .admin-case-row,
+  body.app-workspace--admin .admin-audit-row,
+  body.app-workspace--admin .admin-ip-row {
+    padding: .6rem 0 !important;
+    gap: .45rem !important;
+  }
+
+  body.app-workspace--admin .admin-case-row strong,
+  body.app-workspace--admin .admin-audit-row strong {
+    font-size: .76rem;
+  }
+
+  body.app-workspace--admin .admin-case-row span,
+  body.app-workspace--admin .admin-case-row em,
+  body.app-workspace--admin .admin-audit-row span,
+  body.app-workspace--admin .admin-audit-row time,
+  body.app-workspace--admin .admin-ip-row span,
+  body.app-workspace--admin .admin-ip-row strong {
+    font-size: .65rem;
+  }
+}
+
+@media (max-width: 390px) {
+  body.app-workspace--admin .admin-dashboard-stats {
+    gap: .45rem !important;
+  }
+
+  body.app-workspace--admin .admin-dashboard-stat-card {
+    min-height: 88px !important;
+    padding: .62rem !important;
+  }
+
+  body.app-workspace--admin .admin-dashboard-stat-icon {
+    width: 29px;
+    height: 29px;
+    flex-basis: 29px;
+  }
+
+  body.app-workspace--admin .admin-dashboard-stat-copy strong {
+    font-size: 1.12rem;
+  }
+}
+
+
+/* ================================================================
+   LEXSHIELD — FINAL MOBILE CONSOLIDATION V2
+   Added: 2026-09-12
+   Target: phones 360–767px, especially iPhone 15 Pro (393px)
+   This block intentionally lives at the end so it overrides older
+   mobile patches without changing the desktop design.
+   ================================================================ */
+
+@media (max-width: 767px) {
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body.app-workspace,
+  body.app-workspace .app-shell,
+  body.app-workspace .main-content,
+  body.app-workspace main {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  body.app-workspace .app-shell {
+    display: block !important;
+    min-height: 100dvh;
+    grid-template-columns: 1fr !important;
+  }
+
+  body.app-workspace .main-content {
+    padding: .65rem .65rem calc(1rem + env(safe-area-inset-bottom)) !important;
+    gap: .65rem !important;
+    overflow-x: hidden !important;
+  }
+
+  body.app-workspace .main-content > *,
+  body.app-workspace .content-grid > *,
+  body.app-workspace .kpi-grid > * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  body.app-workspace img,
+  body.app-workspace svg,
+  body.app-workspace video,
+  body.app-workspace canvas {
+    max-width: 100%;
+  }
+
+  body.app-workspace h1,
+  body.app-workspace h2,
+  body.app-workspace h3,
+  body.app-workspace h4,
+  body.app-workspace p,
+  body.app-workspace span,
+  body.app-workspace strong,
+  body.app-workspace small,
+  body.app-workspace label,
+  body.app-workspace td,
+  body.app-workspace th {
+    overflow-wrap: anywhere;
+  }
+
+  body.app-workspace input,
+  body.app-workspace select,
+  body.app-workspace textarea {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  /* ---------- Topbar ---------- */
+  body.app-workspace .topbar {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 56px !important;
+    height: auto !important;
+    padding: .4rem .5rem !important;
+    gap: .35rem !important;
+    box-sizing: border-box !important;
+  }
+
+  body.app-workspace .topbar-title,
+  body.app-workspace .topbar-title h1 {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  body.app-workspace .topbar-title h1 {
+    font-size: .98rem !important;
+    line-height: 1.2 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  body.app-workspace .topbar-actions {
+    min-width: 0 !important;
+    flex: 0 0 auto !important;
+    gap: .18rem !important;
+  }
+
+  body.app-workspace #sidebarToggle,
+  body.app-workspace #themeToggle,
+  body.app-workspace .notification-trigger,
+  body.app-workspace .notification-button,
+  body.app-workspace .avatar-button {
+    width: 40px !important;
+    min-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    padding: 0 !important;
+    flex: 0 0 auto !important;
+  }
+
+  body.app-workspace .dashboard-user-meta {
+    display: none !important;
+  }
+
+  /* ---------- Sidebar ---------- */
+  body.app-workspace .sidebar {
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    width: min(84vw, 300px) !important;
+    max-width: 300px !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    z-index: 1200 !important;
+    transform: translateX(-105%);
+    transition: transform .22s ease !important;
+    overflow: hidden !important;
+    padding-top: env(safe-area-inset-top) !important;
+    padding-bottom: env(safe-area-inset-bottom) !important;
+    box-sizing: border-box !important;
+  }
+
+  body.app-workspace .sidebar.open {
+    transform: translateX(0) !important;
+  }
+
+  body.app-workspace .sidebar-nav {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: .5rem !important;
+  }
+
+  body.app-workspace .sidebar .nav-link {
+    min-height: 44px !important;
+  }
+
+  body.app-workspace .sidebar-footer {
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    min-height: 58px !important;
+    padding: .45rem .55rem calc(.55rem + env(safe-area-inset-bottom)) !important;
+    box-sizing: border-box !important;
+  }
+
+  body.app-workspace .sidebar-footer .nav-link {
+    width: 100% !important;
+    min-height: 46px !important;
+  }
+
+  /* ---------- General grids ---------- */
+  body.app-workspace .content-grid.two-col,
+  body.app-workspace .content-grid.three-col,
+  body.app-workspace .content-grid.four-col {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: .65rem !important;
+  }
+
+  body.app-workspace .form-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: .65rem !important;
+  }
+
+  /* Keep KPI cards 2 x 2 instead of making them unnecessarily tall. */
+  body.app-workspace .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: .5rem !important;
+  }
+
+  body.app-workspace .kpi-card {
+    min-width: 0 !important;
+    min-height: 88px !important;
+    padding: .65rem !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+  }
+
+  body.app-workspace .kpi-card strong {
+    font-size: 1.15rem !important;
+    line-height: 1.05 !important;
+  }
+
+  body.app-workspace .kpi-card span {
+    font-size: .67rem !important;
+    line-height: 1.2 !important;
+  }
+
+  /* ---------- Common cards / panels ---------- */
+  body.app-workspace .card,
+  body.app-workspace .panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden;
+  }
+
+  body.app-workspace .card-head,
+  body.app-workspace .panel-header,
+  body.app-workspace .section-header {
+    min-width: 0 !important;
+    gap: .45rem !important;
+  }
+
+  body.app-workspace .card-head > *,
+  body.app-workspace .panel-header > *,
+  body.app-workspace .section-header > * {
+    min-width: 0 !important;
+  }
+
+  /* ---------- Buttons / action groups ---------- */
+  body.app-workspace .action-group,
+  body.app-workspace .button-group,
+  body.app-workspace .form-actions,
+  body.app-workspace .card-actions {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    flex-wrap: wrap !important;
+    gap: .4rem !important;
+  }
+
+  body.app-workspace button,
+  body.app-workspace .button,
+  body.app-workspace .btn {
+    max-width: 100%;
+  }
+
+  /* ---------- Tables ---------- */
+  body.app-workspace .table-responsive,
+  body.app-workspace .table-scroll,
+  body.app-workspace .data-table-wrap,
+  body.app-workspace .case-table-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  body.app-workspace .data-table,
+  body.app-workspace .case-list-table,
+  body.app-workspace table {
+    max-width: none !important;
+    min-width: 620px;
+  }
+
+  body.app-workspace .data-table th,
+  body.app-workspace .data-table td,
+  body.app-workspace .case-list-table th,
+  body.app-workspace .case-list-table td {
+    padding: .55rem .5rem !important;
+    font-size: .7rem !important;
+    line-height: 1.25 !important;
+  }
+
+  /* ---------- Case Files ---------- */
+  body.app-workspace:has([data-case-files-app]) .case-compact-hero,
+  body.app-workspace:has([data-case-files-app]) .case-panel,
+  body.app-workspace:has([data-case-files-app]) .case-compact-panel,
+  body.app-workspace:has([data-case-files-app]) .case-vault-panel,
+  body.app-workspace:has([data-case-files-app]) .case-vault-documents {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-compact-hero {
+    padding: .75rem !important;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-search-bar,
+  body.app-workspace:has([data-case-files-app]) .case-search-actions {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-search-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: .4rem !important;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-search-actions .button {
+    min-height: 40px !important;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-vault-summary-strip {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: .4rem !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-vault-stat {
+    min-width: 0 !important;
+    padding: .5rem .35rem !important;
+    overflow: hidden !important;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-vault-stat strong {
+    font-size: .82rem !important;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-vault-stat span,
+  body.app-workspace:has([data-case-files-app]) .case-vault-stat small {
+    font-size: .58rem !important;
+    line-height: 1.15 !important;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-vault-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: .6rem !important;
+    padding-inline: .65rem !important;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-vault-folder-section,
+  body.app-workspace:has([data-case-files-app]) .case-vault-folder-content,
+  body.app-workspace:has([data-case-files-app]) .case-vault-doc-list {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-vault-doc-menu-panel {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  /* ---------- Modals ---------- */
+  body.app-workspace .modal,
+  body.app-workspace .case-compact-modal,
+  body.app-workspace .case-create-modal,
+  body.app-workspace .case-detail-modal {
+    width: calc(100% - 20px) !important;
+    max-width: 620px !important;
+    max-height: calc(100dvh - 20px) !important;
+    margin: 10px auto !important;
+    box-sizing: border-box !important;
+  }
+
+  body.app-workspace .modal-body,
+  body.app-workspace .case-detail-modal-body {
+    max-height: calc(100dvh - 150px) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  body.app-workspace .modal input,
+  body.app-workspace .modal select,
+  body.app-workspace .modal textarea {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* ---------- Skip link ---------- */
+  body.app-workspace .skip-link:focus {
+    left: -9999px !important;
+  }
+
+  body.app-workspace .skip-link:focus-visible {
+    left: .65rem !important;
+    top: .65rem !important;
+    z-index: 2000 !important;
+  }
+}
+
+/* ================================================================
+   SMALL PHONE REFINEMENT — 360–389px
+   ================================================================ */
+@media (max-width: 389px) {
+  body.app-workspace .main-content {
+    padding-inline: .5rem !important;
+  }
+
+  body.app-workspace .topbar {
+    padding-inline: .4rem !important;
+  }
+
+  body.app-workspace #sidebarToggle,
+  body.app-workspace #themeToggle,
+  body.app-workspace .notification-trigger,
+  body.app-workspace .notification-button,
+  body.app-workspace .avatar-button {
+    width: 38px !important;
+    min-width: 38px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+  }
+
+  body.app-workspace .kpi-grid {
+    gap: .4rem !important;
+  }
+
+  body.app-workspace .kpi-card {
+    min-height: 84px !important;
+    padding: .55rem !important;
+  }
+
+  body.app-workspace .kpi-card strong {
+    font-size: 1.05rem !important;
+  }
+
+  body.app-workspace .kpi-card span {
+    font-size: .62rem !important;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-vault-summary-strip {
+    gap: .3rem !important;
+  }
+
+  body.app-workspace:has([data-case-files-app]) .case-vault-stat {
+    padding-inline: .25rem !important;
+  }
+}
+
+/* ================================================================
+   VERY SMALL PHONE — 359px and below
+   ================================================================ */
+@media (max-width: 359px) {
+  body.app-workspace .kpi-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.app-workspace .kpi-card {
+    min-height: 78px !important;
+  }
+}
+
+
+/* ================================================================
+   LEXSHIELD — FINAL VISUAL FIX V3
+   Admin light theme + payment readability + lawyer availability
+   Appended intentionally so it wins over older CSS patches.
+   ================================================================ */
+
+/* ---------- ADMIN SETTINGS: LIGHT THEME ---------- */
+html[data-theme="light"] body.app-workspace--admin [data-system-settings-page].admin-settings-card,
+html[data-theme="light"] body.app-workspace--admin .admin-account-security-card {
+  background: #ffffff;
+  border: 1px solid #d8e2ee;
+  color: #10243e;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, .06);
+}
+
+html[data-theme="light"] body.app-workspace--admin .admin-settings-card .card-head,
+html[data-theme="light"] body.app-workspace--admin .admin-account-security-card .card-head {
+  border-bottom-color: #e3eaf2;
+}
+
+html[data-theme="light"] body.app-workspace--admin .admin-settings-form > label,
+html[data-theme="light"] body.app-workspace--admin .admin-settings-form > label > span {
+  color: #334b67;
+}
+
+html[data-theme="light"] body.app-workspace--admin .admin-settings-form input:not([type="checkbox"]),
+html[data-theme="light"] body.app-workspace--admin .admin-settings-form select,
+html[data-theme="light"] body.app-workspace--admin .admin-settings-form textarea {
+  background: #ffffff;
+  color: #10243e;
+  border: 1px solid #b9c8d9;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+}
+
+html[data-theme="light"] body.app-workspace--admin .admin-settings-form input:not([type="checkbox"]):focus,
+html[data-theme="light"] body.app-workspace--admin .admin-settings-form select:focus,
+html[data-theme="light"] body.app-workspace--admin .admin-settings-form textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+  outline: none;
+}
+
+/* Compact, visible OTP switches/checks. */
+body.app-workspace--admin .admin-settings-form label.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  min-height: 46px;
+  padding: .65rem .8rem;
+  border: 1px solid var(--color-line);
+  border-radius: 11px;
+  font-size: .84rem;
+  line-height: 1.3;
+  cursor: pointer;
+}
+
+html[data-theme="light"] body.app-workspace--admin .admin-settings-form label.checkbox-row {
+  background: #f8fafc;
+  border-color: #d3deea;
+  color: #243b55;
+}
+
+body.app-workspace--admin .admin-settings-form label.checkbox-row input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 19px !important;
+  height: 19px !important;
+  min-width: 19px;
+  min-height: 19px;
+  margin: 0;
+  padding: 0;
+  border: 1.5px solid #94a3b8;
+  border-radius: 5px;
+  background: #ffffff;
+  display: inline-grid;
+  place-content: center;
+  flex: 0 0 19px;
+  cursor: pointer;
+}
+
+body.app-workspace--admin .admin-settings-form label.checkbox-row input[type="checkbox"]::before {
+  content: "";
+  width: 9px;
+  height: 5px;
+  border-left: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  transform: rotate(-45deg) scale(0);
+  transform-origin: center;
+  transition: transform .12s ease;
+}
+
+body.app-workspace--admin .admin-settings-form label.checkbox-row input[type="checkbox"]:checked {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+body.app-workspace--admin .admin-settings-form label.checkbox-row input[type="checkbox"]:checked::before {
+  transform: rotate(-45deg) scale(1);
+}
+
+body.app-workspace--admin .admin-settings-form label.checkbox-row input[type="checkbox"]:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, .18);
+  outline-offset: 2px;
+}
+
+/* ---------- ADMIN PAYMENTS: LIGHT THEME ---------- */
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .main-content {
+  background: #f4f7fb !important;
+  color: #10243e;
+}
+
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-payments-stat-card,
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-payments-review-card,
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .payment-page-card {
+  background: #ffffff !important;
+  color: #10243e;
+  border-color: #d7e1ec !important;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, .06);
+}
+
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-payments-review-head h2,
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-payments-stat-copy strong,
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .payment-history-table,
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .payment-history-table td,
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-payments-date,
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-payments-client-cell strong {
+  color: #10243e !important;
+}
+
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-payments-stat-copy span,
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-payments-review-head .payment-section-copy,
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .payment-history-table th,
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-payments-time,
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-payments-client-cell span:not(.admin-payments-client-avatar) {
+  color: #526a84 !important;
+}
+
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-payments-search input,
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-payments-status-filter select,
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .payment-filter-bar .button,
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-payments-review-button {
+  background: #ffffff !important;
+  color: #10243e !important;
+  border: 1px solid #b9c8d9 !important;
+}
+
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-payments-search input::placeholder {
+  color: #71839a !important;
+}
+
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-payments-search input:focus,
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-payments-status-filter select:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .12) !important;
+  outline: none;
+}
+
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-table-wrap {
+  background: #ffffff !important;
+  border-color: #d7e1ec !important;
+}
+
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-table tbody tr {
+  background: #ffffff !important;
+}
+
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-table tbody tr:hover {
+  background: #f7faff !important;
+}
+
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-total {
+  background: #fff8df !important;
+  border-color: #e5c765 !important;
+}
+
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-earnings-total strong,
+html[data-theme="light"] body.app-workspace--admin:has(.admin-payments-review-card) .admin-payment-mobile-amount strong {
+  color: #805b00 !important;
+}
+
+/* ---------- PAYMENT DETAIL / REVIEW PAYMENT LIGHT THEME ---------- */
+html[data-theme="light"] body.app-workspace--admin .payment-admin-shell .payment-admin-hero,
+html[data-theme="light"] body.app-workspace--admin .payment-admin-shell .payment-admin-overview,
+html[data-theme="light"] body.app-workspace--admin .payment-admin-shell .payment-admin-panel,
+html[data-theme="light"] body.app-workspace--admin .payment-admin-shell .payment-admin-decision-card,
+html[data-theme="light"] body.app-workspace--admin .payment-admin-shell .payment-admin-side-card,
+html[data-theme="light"] body.app-workspace--admin .payment-admin-shell .payment-admin-checklist-card {
+  background: #ffffff !important;
+  color: #10243e;
+  border-color: #d7e1ec !important;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, .06);
+}
+
+html[data-theme="light"] body.app-workspace--admin .payment-admin-shell h1,
+html[data-theme="light"] body.app-workspace--admin .payment-admin-shell h2,
+html[data-theme="light"] body.app-workspace--admin .payment-admin-shell h3,
+html[data-theme="light"] body.app-workspace--admin .payment-admin-shell strong {
+  color: #10243e;
+}
+
+html[data-theme="light"] body.app-workspace--admin .payment-admin-shell p,
+html[data-theme="light"] body.app-workspace--admin .payment-admin-shell small,
+html[data-theme="light"] body.app-workspace--admin .payment-admin-shell dt,
+html[data-theme="light"] body.app-workspace--admin .payment-admin-shell .muted {
+  color: #526a84;
+}
+
+html[data-theme="light"] body.app-workspace--admin .payment-admin-status-note {
+  background: #f8fafc !important;
+  border-color: #d4dfeb !important;
+}
+
+html[data-theme="light"] body.app-workspace--admin .payment-admin-status-note__value {
+  color: #10243e !important;
+}
+
+/* ---------- LAWYER AVAILABILITY REDESIGN ---------- */
+.lawyer-availability-page .availability-card {
+  border: 1px solid var(--color-line);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, .05);
+}
+
+.lawyer-availability-page .availability-day-row {
+  grid-template-columns: 165px minmax(0, 1fr) minmax(0, 1fr);
+  gap: .8rem;
+  padding: .8rem 1rem;
+  margin: 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.lawyer-availability-page .availability-day-name {
+  padding: .35rem .2rem;
+}
+
+.lawyer-availability-page .availability-day-name label {
+  min-height: 36px;
+  gap: .6rem;
+  font-size: .9rem;
+}
+
+.lawyer-availability-page .availability-day-name small {
+  margin-left: 1.95rem;
+  font-size: .68rem;
+}
+
+/* Small custom checkbox instead of the oversized native control. */
+.lawyer-availability-page .availability-day-name input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 19px !important;
+  height: 19px !important;
+  min-width: 19px;
+  min-height: 19px;
+  margin: 0;
+  padding: 0;
+  border: 1.5px solid #94a3b8;
+  border-radius: 5px;
+  background: #ffffff;
+  display: inline-grid;
+  place-content: center;
+  flex: 0 0 19px;
+  cursor: pointer;
+}
+
+.lawyer-availability-page .availability-day-name input[type="checkbox"]::before {
+  content: "";
+  width: 9px;
+  height: 5px;
+  border-left: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  transform: rotate(-45deg) scale(0);
+}
+
+.lawyer-availability-page .availability-day-name input[type="checkbox"]:checked {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.lawyer-availability-page .availability-day-name input[type="checkbox"]:checked::before {
+  transform: rotate(-45deg) scale(1);
+}
+
+.lawyer-availability-page .availability-day-name input[type="checkbox"]:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, .18);
+  outline-offset: 2px;
+}
+
+.lawyer-availability-page .availability-session {
+  padding: .7rem;
+  border-radius: 12px;
+  background: var(--color-panel-soft);
+  border: 1px solid var(--color-line);
+}
+
+.lawyer-availability-page .availability-session > strong {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  margin-bottom: .55rem;
+  font-size: .78rem;
+  letter-spacing: .03em;
+}
+
+.lawyer-availability-page .availability-session > strong::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2563eb;
+  flex: 0 0 7px;
+}
+
+.lawyer-availability-page .availability-fields {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .45rem;
+}
+
+.lawyer-availability-page .availability-fields label {
+  gap: .2rem;
+  font-size: .67rem;
+  font-weight: 800;
+  color: var(--color-ink-muted);
+}
+
+.lawyer-availability-page .availability-fields input {
+  min-height: 36px;
+  padding: .38rem .48rem;
+  border-radius: 8px;
+  font-size: .8rem;
+  background: var(--color-panel);
+}
+
+.lawyer-availability-page .availability-fields input:focus {
+  border-color: #2563eb;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .1);
+}
+
+.lawyer-availability-page .availability-actions {
+  padding: .8rem 1rem 1rem;
+}
+
+.lawyer-availability-page .availability-actions .button {
+  min-height: 42px;
+  padding: .65rem 1rem;
+  border-radius: 10px;
+}
+
+@media (max-width: 900px) {
+  .lawyer-availability-page .availability-day-row {
+    grid-template-columns: 145px minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .lawyer-availability-page {
+    padding-left: .65rem;
+    padding-right: .65rem;
+  }
+
+  .lawyer-availability-page .availability-day-row {
+    grid-template-columns: 1fr;
+    gap: .55rem;
+    padding: .75rem .8rem;
+  }
+
+  .lawyer-availability-page .availability-day-name {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .1rem 0 .15rem;
+  }
+
+  .lawyer-availability-page .availability-day-name small {
+    margin-left: 0;
+  }
+
+  .lawyer-availability-page .availability-session {
+    padding: .65rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .lawyer-availability-page .availability-day-row {
+    padding: .7rem;
+    border-radius: 12px;
+    margin-bottom: .45rem;
+    border: 1px solid var(--color-line);
+    background: var(--color-panel);
+  }
+
+  .lawyer-availability-page .availability-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .lawyer-availability-page .availability-fields label:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .lawyer-availability-page .availability-fields input {
+    min-height: 38px;
+  }
+}
+
+@media (max-width: 360px) {
+  .lawyer-availability-page .availability-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .lawyer-availability-page .availability-fields label:last-child {
+    grid-column: auto;
+  }
+}
+
+/* ================================================================
+   LEXSHIELD — PAYMENT EARNINGS READABILITY FIX V4
+   Specifically targets Reported Lawyer Earnings.
+   ================================================================ */
+
+html[data-theme="light"] body.app-workspace--admin .admin-earnings-mobile-card,
+html[data-theme="light"] body.app-workspace--admin .admin-earnings-table-wrap {
+  background: #ffffff !important;
+  color: #12263f !important;
+}
+
+/* Desktop/tablet: give the four important columns enough breathing room. */
+html[data-theme="light"] body.app-workspace--admin .admin-earnings-table th,
+html[data-theme="light"] body.app-workspace--admin .admin-earnings-table td {
+  color: #12263f !important;
+  border-color: #d9e3ee !important;
+  vertical-align: middle;
+}
+
+html[data-theme="light"] body.app-workspace--admin .admin-earnings-table th {
+  background: #eef4fa !important;
+  color: #294866 !important;
+  font-size: .76rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: .045em;
+}
+
+html[data-theme="light"] body.app-workspace--admin .admin-earnings-table td:first-child {
+  min-width: 220px;
+}
+
+html[data-theme="light"] body.app-workspace--admin .admin-earnings-table td:first-child strong {
+  display: block;
+  color: #0b2340 !important;
+  font-size: .98rem;
+  font-weight: 850;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+html[data-theme="light"] body.app-workspace--admin .admin-earnings-table td:nth-child(2) {
+  color: #0b6b45 !important;
+  font-weight: 850;
+}
+
+html[data-theme="light"] body.app-workspace--admin .admin-earnings-table td:nth-child(3),
+html[data-theme="light"] body.app-workspace--admin .admin-earnings-table td:nth-child(4) {
+  color: #183653 !important;
+  font-weight: 800;
+  text-align: center;
+}
+
+/* Mobile: make lawyer identity and the two record counters unmistakable. */
+@media (max-width: 767px) {
+  html[data-theme="light"] body.app-workspace--admin .admin-earnings-mobile-list {
+    display: grid !important;
+    gap: 12px !important;
+  }
+
+  html[data-theme="light"] body.app-workspace--admin .admin-earnings-mobile-card {
+    padding: 15px !important;
+    border: 1px solid #cfdcea !important;
+    border-radius: 16px !important;
+    box-shadow: 0 7px 20px rgba(15, 35, 60, .08) !important;
+  }
+
+  html[data-theme="light"] body.app-workspace--admin .admin-earnings-mobile-top {
+    min-width: 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e0e8f1;
+  }
+
+  html[data-theme="light"] body.app-workspace--admin .admin-earnings-lawyer-mark {
+    width: 44px !important;
+    height: 44px !important;
+    flex-basis: 44px !important;
+    background: #1d4ed8 !important;
+    color: #ffffff !important;
+    font-size: .82rem !important;
+    box-shadow: 0 4px 10px rgba(29, 78, 216, .2);
+  }
+
+  html[data-theme="light"] body.app-workspace--admin .admin-earnings-lawyer-copy {
+    min-width: 0 !important;
+    flex: 1 1 auto;
+  }
+
+  html[data-theme="light"] body.app-workspace--admin .admin-earnings-lawyer-copy strong {
+    display: block !important;
+    color: #071f3a !important;
+    font-size: 1.03rem !important;
+    font-weight: 900 !important;
+    line-height: 1.25 !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word;
+  }
+
+  html[data-theme="light"] body.app-workspace--admin .admin-earnings-lawyer-copy span {
+    color: #60758d !important;
+    font-size: .72rem !important;
+    font-weight: 650;
+  }
+
+  html[data-theme="light"] body.app-workspace--admin .admin-earnings-total {
+    margin-top: 12px !important;
+    padding: 13px !important;
+    background: #fff8df !important;
+    border: 1px solid #e6cb70 !important;
+    border-radius: 12px !important;
+  }
+
+  html[data-theme="light"] body.app-workspace--admin .admin-earnings-total span {
+    color: #725713 !important;
+    font-size: .68rem !important;
+    font-weight: 850 !important;
+  }
+
+  html[data-theme="light"] body.app-workspace--admin .admin-earnings-total strong {
+    color: #704f00 !important;
+    font-size: 1.25rem !important;
+    font-weight: 950 !important;
+  }
+
+  html[data-theme="light"] body.app-workspace--admin .admin-earnings-mobile-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 9px !important;
+    margin-top: 9px !important;
+  }
+
+  html[data-theme="light"] body.app-workspace--admin .admin-earnings-mobile-grid > div {
+    min-width: 0;
+    padding: 12px 11px !important;
+    background: #f1f6fb !important;
+    border: 1px solid #ccd9e7 !important;
+    border-radius: 11px !important;
+  }
+
+  html[data-theme="light"] body.app-workspace--admin .admin-earnings-mobile-grid span {
+    display: block !important;
+    color: #536b84 !important;
+    font-size: .67rem !important;
+    font-weight: 850 !important;
+    text-transform: uppercase;
+    letter-spacing: .035em;
+    line-height: 1.2;
+  }
+
+  html[data-theme="light"] body.app-workspace--admin .admin-earnings-mobile-grid strong {
+    display: block !important;
+    margin-top: 5px !important;
+    color: #0b2948 !important;
+    font-size: 1.15rem !important;
+    font-weight: 950 !important;
+    line-height: 1.1;
+  }
+}
+
+@media (max-width: 390px) {
+  html[data-theme="light"] body.app-workspace--admin .admin-earnings-mobile-card {
+    padding: 13px !important;
+  }
+
+  html[data-theme="light"] body.app-workspace--admin .admin-earnings-mobile-grid > div {
+    padding: 11px 9px !important;
+  }
+
+  html[data-theme="light"] body.app-workspace--admin .admin-earnings-mobile-grid span {
+    font-size: .62rem !important;
+  }
+}
+
+
+/* LEXSHIELD — MESSAGES ARCHIVE ACTIONS */
+.messages-page .conversation-item { position: relative; }
+.messages-page .conversation-archive-form { position: absolute; right: 10px; bottom: 10px; z-index: 3; margin: 0; }
+.messages-page .conversation-archive-button {
+  width: 34px; height: 34px; min-width: 34px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border, #d7e1ec); border-radius: 9px;
+  background: var(--surface, #fff); color: var(--muted, #5d6d80);
+  cursor: pointer; font-size: 15px; line-height: 1;
+}
+.messages-page .conversation-archive-button:hover { color: var(--primary, #155eef); border-color: currentColor; }
+.messages-page .conversation-item-link { padding-right: 52px; }
+.messages-page .conversation-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.messages-page .conversation-action-form { margin:0; }
+.messages-page .conversation-archive-action { display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+.messages-page .filter-tabs { display:flex; gap:6px; flex-wrap:wrap; }
+
+@media (max-width: 767px) {
+  .messages-page .conversation-archive-form { right: 8px; bottom: 8px; }
+  .messages-page .conversation-archive-button { width:32px; height:32px; min-width:32px; border-radius:8px; }
+  .messages-page .conversation-item-link { padding-right:48px; }
+  .messages-page .conversation-actions { gap:6px; }
+  .messages-page .conversation-actions .button { min-height:40px; }
+  .messages-page .conversation-archive-action { min-width:0; }
+}
+
+html[data-theme="dark"] .messages-page .conversation-archive-button {
+  background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.14); color: #b9c8d9;
+}
+html[data-theme="dark"] .messages-page .conversation-archive-button:hover { color:#8bb8ff; }
+
+/* Secure voice messages — compact, clear, mobile-first recording state */
+body:has([data-chat-shell]) .voice-record-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 12px;
+  transition: transform .16s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease;
+}
+
+body:has([data-chat-shell]) .voice-record-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+body:has([data-chat-shell]) .voice-record-button:disabled { opacity: .9; cursor: not-allowed; }
+
+.voice-mic-icon { display: inline-grid; place-items: center; }
+.voice-mic-icon svg { width: 19px; height: 19px; fill: currentColor; }
+
+.voice-record-button.is-recording {
+  color: #fff;
+  border-color: rgba(239,68,68,.55);
+  background: rgba(239,68,68,.16);
+  box-shadow: 0 0 0 4px rgba(239,68,68,.08);
+}
+
+/* While recording, the normal composer disappears so the recording state is unmistakable. */
+[data-chat-composer].is-recording-active .composer-row { display: none; }
+
+/* Keep the recording panel hidden until the user starts a recording. */
+.voice-recording-panel[hidden] { display: none !important; }
+
+.voice-recording-panel {
+  display: grid;
+  grid-template-columns: auto minmax(120px, 1fr) auto auto;
+  align-items: center;
+  gap: .8rem;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 .7rem;
+  padding: .8rem .9rem;
+  border: 1px solid rgba(239,68,68,.32);
+  border-radius: 14px;
+  background: #091a31;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+}
+
+.voice-live-main { display: flex; align-items: center; gap: .65rem; min-width: 0; }
+.voice-live-copy { min-width: 0; display: grid; gap: .15rem; }
+.voice-live-copy strong { color: #f8fbff; font-size: .78rem; font-weight: 750; }
+.voice-live-copy span { color: #8fa3bd; font-size: .66rem; white-space: nowrap; }
+
+.voice-recording-dot {
+  width: .65rem;
+  height: .65rem;
+  flex: 0 0 .65rem;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 0 5px rgba(239,68,68,.11);
+  animation: lexVoicePulse 1.05s ease-in-out infinite;
+}
+
+.voice-wave {
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  overflow: hidden;
+  color: #6ea8ff;
+}
+
+.voice-wave i {
+  display: block;
+  width: 3px;
+  height: 9px;
+  border-radius: 99px;
+  background: currentColor;
+  animation: lexVoiceWave .8s ease-in-out infinite alternate;
+}
+.voice-wave i:nth-child(2n) { animation-delay: -.15s; }
+.voice-wave i:nth-child(3n) { animation-delay: -.3s; }
+.voice-wave i:nth-child(4n) { animation-delay: -.5s; }
+
+.voice-live-time {
+  min-width: 48px;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  font-size: .82rem;
+  font-weight: 750;
+  text-align: center;
+}
+
+.voice-recording-actions { display: inline-flex; align-items: center; gap: .4rem; }
+.voice-recording-actions .button { min-height: 34px; padding: .4rem .72rem; font-size: .7rem; }
+.voice-stop-button { display: inline-flex; align-items: center; gap: .4rem; }
+.voice-stop-button span { width: 8px; height: 8px; border-radius: 2px; background: currentColor; }
+
+/* Small attachment confirmation after Stop — no broken 0:00 audio preview. */
+.voice-attachment-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  max-width: 100%;
+  padding: .5rem .65rem;
+  border: 1px solid rgba(71,100,141,.34);
+  border-radius: 10px;
+  background: rgba(8,24,45,.72);
+}
+
+.voice-attachment-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  border-radius: 9px;
+  color: #8bb8ff;
+  background: rgba(8,119,255,.13);
+}
+.voice-attachment-icon svg { width: 17px; height: 17px; fill: currentColor; }
+.voice-attachment-copy { min-width: 0; display: grid; gap: .1rem; }
+.voice-attachment-copy strong { color: #eaf2ff; font-size: .72rem; }
+.voice-attachment-copy span { color: #8196b1; font-size: .64rem; }
+.voice-attachment-remove {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #91a4bc;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.voice-attachment-remove:hover { background: rgba(255,255,255,.06); color: #fff; }
+
+.voice-recording-error {
+  margin: .6rem 0;
+  padding: .65rem .8rem;
+  border: 1px solid rgba(239,68,68,.28);
+  border-radius: 10px;
+  background: rgba(127,29,29,.18);
+  color: #fecaca;
+  font-size: .72rem;
+  line-height: 1.45;
+}
+
+.voice-message-card { min-width: min(100%, 280px); }
+.voice-message-label { display: flex; align-items: center; gap: .45rem; font-size: .76rem; }
+.voice-message-icon { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; background: rgba(8,119,255,.14); }
+.voice-message-card .voice-message-player { width: 100%; max-width: 340px; }
+
+@keyframes lexVoicePulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(.78); opacity: .65; }
+}
+@keyframes lexVoiceWave {
+  0% { transform: scaleY(.45); opacity: .45; }
+  100% { transform: scaleY(1.5); opacity: 1; }
+}
+
+@media (max-width: 760px) {
+  .voice-recording-panel {
+    grid-template-columns: 1fr auto;
+    gap: .65rem .75rem;
+    padding: .75rem;
+  }
+  .voice-live-main { min-width: 0; }
+  .voice-wave { grid-column: 1 / -1; height: 26px; justify-content: flex-start; }
+  .voice-live-time { justify-self: end; }
+  .voice-recording-actions { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; }
+  .voice-recording-actions .button { width: 100%; min-height: 40px; }
+}
+
+@media (max-width: 480px) {
+  body:has([data-chat-shell]) .voice-record-button { width: 42px; height: 42px; }
+  .voice-recording-panel { border-radius: 12px; padding: .7rem; }
+  .voice-live-copy strong { font-size: .76rem; }
+  .voice-live-copy span { font-size: .62rem; }
+  .voice-attachment-chip { width: 100%; box-sizing: border-box; }
+  .voice-attachment-copy { flex: 1; }
+}
+
+html[data-theme="light"] .voice-recording-panel { background: #fff7f7; border-color: rgba(185,28,28,.18); }
+html[data-theme="light"] .voice-live-copy strong { color: #172033; }
+html[data-theme="light"] .voice-live-copy span { color: #64748b; }
+html[data-theme="light"] .voice-attachment-chip { background: #f8fafc; border-color: rgba(37,61,92,.14); }
+html[data-theme="light"] .voice-attachment-copy strong { color: #172033; }
+html[data-theme="light"] .voice-attachment-copy span { color: #64748b; }
+html[data-theme="light"] .voice-recording-error { background: #fff1f2; border-color: #fecdd3; color: #9f1239; }
+
+
+/* LEXSHIELD — conversation three-dot actions (all message roles) */
+.messages-page .conversation-item { position: relative; overflow: visible; }
+.messages-page .conversation-item-link { padding-right: 52px; }
+.messages-page .conversation-more-menu {
+  position: absolute;
+  top: 12px;
+  right: 10px;
+  z-index: 20;
+}
+.messages-page .conversation-more-toggle {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 9px;
+  background: rgba(255,255,255,.035);
+  color: #b9c8d9;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+.messages-page .conversation-more-toggle:hover,
+.messages-page .conversation-more-toggle[aria-expanded="true"] {
+  background: rgba(59,130,246,.14);
+  border-color: rgba(96,165,250,.5);
+  color: #8bb8ff;
+}
+.messages-page .conversation-more-toggle span { transform: translateY(-1px); }
+.messages-page .conversation-more-dropdown {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  width: 235px;
+  max-width: min(235px, calc(100vw - 32px));
+  overflow: hidden;
+  border: 1px solid rgba(148,163,184,.2);
+  border-radius: 12px;
+  background: #0d1d31;
+  box-shadow: 0 18px 42px rgba(0,0,0,.34);
+}
+.messages-page .conversation-more-dropdown[hidden] { display: none !important; }
+.messages-page .conversation-menu-form { margin: 0; }
+.messages-page .conversation-menu-form + .conversation-menu-form {
+  border-top: 1px solid rgba(148,163,184,.14);
+}
+.messages-page .conversation-menu-item {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #e7eef7;
+  padding: 11px 12px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  text-align: left;
+  cursor: pointer;
+}
+.messages-page .conversation-menu-item:hover { background: rgba(255,255,255,.055); }
+.messages-page .conversation-menu-item > span:last-child {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.messages-page .conversation-menu-item strong { font-size: .84rem; font-weight: 700; }
+.messages-page .conversation-menu-item small { color: #91a4bb; font-size: .72rem; line-height: 1.25; }
+.messages-page .conversation-menu-icon {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 17px;
+  background: rgba(59,130,246,.12);
+  color: #8bb8ff;
+}
+.messages-page .conversation-menu-icon.delete {
+  background: rgba(239,68,68,.10);
+  color: #ff7373;
+}
+.messages-page .conversation-menu-item.is-danger strong { color: #ff8b8b; }
+
+html[data-theme="light"] .messages-page .conversation-more-toggle {
+  background: rgba(15,23,42,.035);
+  border-color: rgba(15,23,42,.12);
+  color: #53657a;
+}
+html[data-theme="light"] .messages-page .conversation-more-dropdown {
+  background: #fff;
+  border-color: #d8e1eb;
+  box-shadow: 0 18px 42px rgba(15,23,42,.16);
+}
+html[data-theme="light"] .messages-page .conversation-menu-item { color: #172033; }
+html[data-theme="light"] .messages-page .conversation-menu-item small { color: #6b7b8f; }
+
+@media (max-width: 767px) {
+  .messages-page .conversation-more-menu { top: 10px; right: 8px; }
+  .messages-page .conversation-more-toggle { width: 38px; height: 38px; border-radius: 10px; font-size: 23px; }
+  .messages-page .conversation-more-dropdown {
+    top: 44px;
+    right: -2px;
+    width: min(250px, calc(100vw - 28px));
+    border-radius: 13px;
+  }
+  .messages-page .conversation-menu-item { min-height: 58px; padding: 10px 12px; }
+  .messages-page .conversation-menu-item strong { font-size: .86rem; }
+  .messages-page .conversation-menu-item small { font-size: .74rem; }
+  .messages-page .conversation-item-link { padding-right: 54px; }
+}
+
+
+/* LEXSHIELD — reserve space for the 3-dot menu so Important never sits underneath it */
+.messages-page .conversation-item-top {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 8px;
+  padding-right: 46px;
+}
+.messages-page .conversation-item-title {
+  min-width: 0;
+}
+.messages-page .conversation-flags {
+  min-width: 0;
+  max-width: 100%;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.messages-page .conversation-state-pill {
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 767px) {
+  .messages-page .conversation-item-top {
+    padding-right: 48px;
+    gap: 6px;
+  }
+}
+
+/* LEXSHIELD — fix legacy delete-form rules leaking into the 3-dot menu */
+.messages-page .conversation-more-menu .conversation-delete-form {
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
+  z-index: auto !important;
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+  margin: 0 !important;
+  width: 100%;
+}
+.messages-page .conversation-more-dropdown {
+  z-index: 100;
+}
+.messages-page .conversation-more-menu {
+  pointer-events: auto;
+}
+.messages-page .conversation-menu-item {
+  min-height: 58px;
+}
+.messages-page .conversation-menu-icon svg {
+  width: 17px;
+  height: 17px;
+  display: block;
+  stroke: currentColor;
+}
+
+@media (max-width: 767px) {
+  .messages-page .conversation-more-dropdown {
+    width: min(270px, calc(100vw - 24px));
+  }
+}

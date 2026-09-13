@@ -213,12 +213,14 @@
     const tabs = Array.from(chatShell.querySelectorAll('[data-filter-tab]'));
     const groups = Array.from(chatShell.querySelectorAll('.conversation-group'));
     let currentFilter = 'all';
+    const initialFilter = chatShell.dataset.initialFilter || new URLSearchParams(window.location.search).get('filter') || 'all';
     const applyFilter = (filter) => {
       currentFilter = filter;
       items.forEach((item) => {
         const unread = item.dataset.unread === '1';
         const important = item.dataset.important === '1';
-        const show = filter === 'all' || (filter === 'unread' && unread) || (filter === 'important' && important);
+        const archived = item.dataset.archived === '1';
+        const show = filter === 'archived' ? archived : !archived && (filter === 'all' || (filter === 'unread' && unread) || (filter === 'important' && important));
         if (searchInput && searchInput.value.trim() !== '') {
           const query = searchInput.value.trim().toLowerCase();
           item.hidden = !show || !item.textContent.toLowerCase().includes(query);
@@ -250,8 +252,7 @@
           window.history.replaceState({}, '', url);
         });
       });
-      const requestedFilter = new URLSearchParams(window.location.search).get('filter') || 'all';
-      const activeFilter = ['all', 'unread', 'important'].includes(requestedFilter) ? requestedFilter : 'all';
+      const activeFilter = ['all', 'unread', 'important', 'archived'].includes(initialFilter) ? initialFilter : 'all';
       tabs.forEach((tab) => tab.classList.toggle('is-active', (tab.dataset.filterTab || 'all') === activeFilter));
       applyFilter(activeFilter);
     }

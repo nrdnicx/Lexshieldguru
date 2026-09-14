@@ -55,6 +55,16 @@ function lex_video_join_late_minutes(): int
     return lex_video_config_int('LEX_VIDEO_JOIN_LATE_MINUTES', 60, 1, 1440);
 }
 
+function lex_video_api_connect_timeout_seconds(): int
+{
+    return lex_video_config_int('LEX_VIDEO_API_CONNECT_TIMEOUT_SECONDS', 10, 1, 30);
+}
+
+function lex_video_api_timeout_seconds(): int
+{
+    return lex_video_config_int('LEX_VIDEO_API_TIMEOUT_SECONDS', 60, 10, 120);
+}
+
 function lex_video_provider(): string
 {
     $provider = strtolower(trim((string) (lex_video_env('LEX_VIDEO_PROVIDER') ?: 'jaas')));
@@ -115,6 +125,15 @@ function lex_video_jaas_private_key(): string
 function lex_video_token_secret(): string
 {
     return trim(lex_video_env('LEX_VIDEO_TOKEN_SECRET') ?: '');
+}
+
+function lex_video_remote_token_error(?string $message = null): string
+{
+    static $lastError = '';
+    if ($message !== null) {
+        $lastError = $message;
+    }
+    return $lastError;
 }
 
 function lex_video_jaas_configured(): bool
@@ -265,9 +284,11 @@ function lex_video_jaas_jwt(array $meeting, array $user): ?string
 
 function lex_video_remote_jaas_token(array $meeting, array $user): ?array
 {
+    lex_video_remote_token_error('');
     $endpoint = lex_api_url('api/video/jaas-token');
     $secret = lex_video_token_secret();
     if ($endpoint === '' || $secret === '') {
+        lex_video_remote_token_error('The Render API URL or video token shared secret is missing.');
         return null;
     }
 
@@ -293,6 +314,7 @@ function lex_video_remote_jaas_token(array $meeting, array $user): ?array
     ];
     $body = json_encode($payload, JSON_UNESCAPED_SLASHES);
     if (!is_string($body)) {
+        lex_video_remote_token_error('The video token request payload could not be encoded.');
         return null;
     }
 
@@ -314,15 +336,21 @@ function lex_video_remote_jaas_token(array $meeting, array $user): ?array
                 CURLOPT_HTTPHEADER => $headers,
                 CURLOPT_POSTFIELDS => $body,
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_CONNECTTIMEOUT => 5,
-                CURLOPT_TIMEOUT => 10,
+                CURLOPT_CONNECTTIMEOUT => lex_video_api_connect_timeout_seconds(),
+                CURLOPT_TIMEOUT => lex_video_api_timeout_seconds(),
             ]);
             $raw = curl_exec($curl);
             $status = (int) curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
             if ($raw !== false && $status >= 200 && $status < 300) {
                 $response = (string) $raw;
             } else {
-                error_log('Remote JaaS token request failed with HTTP status ' . $status . '.');
+                $curlError = curl_error($curl);
+                $message = 'Render token request failed with HTTP status ' . $status . '.';
+                if ($curlError !== '') {
+                    $message .= ' cURL: ' . $curlError;
+                }
+                lex_video_remote_token_error($message);
+                error_log('Remote JaaS token request failed: ' . $message);
             }
             curl_close($curl);
         }
@@ -332,7 +360,7 @@ function lex_video_remote_jaas_token(array $meeting, array $user): ?array
                 'method' => 'POST',
                 'header' => implode("\r\n", $headers),
                 'content' => $body,
-                'timeout' => 10,
+                'timeout' => lex_video_api_timeout_seconds(),
                 'ignore_errors' => true,
             ],
         ]);
@@ -348,17 +376,26 @@ function lex_video_remote_jaas_token(array $meeting, array $user): ?array
             if ($status >= 200 && $status < 300) {
                 $response = (string) $raw;
             } else {
-                error_log('Remote JaaS token request failed with HTTP status ' . $status . '.');
+                $message = 'Render token request failed with HTTP status ' . $status . '.';
+                lex_video_remote_token_error($message);
+                error_log('Remote JaaS token request failed: ' . $message);
             }
+        } else {
+            lex_video_remote_token_error('PHP could not connect to the Render token endpoint.');
         }
     }
 
     if ($response === null) {
+        if (lex_video_remote_token_error() === '') {
+            lex_video_remote_token_error('No response was received from the Render token endpoint.');
+        }
         return null;
     }
 
     $decoded = json_decode($response, true);
     if (!is_array($decoded) || empty($decoded['ok']) || empty($decoded['jwt'])) {
+        $apiMessage = is_array($decoded) && isset($decoded['message']) ? trim((string) $decoded['message']) : '';
+        lex_video_remote_token_error($apiMessage !== '' ? $apiMessage : 'Render returned an invalid token response.');
         error_log('Remote JaaS token response was invalid.');
         return null;
     }

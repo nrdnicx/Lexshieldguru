@@ -39,9 +39,12 @@ function base64UrlEncode(value) {
 function jaasPrivateKey() {
   const encoded = envValue('LEX_VIDEO_JAAS_PRIVATE_KEY_B64');
   if (encoded) {
+    if (encoded.includes('BEGIN ') && encoded.includes('PRIVATE KEY')) {
+      return encoded.replace(/\\n/g, '\n').trim();
+    }
     try {
       const decoded = Buffer.from(encoded, 'base64').toString('utf8').trim();
-      if (decoded) return decoded;
+      if (decoded.includes('BEGIN ') && decoded.includes('PRIVATE KEY')) return decoded;
     } catch (error) {
       return '';
     }
@@ -59,7 +62,7 @@ function jaasStatus() {
     app_id_configured: envValue('LEX_VIDEO_JAAS_APP_ID') !== '',
     key_id_configured: envValue('LEX_VIDEO_JAAS_KEY_ID') !== '',
     private_key_configured: privateKey !== '',
-    private_key_looks_valid: privateKey.includes('BEGIN PRIVATE KEY'),
+    private_key_looks_valid: privateKey.includes('BEGIN ') && privateKey.includes('PRIVATE KEY'),
     token_secret_configured: envValue('LEX_VIDEO_TOKEN_SECRET') !== '',
   };
 }

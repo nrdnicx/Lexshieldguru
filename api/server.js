@@ -56,6 +56,17 @@ function jaasPrivateKey() {
 
 function jaasStatus() {
   const privateKey = jaasPrivateKey();
+  let privateKeyCanSign = false;
+  if (privateKey) {
+    try {
+      const signer = crypto.createSign('RSA-SHA256');
+      signer.update('lexshield-jaas-health-check');
+      signer.end();
+      privateKeyCanSign = Boolean(signer.sign(privateKey));
+    } catch (error) {
+      privateKeyCanSign = false;
+    }
+  }
   return {
     provider: envValue('LEX_VIDEO_PROVIDER', 'jaas'),
     domain: envValue('LEX_VIDEO_JAAS_DOMAIN', '8x8.vc'),
@@ -63,6 +74,7 @@ function jaasStatus() {
     key_id_configured: envValue('LEX_VIDEO_JAAS_KEY_ID') !== '',
     private_key_configured: privateKey !== '',
     private_key_looks_valid: privateKey.includes('BEGIN ') && privateKey.includes('PRIVATE KEY'),
+    private_key_can_sign: privateKeyCanSign,
     token_secret_configured: envValue('LEX_VIDEO_TOKEN_SECRET') !== '',
   };
 }

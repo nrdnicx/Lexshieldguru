@@ -17,6 +17,12 @@ app.use(cors({
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: false }));
 
+app.get('/', (req, res) => res.json({
+  status: 'ok',
+  service: 'LEXSHIELD API',
+  endpoints: ['/health', '/api/phishing/check', '/api/video/status', '/api/video/jaas-token']
+}));
+
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 function envValue(name, fallback = '') {
@@ -43,6 +49,19 @@ function jaasPrivateKey() {
 
   const raw = envValue('LEX_VIDEO_JAAS_PRIVATE_KEY');
   return raw ? raw.replace(/\\n/g, '\n') : '';
+}
+
+function jaasStatus() {
+  const privateKey = jaasPrivateKey();
+  return {
+    provider: envValue('LEX_VIDEO_PROVIDER', 'jaas'),
+    domain: envValue('LEX_VIDEO_JAAS_DOMAIN', '8x8.vc'),
+    app_id_configured: envValue('LEX_VIDEO_JAAS_APP_ID') !== '',
+    key_id_configured: envValue('LEX_VIDEO_JAAS_KEY_ID') !== '',
+    private_key_configured: privateKey !== '',
+    private_key_looks_valid: privateKey.includes('BEGIN PRIVATE KEY'),
+    token_secret_configured: envValue('LEX_VIDEO_TOKEN_SECRET') !== '',
+  };
 }
 
 function signJaasJwt({ meeting, user, expiresAt }) {
@@ -145,6 +164,11 @@ app.post('/api/video/jaas-token', (req, res) => {
     return res.status(500).json({ ok: false, message: 'Unable to create the video token.' });
   }
 });
+
+app.get('/api/video/status', (req, res) => res.json({
+  ok: true,
+  jaas: jaasStatus(),
+}));
 
 const suspiciousTlds = new Set(['zip', 'mov', 'click', 'country', 'gq', 'tk', 'ml', 'cf', 'example', 'invalid', 'test', 'localhost']);
 const brandTerms = ['paypal', 'google', 'microsoft', 'facebook', 'apple', 'gcash', 'bank', 'lexshield', 'netflix'];

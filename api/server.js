@@ -3,16 +3,11 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const crypto = require('crypto');
 const express = require('express');
 const helmet = require('helmet');
-const cors = require('cors');
 
 const app = express();
 
 app.use(helmet({
   contentSecurityPolicy: false
-}));
-app.use(cors({
-  origin: (origin, cb) => cb(null, true),
-  credentials: true
 }));
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: false }));
@@ -20,7 +15,7 @@ app.use(express.urlencoded({ extended: false }));
 app.get('/', (req, res) => res.json({
   status: 'ok',
   service: 'LEXSHIELD API',
-  endpoints: ['/health', '/api/phishing/check', '/api/video/status', '/api/video/jaas-token']
+  endpoints: ['/health', '/api/phishing/check', '/api/video/jaas-token']
 }));
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
@@ -52,31 +47,6 @@ function jaasPrivateKey() {
 
   const raw = envValue('LEX_VIDEO_JAAS_PRIVATE_KEY');
   return raw ? raw.replace(/\\n/g, '\n') : '';
-}
-
-function jaasStatus() {
-  const privateKey = jaasPrivateKey();
-  let privateKeyCanSign = false;
-  if (privateKey) {
-    try {
-      const signer = crypto.createSign('RSA-SHA256');
-      signer.update('lexshield-jaas-health-check');
-      signer.end();
-      privateKeyCanSign = Boolean(signer.sign(privateKey));
-    } catch (error) {
-      privateKeyCanSign = false;
-    }
-  }
-  return {
-    provider: envValue('LEX_VIDEO_PROVIDER', 'jaas'),
-    domain: envValue('LEX_VIDEO_JAAS_DOMAIN', '8x8.vc'),
-    app_id_configured: envValue('LEX_VIDEO_JAAS_APP_ID') !== '',
-    key_id_configured: envValue('LEX_VIDEO_JAAS_KEY_ID') !== '',
-    private_key_configured: privateKey !== '',
-    private_key_looks_valid: privateKey.includes('BEGIN ') && privateKey.includes('PRIVATE KEY'),
-    private_key_can_sign: privateKeyCanSign,
-    token_secret_configured: envValue('LEX_VIDEO_TOKEN_SECRET') !== '',
-  };
 }
 
 function signJaasJwt({ meeting, user, expiresAt }) {
@@ -180,10 +150,6 @@ app.post('/api/video/jaas-token', (req, res) => {
   }
 });
 
-app.get('/api/video/status', (req, res) => res.json({
-  ok: true,
-  jaas: jaasStatus(),
-}));
 
 const suspiciousTlds = new Set(['zip', 'mov', 'click', 'country', 'gq', 'tk', 'ml', 'cf', 'example', 'invalid', 'test', 'localhost']);
 const brandTerms = ['paypal', 'google', 'microsoft', 'facebook', 'apple', 'gcash', 'bank', 'lexshield', 'netflix'];

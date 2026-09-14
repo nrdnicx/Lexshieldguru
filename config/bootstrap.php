@@ -12,8 +12,8 @@ lex_start_secure_session();
 header("X-Content-Type-Options: nosniff");
 header("X-Frame-Options: SAMEORIGIN");
 header("Referrer-Policy: strict-origin-when-cross-origin");
-header("Permissions-Policy: camera=(), microphone=(self), geolocation=()");
-header("Content-Security-Policy: default-src 'self' https: data:; script-src 'self' https://cdn.jsdelivr.net https://cdn.jsdelivr.net/npm https://cdnjs.cloudflare.com 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' http://127.0.0.1:3001 https://lexshieldguru.onrender.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'");
+header("Permissions-Policy: camera=(self \"https://meet.jit.si\" \"https://8x8.vc\"), microphone=(self \"https://meet.jit.si\" \"https://8x8.vc\"), display-capture=(self \"https://meet.jit.si\" \"https://8x8.vc\"), geolocation=()");
+header("Content-Security-Policy: default-src 'self' https: data:; script-src 'self' https://cdn.jsdelivr.net https://cdn.jsdelivr.net/npm https://cdnjs.cloudflare.com https://meet.jit.si https://8x8.vc 'unsafe-inline'; script-src-elem 'self' https://cdn.jsdelivr.net https://cdn.jsdelivr.net/npm https://cdnjs.cloudflare.com https://meet.jit.si https://8x8.vc 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' http://127.0.0.1:3001 https://lexshieldguru.onrender.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://meet.jit.si https://8x8.vc; frame-src 'self' https://meet.jit.si https://8x8.vc; child-src 'self' https://meet.jit.si https://8x8.vc; media-src 'self' blob: https:; worker-src 'self' blob:; frame-ancestors 'self'; base-uri 'self'; form-action 'self'");
 
 require_once __DIR__ . '/bootstrap/core.php';
 require_once __DIR__ . '/../security/rate_limiter.php';
@@ -24,6 +24,7 @@ require_once __DIR__ . '/bootstrap/helpers.php';
 require_once __DIR__ . '/bootstrap/storage.php';
 require_once __DIR__ . '/bootstrap/case_files.php';
 require_once __DIR__ . '/bootstrap/messages.php';
+require_once __DIR__ . '/bootstrap/video.php';
 require_once __DIR__ . '/bootstrap/schema.php';
 
 lex_users_table_ensure();

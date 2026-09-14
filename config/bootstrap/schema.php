@@ -194,6 +194,34 @@ function lex_appointments_table_ensure(): void
             $pdo->exec("ALTER TABLE `appointments` ADD COLUMN `appointment_type` VARCHAR(120) NOT NULL DEFAULT 'Client Intake Consultation' AFTER `scheduled_at`");
         }
 
+        $videoAdds = [
+            'meeting_provider' => "ALTER TABLE `appointments` ADD COLUMN `meeting_provider` VARCHAR(30) DEFAULT NULL AFTER `notes`",
+            'meeting_room' => "ALTER TABLE `appointments` ADD COLUMN `meeting_room` VARCHAR(180) DEFAULT NULL AFTER `meeting_provider`",
+            'meeting_enabled' => "ALTER TABLE `appointments` ADD COLUMN `meeting_enabled` TINYINT(1) NOT NULL DEFAULT 0 AFTER `meeting_room`",
+            'meeting_created_at' => "ALTER TABLE `appointments` ADD COLUMN `meeting_created_at` DATETIME DEFAULT NULL AFTER `meeting_enabled`",
+        ];
+        foreach ($videoAdds as $column => $sql) {
+            if (!in_array($column, $columns, true)) {
+                $pdo->exec($sql);
+            }
+        }
+        // Index existence is checked separately because SHOW COLUMNS does not expose indexes.
+        // Accept an existing index regardless of its name (the production database may
+        // already use a different, valid name such as ux_appointments_meeting_room).
+        $indexStmt = $pdo->query("SHOW INDEX FROM `appointments` WHERE Column_name = 'meeting_room'");
+        $hasMeetingRoomIndex = false;
+        if ($indexStmt) {
+            foreach ($indexStmt->fetchAll() as $indexRow) {
+                if (strcasecmp((string) ($indexRow['Column_name'] ?? ''), 'meeting_room') === 0) {
+                    $hasMeetingRoomIndex = true;
+                    break;
+                }
+            }
+        }
+        if (!$hasMeetingRoomIndex) {
+            $pdo->exec("ALTER TABLE `appointments` ADD UNIQUE KEY `idx_appointments_meeting_room` (`meeting_room`)");
+        }
+
         $done = true;
     });
 }

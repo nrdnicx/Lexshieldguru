@@ -348,6 +348,11 @@ function lex_allowed_upload_types(): array
         'png' => ['image/png'],
         'webp' => ['image/webp'],
         'docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/zip'],
+        'mp3' => ['audio/mpeg'],
+        'wav' => ['audio/wav', 'audio/x-wav'],
+        'webm' => ['audio/webm', 'video/webm'],
+        'ogg' => ['audio/ogg', 'application/ogg'],
+        'm4a' => ['audio/mp4'],
     ];
 }
 
@@ -448,7 +453,7 @@ function lex_validate_allowed_upload_type(string $path, string $originalName, st
     $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
     $allowed = lex_allowed_upload_types();
     if ($extension === '' || !isset($allowed[$extension])) {
-        lex_reject_upload($context, 'Unsupported file type. Allowed types: PDF, JPG, PNG, WEBP, DOCX.');
+        lex_reject_upload($context, 'Unsupported file type. Allowed types: PDF, JPG, PNG, WEBP, DOCX, MP3, WAV, WEBM, OGG, M4A.');
     }
 
     $mime = 'application/octet-stream';
@@ -461,6 +466,13 @@ function lex_validate_allowed_upload_type(string $path, string $originalName, st
 
     if (!in_array($mime, $allowed[$extension], true)) {
         lex_reject_upload($context, 'The uploaded file does not match its file type.');
+    }
+
+    // Browser MediaRecorder commonly creates an audio-only WebM container that
+    // PHP fileinfo identifies as video/webm. Treat that container as audio for
+    // message playback after the extension/MIME allow-list check above.
+    if ($extension === 'webm' && $mime === 'video/webm') {
+        $mime = 'audio/webm';
     }
 
     return [
@@ -540,7 +552,7 @@ function lex_store_message_attachment(array $file): ?array
     $originalName = $originalName !== '' ? $originalName : 'attachment';
     $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
     if ($extension === '' || !isset(lex_allowed_upload_types()[$extension])) {
-        lex_reject_upload('message_attachment', 'Unsupported attachment type. Allowed types: PDF, JPG, PNG, WEBP, DOCX.');
+        lex_reject_upload('message_attachment', 'Unsupported attachment type. Allowed types: PDF, JPG, PNG, WEBP, DOCX, MP3, WAV, WEBM, OGG, M4A.');
     }
     lex_validate_allowed_upload_type((string) $file['tmp_name'], $originalName, 'message_attachment');
     lex_scan_upload_for_malware((string) $file['tmp_name'], 'message_attachment', $originalName);

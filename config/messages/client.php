@@ -376,6 +376,10 @@ if ($selectedCaseId && $partnerId) {
     $threadMessages = $stmt->fetchAll();
 }
 
+$videoMeeting = ($selectedCaseId && $partnerId)
+    ? lex_video_thread_for_user($selectedCaseId, (int) $user['id'], $partnerId)
+    : null;
+
 $activeThread = 'lawyer:' . $selectedCaseId;
 $threadLabel = $partnerName ?: 'Lawyer';
 $onlineLabel = 'Online';
@@ -476,6 +480,17 @@ lex_page_header('Messages', 'messages', $user);
         <div class="header-actions">
           <div class="role-badge"><?= lex_e(lex_message_role_label('lawyer')) ?></div>
           <?php if ($isThreadMuted): ?><div class="role-badge">Muted</div><?php endif; ?>
+          <?php if ($videoMeeting): ?>
+            <?php if (!empty($videoMeeting['can_join'])): ?>
+              <a class="button button-primary chat-video-call" href="<?= lex_e(lex_app_url('video/consultation.php?appointment=' . (int) $videoMeeting['id'])) ?>" aria-label="Join video consultation">
+                <span aria-hidden="true">&#128249;</span> Video Call
+              </a>
+            <?php else: ?>
+              <span class="chat-video-call chat-video-call-disabled" title="The video consultation opens <?= lex_e(date('M j, Y g:i A', strtotime((string) $videoMeeting['scheduled_at']) - (lex_video_join_early_minutes() * 60))) ?>">
+                <span aria-hidden="true">&#128249;</span> Video Call
+              </span>
+            <?php endif; ?>
+          <?php endif; ?>
           <button
             class="icon-chip"
             type="button"

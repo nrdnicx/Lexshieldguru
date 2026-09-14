@@ -414,9 +414,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_toke
                         throw new LexAppointmentBookingException((string) $validation['error']);
                     }
                 }
-                $pdo->prepare('UPDATE appointments SET status = :status, scheduled_at = CASE WHEN :scheduled_at_value <> "" THEN :scheduled_at_value ELSE scheduled_at END, notes = CASE WHEN :notes_value <> "" THEN :notes_value ELSE notes END WHERE id = :id AND lawyer_id = :lawyer_id')->execute([
+                // Use unique PDO placeholders because native MySQL prepares do not allow
+                // the same named placeholder to be reused multiple times.
+                $pdo->prepare('UPDATE appointments
+                    SET status = :status,
+                        scheduled_at = CASE WHEN :scheduled_at_check <> "" THEN :scheduled_at_value ELSE scheduled_at END,
+                        notes = CASE WHEN :notes_check <> "" THEN :notes_value ELSE notes END
+                    WHERE id = :id AND lawyer_id = :lawyer_id'
+                )->execute([
                     'status' => $status,
+                    'scheduled_at_check' => $scheduledAt,
                     'scheduled_at_value' => $scheduledAt,
+                    'notes_check' => $notes,
                     'notes_value' => $notes,
                     'id' => $appointmentId,
                     'lawyer_id' => $lawyerId,
@@ -427,6 +436,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_toke
                     $lockAcquired = false;
                 }
                 lex_audit('update_appointment', 'appointments', (string) $appointmentId);
+                if ($status === 'confirmed') {
+                    // Prepare a unique consultation room only after the appointment
+                    // is successfully confirmed. Authorization is still enforced
+                    // when either participant actually joins the call.
+                    lex_video_prepare_for_confirmed_appointment($appointmentId);
+                }
                 $message = $status === 'confirmed' ? 'Appointment approved.' : ($status === 'cancelled' ? 'Appointment cancelled.' : 'Appointment updated.');
                 lex_notify((int) $appointment['client_user_id'], 'appointment', $message);
                 lex_flash_set('success', $message);

@@ -1,0 +1,192 @@
+<?php
+declare(strict_types=1);
+
+require_once __DIR__ . '/../config/bootstrap.php';
+
+$user = lex_require_role(['lawyer', 'client']);
+$appointmentId = lex_sanitize_int($_GET['appointment'] ?? 0);
+$meeting = lex_video_consultation_for_user($appointmentId, (int) $user['id']);
+
+if (!$meeting) {
+    http_response_code(403);
+    lex_page_header('Video Consultation', 'messages', $user);
+    ?>
+    <main class="page-container">
+      <section class="card video-access-card">
+        <div class="card-head"><h1>Video Consultation</h1></div>
+        <p class="muted">This consultation is unavailable. It may not be confirmed, may belong to another user, or its meeting window may no longer be active.</p>
+        <a class="button button-secondary" href="<?= lex_e(lex_app_url($user['role'] === 'lawyer' ? 'lawyer/messages.php' : 'client/messages.php')) ?>">Back to Messages</a>
+      </section>
+    </main>
+    <?php
+    lex_page_footer();
+    exit;
+}
+
+if (empty($meeting['can_join'])) {
+    lex_page_header('Video Consultation', 'messages', $user);
+    $start = strtotime((string) $meeting['join_starts_at']);
+    $end = strtotime((string) $meeting['join_ends_at']);
+    ?>
+    <main class="page-container">
+      <section class="card video-access-card">
+        <div class="card-head"><h1>Video Consultation</h1><span class="pill">Scheduled</span></div>
+        <div class="video-schedule-box">
+          <strong><?= lex_e(date('F j, Y g:i A', strtotime((string) $meeting['scheduled_at']))) ?></strong>
+          <span>Join window: <?= lex_e($start ? date('g:i A', $start) : '—') ?> – <?= lex_e($end ? date('g:i A', $end) : '—') ?></span>
+        </div>
+        <p class="muted">The video room is not open yet. Return to Messages when the join window begins.</p>
+        <a class="button button-secondary" href="<?= lex_e(lex_app_url($user['role'] === 'lawyer' ? 'lawyer/messages.php?thread=client:' . (int) $meeting['case_id'] : 'client/messages.php?thread=lawyer:' . (int) $meeting['case_id'])) ?>">Back to Messages</a>
+      </section>
+    </main>
+    <?php
+    lex_page_footer();
+    exit;
+}
+
+$displayName = trim((string) ($user['full_name'] ?? 'LEXSHIELD User'));
+$provider = strtolower((string) ($meeting['meeting_provider'] ?? 'jitsi'));
+$domain = (string) ($meeting['video_domain'] ?? lex_video_domain_for_provider($provider));
+$room = (string) $meeting['meeting_room'];
+$jaasAppId = $provider === 'jaas' ? lex_video_jaas_app_id() : '';
+$jaasJwt = $provider === 'jaas' ? lex_video_jaas_jwt($meeting, $user) : null;
+$jaasStatus = $provider === 'jaas' ? lex_video_jaas_status() : null;
+$jaasError = '';
+if ($provider === 'jaas') {
+    if (!$jaasStatus['app_id_configured'] || !$jaasStatus['key_id_configured']) {
+        $jaasError = 'JaaS App ID or Key ID is missing from the server configuration.';
+    } elseif (!$jaasStatus['private_key_configured']) {
+        $jaasError = 'The JaaS private key is missing from the server configuration.';
+    } elseif ($jaasStatus['private_key_base64_valid'] === false) {
+        $jaasError = 'The JaaS private-key Base64 value is invalid or could not be decoded.';
+    } elseif (!$jaasStatus['openssl_available']) {
+        $jaasError = 'PHP OpenSSL is not available on the server, so the JaaS JWT cannot be signed.';
+    } elseif (!$jaasStatus['private_key_valid']) {
+        $jaasError = 'The JaaS private key could not be read by PHP OpenSSL. Please verify that the downloaded PEM private key was Base64-encoded correctly.';
+    } elseif ($jaasJwt === null) {
+        $jaasError = 'The JaaS JWT could not be generated on the server.';
+    }
+}
+$backUrl = $user['role'] === 'lawyer'
+    ? lex_app_url('lawyer/messages.php?thread=client:' . (int) $meeting['case_id'])
+    : lex_app_url('client/messages.php?thread=lawyer:' . (int) $meeting['case_id']);
+
+lex_page_header('Video Consultation', 'messages', $user);
+?>
+<main class="video-consultation-page">
+  <section class="video-consultation-shell">
+    <header class="video-consultation-header">
+      <div>
+        <span class="eyebrow">LEXSHIELD SECURE CONSULTATION</span>
+        <h1>Video Consultation</h1>
+        <p><?= lex_e($meeting['appointment_type'] ?: 'Legal consultation') ?> &middot; <?= lex_e($meeting['case_number']) ?></p>
+      </div>
+      <a class="button button-secondary" href="<?= lex_e($backUrl) ?>">Back to Messages</a>
+    </header>
+    <div class="video-consultation-stage" id="jitsi-container"
+         data-video-provider="<?= lex_e($provider) ?>"
+         data-jitsi-domain="<?= lex_e($domain) ?>"
+         data-jitsi-room="<?= lex_e($room) ?>"
+         data-jaas-app-id="<?= lex_e($jaasAppId) ?>"
+         data-display-name="<?= lex_e($displayName) ?>">
+      <div class="video-loading" id="jitsi-loading">Connecting to your consultation&hellip;</div>
+    </div>
+    <p class="video-security-note">This room is assigned to this confirmed appointment. Do not share the consultation link with anyone outside the case.</p>
+  </section>
+</main>
+<?php if ($provider === 'jaas' && $jaasAppId !== ''): ?>
+<script src="<?= lex_e('https://' . $domain . '/' . rawurlencode($jaasAppId) . '/external_api.js') ?>"></script>
+<?php endif; ?>
+<script>
+(() => {
+  const container = document.getElementById('jitsi-container');
+  const loading = document.getElementById('jitsi-loading');
+  if (!container) return;
+
+  const provider = container.dataset.videoProvider || 'jitsi';
+  const domain = container.dataset.jitsiDomain || 'meet.jit.si';
+  const room = container.dataset.jitsiRoom || '';
+  const displayName = container.dataset.displayName || 'LEXSHIELD User';
+  if (!room) {
+    if (loading) loading.textContent = 'The video room is unavailable. Please return to Messages and try again.';
+    return;
+  }
+
+  const backUrl = <?= json_encode($backUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
+
+  if (provider === 'jaas') {
+    const appId = container.dataset.jaasAppId || '';
+    const jwt = <?= json_encode($jaasJwt, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
+
+    const serverConfigError = <?= json_encode($jaasError, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
+
+    if (!appId) {
+      if (loading) loading.textContent = serverConfigError || 'The JaaS App ID is missing from the server configuration.';
+      return;
+    }
+    if (!jwt) {
+      if (loading) loading.textContent = serverConfigError || 'The secure video token could not be generated. Please return to Messages and try again.';
+      return;
+    }
+    if (typeof window.JitsiMeetExternalAPI !== 'function') {
+      if (loading) loading.textContent = 'The JaaS video service could not load from 8x8.vc. Please check the server CSP/network configuration and try again.';
+      return;
+    }
+
+    const api = new window.JitsiMeetExternalAPI(domain, {
+      roomName: appId + '/' + room,
+      jwt,
+      parentNode: container,
+      width: '100%',
+      height: '100%',
+      configOverwrite: {
+        prejoinConfig: {
+          enabled: false
+        },
+        disableDeepLinking: true,
+        startWithAudioMuted: false,
+        startWithVideoMuted: false
+      },
+      interfaceConfigOverwrite: {
+        MOBILE_APP_PROMO: false,
+        SHOW_JITSI_WATERMARK: false
+      }
+    });
+
+    api.addEventListener('videoConferenceJoined', () => {
+      if (loading) loading.remove();
+    });
+    api.addEventListener('readyToClose', () => {
+      window.location.href = backUrl;
+    });
+    return;
+  }
+
+  // Backward-compatible fallback for any older appointment still using public Jitsi.
+  // New production appointments should use JaaS.
+  const iframe = document.createElement('iframe');
+  iframe.title = 'LEXSHIELD secure video consultation';
+  const encodedDisplayName = encodeURIComponent(JSON.stringify(displayName));
+  const jitsiHash = [
+    'config.prejoinConfig.enabled=false',
+    'config.prejoinPageEnabled=false',
+    'config.disableDeepLinking=true',
+    'userInfo.displayName=' + encodedDisplayName
+  ].join('&');
+  iframe.src = 'https://' + domain + '/' + encodeURIComponent(room) + '#' + jitsiHash;
+  iframe.allow = 'camera; microphone; fullscreen; display-capture; autoplay; clipboard-write';
+  iframe.allowFullscreen = true;
+  iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+  iframe.setAttribute('aria-label', 'LEXSHIELD secure video consultation');
+  iframe.addEventListener('load', () => {
+    if (loading) loading.remove();
+  });
+  container.appendChild(iframe);
+  if (loading) {
+    window.setTimeout(() => {
+      if (loading && loading.isConnected) loading.remove();
+    }, 12000);
+  }
+})();
+</script>
+<?php lex_page_footer(); ?>

@@ -98,9 +98,6 @@ lex_page_header('Video Consultation', 'messages', $user);
     <p class="video-security-note">This room is assigned to this confirmed appointment. Do not share the consultation link with anyone outside the case.</p>
   </section>
 </main>
-<?php if ($provider === 'jaas' && $jaasAppId !== ''): ?>
-<script src="<?= lex_e('https://' . $domain . '/' . rawurlencode($jaasAppId) . '/external_api.js') ?>"></script>
-<?php endif; ?>
 <script>
 (() => {
   const container = document.getElementById('jitsi-container');
@@ -118,7 +115,43 @@ lex_page_header('Video Consultation', 'messages', $user);
 
   const backUrl = <?= json_encode($backUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
 
-  if (provider === 'jaas') {
+  const loadJitsiExternalApi = (domainName, appId) => new Promise((resolve, reject) => {
+    if (typeof window.JitsiMeetExternalAPI === 'function') {
+      resolve();
+      return;
+    }
+
+    const candidates = [];
+    if (appId) candidates.push(`https://${domainName}/${encodeURIComponent(appId)}/external_api.js`);
+    candidates.push(`https://${domainName}/external_api.js`);
+    let index = 0;
+
+    const tryNext = () => {
+      if (typeof window.JitsiMeetExternalAPI === 'function') {
+        resolve();
+        return;
+      }
+      if (index >= candidates.length) {
+        reject(new Error('JaaS API script failed to load.'));
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = candidates[index];
+      script.async = true;
+      script.onload = () => {
+        if (typeof window.JitsiMeetExternalAPI === 'function') resolve();
+        else tryNext();
+      };
+      script.onerror = tryNext;
+      index += 1;
+      document.head.appendChild(script);
+    };
+
+    tryNext();
+  });
+
+  const startJaas = async () => {
     const appId = container.dataset.jaasAppId || '';
     const jwt = <?= json_encode($jaasJwt, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
 
@@ -132,8 +165,10 @@ lex_page_header('Video Consultation', 'messages', $user);
       if (loading) loading.textContent = serverConfigError || 'The secure video token could not be generated. Please return to Messages and try again.';
       return;
     }
-    if (typeof window.JitsiMeetExternalAPI !== 'function') {
-      if (loading) loading.textContent = 'The JaaS video service could not load from 8x8.vc. Please check the server CSP/network configuration and try again.';
+    try {
+      await loadJitsiExternalApi(domain, appId);
+    } catch (error) {
+      if (loading) loading.textContent = 'The JaaS video service could not load from 8x8.vc. Please check your browser connection or content-security policy and try again.';
       return;
     }
 
@@ -163,6 +198,10 @@ lex_page_header('Video Consultation', 'messages', $user);
     api.addEventListener('readyToClose', () => {
       window.location.href = backUrl;
     });
+  };
+
+  if (provider === 'jaas') {
+    startJaas();
     return;
   }
 

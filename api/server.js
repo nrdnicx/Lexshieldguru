@@ -1,5 +1,6 @@
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+const crypto = require('crypto');
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
@@ -17,6 +18,133 @@ app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: false }));
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
+
+function envValue(name, fallback = '') {
+  return String(process.env[name] || fallback).trim();
+}
+
+function base64UrlEncode(value) {
+  return Buffer.from(value).toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '');
+}
+
+function jaasPrivateKey() {
+  const encoded = envValue('LEX_VIDEO_JAAS_PRIVATE_KEY_B64');
+  if (encoded) {
+    try {
+      const decoded = Buffer.from(encoded, 'base64').toString('utf8').trim();
+      if (decoded) return decoded;
+    } catch (error) {
+      return '';
+    }
+  }
+
+  const raw = envValue('LEX_VIDEO_JAAS_PRIVATE_KEY');
+  return raw ? raw.replace(/\\n/g, '\n') : '';
+}
+
+function signJaasJwt({ meeting, user, expiresAt }) {
+  const appId = envValue('LEX_VIDEO_JAAS_APP_ID');
+  const keyId = envValue('LEX_VIDEO_JAAS_KEY_ID');
+  const privateKey = jaasPrivateKey();
+  if (!appId || !keyId || !privateKey) {
+    throw new Error('JaaS is not configured on the API service.');
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  const exp = Math.max(now + 60, Math.min(Number(expiresAt || 0) || now + 3600, now + 3600));
+  const room = String(meeting?.room || '').trim();
+  if (!/^[A-Za-z0-9_-]{8,180}$/.test(room)) {
+    throw new Error('Invalid JaaS room.');
+  }
+
+  const header = {
+    alg: 'RS256',
+    kid: keyId,
+    typ: 'JWT',
+  };
+  const payload = {
+    aud: 'jitsi',
+    exp,
+    iss: 'chat',
+    nbf: now - 30,
+    room,
+    sub: appId,
+    context: {
+      user: {
+        id: String(user?.id || ''),
+        name: String(user?.name || 'LEXSHIELD User').trim() || 'LEXSHIELD User',
+        avatar: '',
+        email: String(user?.email || '').trim(),
+        moderator: user?.role === 'lawyer' ? 'true' : 'false',
+      },
+      features: {
+        livestreaming: false,
+        recording: false,
+        transcription: false,
+        'outbound-call': false,
+      },
+      room: {
+        regex: false,
+      },
+    },
+  };
+
+  const signingInput = `${base64UrlEncode(JSON.stringify(header))}.${base64UrlEncode(JSON.stringify(payload))}`;
+  const signer = crypto.createSign('RSA-SHA256');
+  signer.update(signingInput);
+  signer.end();
+  return `${signingInput}.${base64UrlEncode(signer.sign(privateKey))}`;
+}
+
+function verifyLexshieldSignature(req) {
+  const secret = envValue('LEX_VIDEO_TOKEN_SECRET');
+  if (!secret) {
+    return { ok: false, message: 'Video token secret is not configured on the API service.' };
+  }
+  const signature = String(req.get('X-Lexshield-Signature') || '');
+  const timestamp = String(req.get('X-Lexshield-Timestamp') || '');
+  if (!/^\d{10}$/.test(timestamp)) {
+    return { ok: false, message: 'Missing video token timestamp.' };
+  }
+  const now = Math.floor(Date.now() / 1000);
+  if (Math.abs(now - Number(timestamp)) > 300) {
+    return { ok: false, message: 'Expired video token request.' };
+  }
+  const body = JSON.stringify(req.body || {});
+  const expected = crypto
+    .createHmac('sha256', secret)
+    .update(`${timestamp}.${body}`)
+    .digest('hex');
+  const expectedBuffer = Buffer.from(expected, 'hex');
+  const actualBuffer = Buffer.from(signature, 'hex');
+  if (actualBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(actualBuffer, expectedBuffer)) {
+    return { ok: false, message: 'Invalid video token signature.' };
+  }
+  return { ok: true };
+}
+
+app.post('/api/video/jaas-token', (req, res) => {
+  const auth = verifyLexshieldSignature(req);
+  if (!auth.ok) {
+    return res.status(401).json({ ok: false, message: auth.message });
+  }
+
+  try {
+    const jwt = signJaasJwt(req.body || {});
+    return res.json({
+      ok: true,
+      jwt,
+      app_id: envValue('LEX_VIDEO_JAAS_APP_ID'),
+      domain: envValue('LEX_VIDEO_JAAS_DOMAIN', '8x8.vc'),
+    });
+  } catch (error) {
+    console.error('[VIDEO] JaaS token generation failed:', error.message);
+    return res.status(500).json({ ok: false, message: 'Unable to create the video token.' });
+  }
+});
 
 const suspiciousTlds = new Set(['zip', 'mov', 'click', 'country', 'gq', 'tk', 'ml', 'cf', 'example', 'invalid', 'test', 'localhost']);
 const brandTerms = ['paypal', 'google', 'microsoft', 'facebook', 'apple', 'gcash', 'bank', 'lexshield', 'netflix'];

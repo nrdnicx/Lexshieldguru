@@ -1,9 +1,6 @@
 -- LEXSHIELD database schema and seed data
-CREATE DATABASE IF NOT EXISTS `lexsh_db`
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
+-- InfinityFree version: import this after selecting your InfinityFree database in phpMyAdmin.
 
-USE `lexsh_db`;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
@@ -187,9 +184,14 @@ CREATE TABLE `appointments` (
   `appointment_type` VARCHAR(120) NOT NULL DEFAULT 'Client Intake Consultation',
   `status` ENUM('pending','confirmed','cancelled','deleted') NOT NULL DEFAULT 'pending',
   `notes` TEXT,
+  `meeting_provider` VARCHAR(30) DEFAULT NULL,
+  `meeting_room` VARCHAR(180) DEFAULT NULL,
+  `meeting_enabled` TINYINT(1) NOT NULL DEFAULT 0,
+  `meeting_created_at` DATETIME DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_appointments_lawyer_date` (`lawyer_id`, `scheduled_at`),
   KEY `idx_appointments_client_date` (`client_id`, `scheduled_at`),
+  UNIQUE KEY `idx_appointments_meeting_room` (`meeting_room`),
   CONSTRAINT `fk_appointments_case` FOREIGN KEY (`case_id`) REFERENCES `cases` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_appointments_client` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_appointments_lawyer` FOREIGN KEY (`lawyer_id`) REFERENCES `lawyers` (`id`) ON DELETE CASCADE

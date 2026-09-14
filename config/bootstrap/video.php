@@ -112,6 +112,11 @@ function lex_video_jaas_private_key(): string
     return '';
 }
 
+function lex_video_token_secret(): string
+{
+    return trim(lex_video_env('LEX_VIDEO_TOKEN_SECRET') ?: '');
+}
+
 function lex_video_jaas_configured(): bool
 {
     return lex_video_jaas_app_id() !== ''
@@ -256,6 +261,113 @@ function lex_video_jaas_jwt(array $meeting, array $user): ?string
     }
 
     return $signingInput . '.' . lex_video_base64url_encode($signature);
+}
+
+function lex_video_remote_jaas_token(array $meeting, array $user): ?array
+{
+    $endpoint = lex_api_url('api/video/jaas-token');
+    $secret = lex_video_token_secret();
+    if ($endpoint === '' || $secret === '') {
+        return null;
+    }
+
+    $now = time();
+    $scheduledAt = strtotime((string) ($meeting['scheduled_at'] ?? ''));
+    $joinEnd = $scheduledAt !== false
+        ? $scheduledAt + (lex_video_join_late_minutes() * 60)
+        : $now + 3600;
+
+    $payload = [
+        'meeting' => [
+            'room' => (string) ($meeting['meeting_room'] ?? ''),
+            'appointment_id' => (int) ($meeting['id'] ?? 0),
+            'case_id' => (int) ($meeting['case_id'] ?? 0),
+        ],
+        'user' => [
+            'id' => (string) ($user['id'] ?? ''),
+            'name' => trim((string) ($user['full_name'] ?? 'LEXSHIELD User')),
+            'email' => trim((string) ($user['email'] ?? '')),
+            'role' => (string) ($user['role'] ?? ''),
+        ],
+        'expiresAt' => min($joinEnd + 300, $now + 3600),
+    ];
+    $body = json_encode($payload, JSON_UNESCAPED_SLASHES);
+    if (!is_string($body)) {
+        return null;
+    }
+
+    $timestamp = (string) $now;
+    $signature = hash_hmac('sha256', $timestamp . '.' . $body, $secret);
+    $headers = [
+        'Accept: application/json',
+        'Content-Type: application/json',
+        'X-Lexshield-Timestamp: ' . $timestamp,
+        'X-Lexshield-Signature: ' . $signature,
+    ];
+
+    $response = null;
+    if (function_exists('curl_init')) {
+        $curl = curl_init($endpoint);
+        if ($curl !== false) {
+            curl_setopt_array($curl, [
+                CURLOPT_POST => true,
+                CURLOPT_HTTPHEADER => $headers,
+                CURLOPT_POSTFIELDS => $body,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_CONNECTTIMEOUT => 5,
+                CURLOPT_TIMEOUT => 10,
+            ]);
+            $raw = curl_exec($curl);
+            $status = (int) curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
+            if ($raw !== false && $status >= 200 && $status < 300) {
+                $response = (string) $raw;
+            } else {
+                error_log('Remote JaaS token request failed with HTTP status ' . $status . '.');
+            }
+            curl_close($curl);
+        }
+    } else {
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'POST',
+                'header' => implode("\r\n", $headers),
+                'content' => $body,
+                'timeout' => 10,
+                'ignore_errors' => true,
+            ],
+        ]);
+        $raw = @file_get_contents($endpoint, false, $context);
+        if ($raw !== false) {
+            $status = 0;
+            foreach (($http_response_header ?? []) as $headerLine) {
+                if (preg_match('/^HTTP\/\S+\s+(\d+)/', (string) $headerLine, $matches)) {
+                    $status = (int) $matches[1];
+                    break;
+                }
+            }
+            if ($status >= 200 && $status < 300) {
+                $response = (string) $raw;
+            } else {
+                error_log('Remote JaaS token request failed with HTTP status ' . $status . '.');
+            }
+        }
+    }
+
+    if ($response === null) {
+        return null;
+    }
+
+    $decoded = json_decode($response, true);
+    if (!is_array($decoded) || empty($decoded['ok']) || empty($decoded['jwt'])) {
+        error_log('Remote JaaS token response was invalid.');
+        return null;
+    }
+
+    return [
+        'jwt' => (string) $decoded['jwt'],
+        'app_id' => trim((string) ($decoded['app_id'] ?? lex_video_jaas_app_id())),
+        'domain' => trim((string) ($decoded['domain'] ?? lex_video_jaas_domain())),
+    ];
 }
 
 function lex_video_generate_room(): string

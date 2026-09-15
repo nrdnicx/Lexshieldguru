@@ -201,7 +201,7 @@ function lex_phishing_detector_button(): string
 
 function lex_phishing_detector_modal(): void
 {
-    $endpointPath = lex_api_url('api/phishing/check');
+    $endpointPath = lex_app_url('api/phishing/check.php');
     ?>
     <div class="modal-overlay phishing-detector-modal" id="phishingDetectorModal" data-modal aria-hidden="true">
       <div class="modal-card phishing-detector-card" role="dialog" aria-modal="true" aria-labelledby="phishingDetectorTitle">
@@ -211,6 +211,7 @@ function lex_phishing_detector_modal(): void
         </div>
         <div class="modal-body">
           <form class="phishing-detector-form" data-phishing-form data-no-loading data-endpoint="<?= lex_e($endpointPath) ?>" novalidate>
+            <?= lex_csrf_field() ?>
             <label class="phishing-detector-field">
               <span>URL</span>
               <input class="modal-input" type="url" name="url" placeholder="https://example.com" autocomplete="url" data-phishing-input required>

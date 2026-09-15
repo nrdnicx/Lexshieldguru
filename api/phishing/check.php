@@ -599,6 +599,28 @@ function lex_phishing_handle_request(): void
         return;
     }
 
+    $user = lex_current_user();
+    if (!$user || (int) ($user['is_active'] ?? 0) !== 1) {
+        http_response_code(401);
+        echo json_encode([
+            'status' => 'suspicious',
+            'score' => 0,
+            'message' => 'You must be signed in to use the phishing detector.',
+        ], JSON_UNESCAPED_SLASHES);
+        return;
+    }
+
+    $csrfToken = (string) ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? ($_POST['csrf_token'] ?? ''));
+    if (!lex_csrf_validate($csrfToken)) {
+        http_response_code(403);
+        echo json_encode([
+            'status' => 'suspicious',
+            'score' => 0,
+            'message' => 'Security validation failed. Refresh the page and try again.',
+        ], JSON_UNESCAPED_SLASHES);
+        return;
+    }
+
     $limit = lex_rate_limit_hit(
         'phishing_check',
         lex_rate_limit_client_ip(),

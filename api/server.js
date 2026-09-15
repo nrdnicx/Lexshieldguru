@@ -15,7 +15,7 @@ app.use(express.urlencoded({ extended: false }));
 app.get('/', (req, res) => res.json({
   status: 'ok',
   service: 'LEXSHIELD API',
-  endpoints: ['/health', '/api/phishing/check', '/api/video/jaas-token']
+  endpoints: ['/health', '/api/video/jaas-token']
 }));
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
@@ -356,69 +356,6 @@ function evaluateSingleUrl(rawUrl) {
     findings,
   };
 }
-
-app.post('/api/phishing/check', async (req, res) => {
-  const url = typeof req.body?.url === 'string' ? req.body.url.trim() : '';
-  if (!url) {
-    return res.status(400).json({ status: 'suspicious', score: 0, message: 'URL is required.' });
-  }
-
-  const initialScan = evaluateSingleUrl(url);
-  if (initialScan.error) {
-    return res.status(422).json({ status: 'suspicious', score: 0, message: initialScan.error });
-  }
-
-  const redirect = await resolveRedirects(url);
-  let risk = initialScan.risk;
-  const findings = [...initialScan.findings];
-  if (redirect.finalUrl !== url) {
-    findings.push(`The URL redirects to: ${redirect.finalUrl}`);
-    const finalScan = evaluateSingleUrl(redirect.finalUrl);
-    if (!finalScan.error) {
-      risk += Math.min(60, finalScan.risk);
-      finalScan.findings.forEach((finding) => findings.push(`Final URL: ${finding}`));
-    }
-  }
-  if (redirect.redirectCount > 0) {
-    risk += Math.min(12, redirect.redirectCount * 4);
-  }
-  if (redirect.redirectError) {
-    findings.push(redirect.redirectError);
-  }
-
-  if (risk >= 55) {
-    return res.json({
-      status: 'phishing',
-      score: Math.min(99, risk),
-      message: findings[0] || 'Multiple phishing indicators were detected.',
-      findings,
-      final_url: redirect.finalUrl,
-      redirect_count: redirect.redirectCount,
-      redirect_chain: redirect.redirectChain,
-    });
-  }
-  if (risk >= 25) {
-    return res.json({
-      status: 'suspicious',
-      score: risk,
-      message: findings[0] || 'Some suspicious URL patterns were detected.',
-      findings,
-      final_url: redirect.finalUrl,
-      redirect_count: redirect.redirectCount,
-      redirect_chain: redirect.redirectChain,
-    });
-  }
-
-  return res.json({
-    status: 'safe',
-    score: Math.max(90, 100 - risk),
-    message: 'No phishing indicators detected.',
-    findings,
-    final_url: redirect.finalUrl,
-    redirect_count: redirect.redirectCount,
-    redirect_chain: redirect.redirectChain,
-  });
-});
 
 app.use((err, req, res, next) => {
   console.error(err);

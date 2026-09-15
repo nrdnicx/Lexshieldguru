@@ -527,6 +527,7 @@
             headers: {
               Accept: 'application/json',
               'Content-Type': 'application/json',
+              'X-CSRF-Token': phishingForm.querySelector('input[name=csrf_token]')?.value || '',
             },
             body: JSON.stringify({ url }),
             signal: scanController.signal,

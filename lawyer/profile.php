@@ -6,7 +6,7 @@ $pdo = lex_pdo();
 $lawyerId = lex_user_lawyer_id((int) $user['id']);
 
 $profile = lex_recent(
-    'SELECT l.specialization, l.status, l.bio, l.background, l.contact_number, l.gcash_account_name, l.gcash_number, l.gcash_qr_stored_name, u.full_name, u.email, u.password_hash, u.avatar_stored_name, u.created_at
+    'SELECT l.bar_number, l.specialization, l.status, l.bio, l.background, l.contact_number, l.address, l.gcash_account_name, l.gcash_number, l.gcash_qr_stored_name, u.full_name, u.email, u.password_hash, u.avatar_stored_name, u.created_at
      FROM lawyers l
      JOIN users u ON u.id = l.user_id
      WHERE l.id = :id
@@ -14,11 +14,13 @@ $profile = lex_recent(
     ['id' => $lawyerId]
 );
 $profile = $profile[0] ?? [
+    'bar_number' => '',
     'specialization' => '',
     'status' => 'active',
     'bio' => '',
     'background' => '',
     'contact_number' => '',
+    'address' => '',
     'gcash_account_name' => '',
     'gcash_number' => '',
     'gcash_qr_stored_name' => '',
@@ -33,11 +35,13 @@ $error = '';
 
 $fullName = (string) ($profile['full_name'] ?? '');
 $email = (string) ($profile['email'] ?? '');
+$barNumber = (string) ($profile['bar_number'] ?? '');
 $specialization = (string) ($profile['specialization'] ?? '');
 $status = (string) ($profile['status'] ?? 'active');
 $bio = (string) ($profile['bio'] ?? '');
 $background = (string) ($profile['background'] ?? '');
 $contactNumber = (string) ($profile['contact_number'] ?? '');
+$address = (string) ($profile['address'] ?? '');
 $gcashAccountName = (string) ($profile['gcash_account_name'] ?? '');
 $gcashNumber = (string) ($profile['gcash_number'] ?? '');
 $gcashQrStoredName = (string) ($profile['gcash_qr_stored_name'] ?? '');
@@ -52,11 +56,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $fullName = lex_sanitize_text($_POST['full_name'] ?? '');
         $email = lex_sanitize_email($_POST['email'] ?? '');
+        $barNumber = lex_sanitize_text($_POST['bar_number'] ?? '');
         $specialization = lex_sanitize_text($_POST['specialization'] ?? '');
         $status = strtolower(lex_sanitize_text($_POST['status'] ?? 'active'));
         $bio = lex_sanitize_multiline_text($_POST['bio'] ?? '');
         $background = lex_sanitize_multiline_text($_POST['background'] ?? '');
         $contactNumber = lex_sanitize_text($_POST['contact_number'] ?? '');
+        $address = lex_sanitize_multiline_text($_POST['address'] ?? '');
         $gcashAccountName = lex_sanitize_text($_POST['gcash_account_name'] ?? '');
         $gcashNumber = lex_sanitize_text($_POST['gcash_number'] ?? '');
         $currentPassword = (string) ($_POST['current_password'] ?? '');
@@ -65,22 +71,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $newAvatar = null;
         $newPaymentQr = null;
 
-        if ($fullName === '' || $email === '' || $specialization === '') {
+        if ($fullName === '' || $email === '' || $barNumber === '' || $specialization === '') {
             $error = 'Please complete the required profile fields.';
         } elseif (!in_array($status, ['active', 'busy'], true)) {
             $error = 'Choose a valid availability status.';
         } elseif (($newPassword !== '' || $confirmPassword !== '' || $email !== (string) ($profile['email'] ?? '')) && $currentPassword === '') {
             $error = 'Enter your current password to change your email or password.';
-        } elseif ($newPassword !== '' && ($passwordError = lex_password_policy_error($newPassword, $email, $fullName)) !== '') {
+        } elseif ($error === '' && $newPassword !== '' && ($passwordError = lex_password_policy_error($newPassword, $email, $fullName)) !== '') {
             $error = $passwordError;
-        } elseif ($newPassword !== '' && $newPassword !== $confirmPassword) {
+        } elseif ($error === '' && $newPassword !== '' && $newPassword !== $confirmPassword) {
             $error = 'New password and confirmation do not match.';
         } else {
             $stmt = $pdo->prepare('SELECT id FROM users WHERE email = :email AND id <> :id LIMIT 1');
             $stmt->execute(['email' => $email, 'id' => (int) $user['id']]);
             if ($stmt->fetchColumn()) {
                 $error = 'That email address is already in use.';
-            } elseif (($newPassword !== '' || $email !== (string) ($profile['email'] ?? '')) && !password_verify($currentPassword, (string) ($profile['password_hash'] ?? ''))) {
+            } else {
+                $barStmt = $pdo->prepare('SELECT id FROM lawyers WHERE bar_number = :bar_number AND id <> :id LIMIT 1');
+                $barStmt->execute(['bar_number' => $barNumber, 'id' => $lawyerId]);
+                if ($barStmt->fetchColumn()) {
+                    $error = 'That bar roll number is already assigned to another lawyer.';
+                }
+            }
+            if ($error === '' && ($newPassword !== '' || $email !== (string) ($profile['email'] ?? '')) && !password_verify($currentPassword, (string) ($profile['password_hash'] ?? ''))) {
                 $error = 'Current password is incorrect.';
             } else {
                 try {
@@ -95,11 +108,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $emailChanged = $email !== $oldEmail;
                     $passwordChanged = $newPassword !== '';
                     $profileChanged = $fullName !== (string) ($profile['full_name'] ?? '')
+                        || $barNumber !== (string) ($profile['bar_number'] ?? '')
                         || $specialization !== (string) ($profile['specialization'] ?? '')
                         || $status !== (string) ($profile['status'] ?? 'active')
                         || $bio !== (string) ($profile['bio'] ?? '')
                         || $background !== (string) ($profile['background'] ?? '')
                         || $contactNumber !== (string) ($profile['contact_number'] ?? '')
+                        || $address !== (string) ($profile['address'] ?? '')
                         || $gcashAccountName !== (string) ($profile['gcash_account_name'] ?? '')
                         || $gcashNumber !== (string) ($profile['gcash_number'] ?? '')
                         || (bool) $newAvatar;
@@ -132,14 +147,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $pdo->prepare($updateUsers)->execute($params);
 
                     $lawyerUpdate = 'UPDATE lawyers
-                         SET specialization = :specialization, status = :status, bio = :bio, background = :background, contact_number = :contact_number,
+                         SET bar_number = :bar_number, specialization = :specialization, status = :status, bio = :bio, background = :background, contact_number = :contact_number, address = :address,
                              gcash_account_name = :gcash_account_name, gcash_number = :gcash_number';
                     $lawyerParams = [
+                        'bar_number' => $barNumber,
                         'specialization' => $specialization,
                         'status' => $status,
                         'bio' => $bio,
                         'background' => $background,
                         'contact_number' => $contactNumber !== '' ? $contactNumber : null,
+                        'address' => $address !== '' ? $address : null,
                         'gcash_account_name' => $gcashAccountName !== '' ? $gcashAccountName : null,
                         'gcash_number' => $gcashNumber !== '' ? $gcashNumber : null,
                         'id' => $lawyerId,
@@ -355,8 +372,14 @@ lex_page_header('Lawyer Profile', 'profile', $user);
         <label>Email
           <input type="email" name="email" required value="<?= lex_e($email) ?>">
         </label>
+        <label>Bar roll number
+          <input type="text" name="bar_number" required maxlength="60" autocomplete="off" placeholder="e.g. 123456" value="<?= lex_e($barNumber) ?>">
+        </label>
         <label>Phone number
           <input type="text" name="contact_number" inputmode="tel" autocomplete="tel" placeholder="09xxxxxxxxx" value="<?= lex_e($contactNumber) ?>">
+        </label>
+        <label class="full">Office / professional address
+          <textarea name="address" rows="3" maxlength="500" placeholder="Enter the address clients can use to locate your office."><?= lex_e($address) ?></textarea>
         </label>
         <label>GCash account name
           <input type="text" name="gcash_account_name" placeholder="Name shown on your GCash account" value="<?= lex_e($gcashAccountName) ?>">

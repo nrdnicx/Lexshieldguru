@@ -5,7 +5,11 @@ $user = lex_require_role('lawyer');
 $pdo = lex_pdo();
 $lawyerId = lex_user_lawyer_id((int) $user['id']);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_token'] ?? null)) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!lex_csrf_validate($_POST['csrf_token'] ?? null)) {
+        http_response_code(403);
+        exit('Invalid security token. Please refresh the page and try again.');
+    }
     $paymentId = lex_sanitize_int($_POST['payment_id'] ?? 0);
     $decision = isset($_POST['verify_payment'])
         ? 'verified'
@@ -35,21 +39,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_toke
         exit;
     }
 
-    $pdo->prepare(
+    $updateStmt = $pdo->prepare(
         'UPDATE manual_payments
          SET status = :status,
              admin_notes = :review_notes,
              reviewed_by_user_id = :reviewed_by_user_id,
              reviewed_at = NOW()
          WHERE id = :id
-           AND lawyer_id = :lawyer_id'
-    )->execute([
+           AND lawyer_id = :lawyer_id
+           AND status = "pending"'
+    );
+    $updateStmt->execute([
         'status' => $decision,
         'review_notes' => $reviewNotes,
         'reviewed_by_user_id' => (int) $user['id'],
         'id' => $paymentId,
         'lawyer_id' => $lawyerId,
     ]);
+    if ($updateStmt->rowCount() !== 1) {
+        lex_flash_set('error', 'This payment has already been reviewed.');
+        header('Location: ' . lex_app_url('lawyer/payments.php'));
+        exit;
+    }
 
     lex_audit($decision === 'verified' ? 'lawyer_verify_payment' : 'lawyer_reject_payment', 'manual_payments', (string) $paymentId);
     $note = $reviewNotes !== '' ? ' Note: ' . $reviewNotes : '';

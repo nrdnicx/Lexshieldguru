@@ -33,7 +33,11 @@ foreach ($lawyerPaymentAccounts as $paymentLawyer) {
 }
 $gcashReady = (bool) $lawyerPaymentAccounts;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_token'] ?? null)) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!lex_csrf_validate($_POST['csrf_token'] ?? null)) {
+        http_response_code(403);
+        exit('Invalid security token. Please refresh the page and try again.');
+    }
     $proof = null;
     try {
         if (!$gcashReady) {
@@ -47,6 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_toke
         $payerName = trim(lex_sanitize_text($_POST['payer_name'] ?? ''));
         $payerContact = trim(lex_sanitize_text($_POST['payer_contact'] ?? ''));
         $referenceNumber = trim(lex_sanitize_text($_POST['reference_number'] ?? ''));
+        $referenceNumber = $referenceNumber !== '' ? $referenceNumber : null;
         $notes = trim(lex_sanitize_text($_POST['notes'] ?? ''));
 
         if ($paymentFor === '') {
@@ -74,6 +79,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_toke
         }
         if ($amount <= 0) {
             throw new RuntimeException('Enter a valid payment amount.');
+        }
+        if ($referenceNumber !== null) {
+            $duplicateStmt = $pdo->prepare(
+                'SELECT id, status
+                 FROM manual_payments
+                 WHERE lawyer_id = :lawyer_id
+                   AND reference_number = :reference_number
+                 ORDER BY id DESC
+                 LIMIT 1'
+            );
+            $duplicateStmt->execute([
+                'lawyer_id' => (int) $targetLawyer['id'],
+                'reference_number' => $referenceNumber,
+            ]);
+            $duplicate = $duplicateStmt->fetch();
+            if ($duplicate) {
+                throw new RuntimeException('That GCash reference number has already been submitted for this lawyer. Please check your receipt.');
+            }
         }
         if ($payerName === '') {
             $payerName = (string) ($user['full_name'] ?? '');

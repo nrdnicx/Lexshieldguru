@@ -2,6 +2,12 @@
 declare(strict_types=1);
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
+    // InfinityFree may point PHP sessions at a server-level path that is not writable.
+    // Store sessions inside the application directory instead.
+    $lexSessionPath = __DIR__ . '/../.sessions';
+    if (is_dir($lexSessionPath) && is_writable($lexSessionPath)) {
+        session_save_path($lexSessionPath);
+    }
     session_start();
 }
 

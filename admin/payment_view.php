@@ -9,7 +9,11 @@ if ($paymentId <= 0) {
     exit('Payment not found.');
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_token'] ?? null)) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!lex_csrf_validate($_POST['csrf_token'] ?? null)) {
+        http_response_code(403);
+        exit('Invalid security token. Please refresh the page and try again.');
+    }
     $decision = trim((string) ($_POST['decision'] ?? ''));
     $adminNotes = trim(lex_sanitize_text($_POST['admin_notes'] ?? ''));
 
@@ -36,19 +40,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && lex_csrf_validate($_POST['csrf_toke
         exit;
     }
 
-    $pdo->prepare(
+    $stmt = $pdo->prepare(
         'UPDATE manual_payments
          SET status = :status,
              admin_notes = :admin_notes,
              reviewed_by_user_id = :reviewed_by_user_id,
              reviewed_at = NOW()
-         WHERE id = :id'
-    )->execute([
+         WHERE id = :id
+           AND status = "pending"'
+    );
+    $stmt->execute([
         'status' => $decision,
         'admin_notes' => $adminNotes,
         'reviewed_by_user_id' => (int) $admin['id'],
         'id' => $paymentId,
     ]);
+    if ($stmt->rowCount() !== 1) {
+        lex_flash_set('error', 'This payment has already been reviewed.');
+        header('Location: ' . lex_app_url('admin/payment_view.php?id=' . $paymentId));
+        exit;
+    }
 
     lex_audit($decision === 'verified' ? 'verify_manual_payment' : 'reject_manual_payment', 'manual_payments', (string) $paymentId);
     $note = $adminNotes !== '' ? ' Note: ' . $adminNotes : '';

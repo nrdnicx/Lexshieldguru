@@ -462,6 +462,10 @@ $isThreadArchived = $selectedCaseId && $partnerId
 $canUseThreadPreferences = $selectedCaseId > 0;
 
 lex_page_header('Messages', 'messages', $user);
+$initialMessageFilter = (string) ($_GET['filter'] ?? 'all');
+if (!in_array($initialMessageFilter, ['all', 'unread', 'important', 'archived'], true)) {
+    $initialMessageFilter = 'all';
+}
 ?>
 <section class="messages-page admin-messages-page" data-chat-shell data-initial-filter="<?= lex_e((string) ($_GET['filter'] ?? 'all')) ?>" data-partner-name="<?= lex_e($threadLabel) ?>">
   <div class="messages-layout admin-messages-layout">
@@ -482,7 +486,7 @@ lex_page_header('Messages', 'messages', $user);
         <div class="conversation-group">
           <h3><?= lex_e($groupName) ?></h3>
           <?php foreach ($items as $item): ?>
-            <div class="conversation-item<?= $activeThread === $item['key'] ? ' is-active' : '' ?>" data-conversation-item data-unread="<?= (int) ($item['unread'] > 0 ? 1 : 0) ?>" data-important="<?= lex_e($item['important']) ?>" data-archived="<?= lex_e((string) ($item['archived'] ?? '0')) ?>">
+            <div class="conversation-item<?= $activeThread === $item['key'] ? ' is-active' : '' ?>" data-conversation-item data-unread="<?= (int) ($item['unread'] > 0 ? 1 : 0) ?>" data-important="<?= lex_e($item['important']) ?>" data-archived="<?= lex_e((string) ($item['archived'] ?? '0')) ?>"<?= $initialMessageFilter === 'archived' && (string) ($item['archived'] ?? '0') !== '1' ? ' hidden' : '' ?>>
               <a class="conversation-item-link" href="?thread=<?= urlencode($item['key']) ?>">
               <div class="conversation-item-top">
                 <div class="conversation-item-title">
@@ -778,20 +782,20 @@ lex_page_header('Messages', 'messages', $user);
           <?= lex_csrf_field() ?>
           <input type="hidden" name="toggle_important_submit" value="1">
           <input type="hidden" name="case_id" value="<?= (int) $selectedCaseId ?>">
-          <button class="button button-secondary" type="submit" <?= !$canUseThreadPreferences ? 'disabled' : '' ?>><?= $isThreadImportant ? 'Remove Important' : 'Mark as Important' ?></button>
+          <button class="button button-secondary" type="submit" <?= !$selectedCaseId ? 'disabled' : '' ?>><?= $isThreadImportant ? 'Remove Important' : 'Mark as Important' ?></button>
         </form>
         <form method="post" data-no-loading class="conversation-action-form conversation-archive-action-form">
           <?= lex_csrf_field() ?>
           <input type="hidden" name="<?= $isThreadArchived ? 'restore_conversation_submit' : 'archive_conversation_submit' ?>" value="1">
           <input type="hidden" name="case_id" value="<?= (int) $selectedCaseId ?>">
           <input type="hidden" name="thread_kind" value="lawyer">
-          <button class="button button-secondary conversation-archive-action" type="submit" <?= !$canUseThreadPreferences ? 'disabled' : '' ?> data-confirm="<?= $isThreadArchived ? 'Restore this conversation?' : 'Archive this conversation?' ?>">&#128230; <?= $isThreadArchived ? 'Restore Conversation' : 'Archive Conversation' ?></button>
+          <button class="button button-secondary conversation-archive-action" type="submit" <?= !$selectedCaseId ? 'disabled' : '' ?> data-confirm="<?= $isThreadArchived ? 'Restore this conversation?' : 'Archive this conversation?' ?>">&#128230; <?= $isThreadArchived ? 'Restore Conversation' : 'Archive Conversation' ?></button>
         </form>
         <form method="post" data-no-loading>
           <?= lex_csrf_field() ?>
           <input type="hidden" name="toggle_mute_submit" value="1">
           <input type="hidden" name="case_id" value="<?= (int) $selectedCaseId ?>">
-          <button class="button button-secondary" type="submit" <?= !$canUseThreadPreferences ? 'disabled' : '' ?>><?= $isThreadMuted ? 'Unmute Notifications' : 'Mute Notifications' ?></button>
+          <button class="button button-secondary" type="submit" <?= !$selectedCaseId ? 'disabled' : '' ?>><?= $isThreadMuted ? 'Unmute Notifications' : 'Mute Notifications' ?></button>
         </form>
       </div>
     </div>

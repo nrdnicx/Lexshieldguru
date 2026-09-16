@@ -12,7 +12,7 @@ $isJsonRequest = str_contains((string) ($_SERVER['HTTP_ACCEPT'] ?? ''), 'applica
 
 $lawyer = null;
 if ($lawyerId > 0) {
-    $query = 'SELECT l.id, l.bar_number, l.specialization, l.status, l.bio, l.background, l.contact_number, u.full_name, u.email, u.avatar_stored_name, u.created_at,
+    $query = 'SELECT l.id, l.bar_number, l.specialization, l.status, l.bio, l.background, l.contact_number, l.address, u.full_name, u.email, u.avatar_stored_name, u.created_at,
                 COALESCE(stats.avg_rating, 0) AS avg_rating,
                 COALESCE(stats.review_count, 0) AS review_count';
     if ($isClientUser) {
@@ -78,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             lex_audit('rate_lawyer', 'lawyer_reviews', (string) $lawyerId);
 
             $updatedRows = lex_recent(
-                'SELECT l.id, l.bar_number, l.specialization, l.status, l.bio, l.background, l.contact_number, u.full_name, u.email, u.avatar_stored_name, u.created_at,
+                'SELECT l.id, l.bar_number, l.specialization, l.status, l.bio, l.background, l.contact_number, l.address, u.full_name, u.email, u.avatar_stored_name, u.created_at,
                         COALESCE(stats.avg_rating, 0) AS avg_rating,
                         COALESCE(stats.review_count, 0) AS review_count,
                         my.rating AS my_rating,
@@ -132,9 +132,6 @@ $totalReviews = (int) ($lawyer['review_count'] ?? count($reviews));
 $filledStars = max(0, min(5, (int) round($ratingValue)));
 $avatarUrl = $lawyer ? lex_profile_avatar_url((string) ($lawyer['avatar_stored_name'] ?? '')) : '';
 $initials = $lawyer ? strtoupper(substr(preg_replace('/\s+/', '', (string) ($lawyer['full_name'] ?? 'LW')) ?: 'LW', 0, 2)) : 'LW';
-$joinedDate = $lawyer ? strtotime((string) ($lawyer['created_at'] ?? '')) : false;
-$joinedLabel = $joinedDate ? date('M Y', $joinedDate) : 'Recently joined';
-$joinedHelper = $joinedDate ? date('F j, Y', $joinedDate) : 'Recently joined';
 $statusLabel = $lawyer ? ucfirst((string) ($lawyer['status'] ?? 'active')) : 'Active';
 $specialization = trim((string) ($lawyer['specialization'] ?? ''));
 $lawyerBio = $lawyer ? trim((string) ($lawyer['bio'] ?? '')) : '';
@@ -142,6 +139,7 @@ $lawyerBackground = $lawyer ? trim((string) ($lawyer['background'] ?? '')) : '';
 $fullName = $lawyer ? (string) $lawyer['full_name'] : 'Lawyer Profile';
 $email = $lawyer ? (string) ($lawyer['email'] ?? '') : '';
 $contactNumber = $lawyer ? trim((string) ($lawyer['contact_number'] ?? '')) : '';
+$officeAddress = $lawyer ? trim((string) ($lawyer['address'] ?? '')) : '';
 $reviewValue = (int) ($lawyer['my_rating'] ?? 0);
 $reviewComment = (string) ($lawyer['my_comment'] ?? '');
 $ctaLink = $isClientUser
@@ -855,6 +853,60 @@ $maskReviewerName = static function (string $name): string {
         justify-items: start;
       }
     }
+
+
+    /* Public lawyer profile contact/details visibility */
+    .public-lawyer-stage { align-items: start; }
+    .public-lawyer-side {
+      min-width: 0;
+      min-height: 0;
+      height: auto;
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto auto;
+      align-content: start;
+    }
+    .public-lawyer-portrait {
+      min-height: 0;
+      height: auto;
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+    }
+    .public-lawyer-portrait img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+      background: #efe5d1;
+    }
+    .public-lawyer-info {
+      display: grid;
+      gap: 0.52rem;
+      padding: 0.75rem;
+      min-width: 0;
+      visibility: visible;
+      opacity: 1;
+    }
+    .public-lawyer-info-row {
+      min-width: 0;
+      align-items: start;
+    }
+    .public-lawyer-info-row > span:last-child {
+      min-width: 0;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    @media (max-width: 640px) {
+      .public-lawyer-shell { width: min(100% - 0.75rem, 560px); padding-top: 0.5rem; }
+      .public-lawyer-stage { gap: 0.65rem; }
+      .public-lawyer-portrait { aspect-ratio: 1 / 1; }
+      .public-lawyer-info { padding: 0.7rem; gap: 0.45rem; }
+      .public-lawyer-info-row { grid-template-columns: 32px minmax(0, 1fr); gap: 0.5rem; font-size: 0.82rem; }
+      .public-lawyer-info-icon { width: 32px; height: 32px; }
+      .public-lawyer-info-icon svg { width: 15px; height: 15px; }
+    }
   </style>
   <script defer src="<?= lex_e(lex_app_url('public/js/main.js')) ?>"></script>
 </head>
@@ -912,12 +964,6 @@ $maskReviewerName = static function (string $name): string {
                   <strong id="profile-review-count"><?= number_format($totalReviews) ?></strong>
                   <p class="public-lawyer-stat-note">Client review<?= $totalReviews === 1 ? '' : 's' ?></p>
                 </div>
-
-                <div class="public-lawyer-stat">
-                  <p class="public-lawyer-stat-label">Member Since</p>
-                  <strong><?= lex_e($joinedLabel) ?></strong>
-                  <p class="public-lawyer-stat-note"><?= lex_e($joinedHelper) ?></p>
-                </div>
               </div>
 
               <div class="public-lawyer-profile-sections">
@@ -961,38 +1007,31 @@ $maskReviewerName = static function (string $name): string {
 
             <div class="public-lawyer-info">
               <div class="public-lawyer-info-row">
-                <span class="public-lawyer-info-icon">
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 6.75h10M7 12h10M7 17.25h6M5.75 4.75h12.5A1.75 1.75 0 0 1 20 6.5v11A1.75 1.75 0 0 1 18.25 19.25H5.75A1.75 1.75 0 0 1 4 17.5v-11A1.75 1.75 0 0 1 5.75 4.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg>
+                <span class="public-lawyer-info-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="14" rx="2" stroke="currentColor" stroke-width="1.5"></rect><path d="m5.5 7 6.5 5 6.5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                 </span>
-                <span><?= lex_e($specialization !== '' ? $specialization : 'General legal services') ?></span>
+                <span><?= lex_e($email !== '' ? $email : 'Email not provided') ?></span>
               </div>
 
               <div class="public-lawyer-info-row">
-                <span class="public-lawyer-info-icon">
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4.75 8.5 12 13.5l7.25-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path><rect x="4" y="6" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.5"></rect></svg>
+                <span class="public-lawyer-info-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M7.2 4.5 9.6 4c.6-.1 1.2.2 1.4.8l1 2.5c.2.5.1 1.1-.3 1.5l-1.3 1.2c.9 1.8 2.3 3.2 4.1 4.1l1.2-1.3c.4-.4 1-.5 1.5-.3l2.5 1c.6.2.9.8.8 1.4l-.5 2.4c-.1.7-.7 1.2-1.4 1.2C11.7 18.5 5.5 12.3 5.5 5.9c0-.7.5-1.3 1.2-1.4Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path></svg>
                 </span>
-                <span><?= lex_e($email !== '' ? $email : 'LEXSHIELD lawyer profile') ?></span>
+                <span><?= lex_e($contactNumber !== '' ? $contactNumber : 'Contact number not provided') ?></span>
               </div>
 
               <div class="public-lawyer-info-row">
-                <span class="public-lawyer-info-icon">
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6.62 3.75h2.3c.58 0 1.08.4 1.21.96l.55 2.38c.11.47-.06.96-.44 1.26l-1.25.98a10.1 10.1 0 0 0 5.68 5.68l.98-1.25c.3-.38.79-.55 1.26-.44l2.38.55c.56.13.96.63.96 1.21v2.3c0 1.03-.83 1.87-1.86 1.87C10.86 19.25 4.75 13.14 4.75 5.61c0-1.03.84-1.86 1.87-1.86Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path></svg>
+                <span class="public-lawyer-info-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="3.5" width="14" height="17" rx="2" stroke="currentColor" stroke-width="1.5"></rect><path d="M8 8h8M8 11.5h8M8 15h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg>
                 </span>
-                <span><?= lex_e($contactNumber !== '' ? $contactNumber : 'Phone number not provided') ?></span>
+                <span>Bar Roll No. <?= lex_e((string) ($lawyer['bar_number'] ?? '')) ?></span>
               </div>
 
-              <div class="public-lawyer-info-row">
-                <span class="public-lawyer-info-icon">
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 5.75h10l1.25 2.5v9.5A1.75 1.75 0 0 1 16.5 19.5h-9A1.75 1.75 0 0 1 5.75 17.75v-9.5L7 5.75Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path><path d="M8.75 10.5h6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg>
+              <div class="public-lawyer-info-row public-lawyer-info-row--address">
+                <span class="public-lawyer-info-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M12 20s6-5.1 6-10a6 6 0 1 0-12 0c0 4.9 6 10 6 10Z" stroke="currentColor" stroke-width="1.5"></path><circle cx="12" cy="10" r="2" stroke="currentColor" stroke-width="1.5"></circle></svg>
                 </span>
-                <span>Bar roll: <?= lex_e((string) $lawyer['bar_number']) ?></span>
-              </div>
-
-              <div class="public-lawyer-info-row">
-                <span class="public-lawyer-info-icon">
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.5"></circle><path d="M12 8v4l2.6 2.15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg>
-                </span>
-                <span>Joined <?= lex_e($joinedLabel) ?></span>
+                <span><?= lex_e($officeAddress !== '' ? $officeAddress : 'Office address not provided') ?></span>
               </div>
             </div>
           </aside>

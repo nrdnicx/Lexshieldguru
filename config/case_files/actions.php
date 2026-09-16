@@ -112,18 +112,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $folderId = (int) ($clientFolderStmt->fetchColumn() ?: $folderId);
                     }
                     $status = $access === 'manage' ? 'approved' : 'pending';
-                    $document = lex_case_file_vault_store_document($caseFile, $folderId, $_FILES['vault_document'] ?? [], $user, $status);
+                    $files = $_FILES['vault_document'] ?? [];
+                    $names = $files['name'] ?? [];
+                    $isMulti = is_array($names);
+                    $fileCount = $isMulti ? count($names) : (!empty($names) ? 1 : 0);
+                    if ($fileCount < 1) {
+                        lex_reject_upload('case_file_document', 'Select at least one document to upload.');
+                    }
+                    if ($fileCount > 5) {
+                        lex_reject_upload('case_file_document', 'You can upload up to 5 documents at a time.');
+                    }
+                    $normalizedFiles = [];
+                    $totalSize = 0;
+                    for ($i = 0; $i < $fileCount; $i++) {
+                        $normalizedFiles[] = [
+                            'name' => $isMulti ? ($files['name'][$i] ?? '') : ($files['name'] ?? ''),
+                            'type' => $isMulti ? ($files['type'][$i] ?? '') : ($files['type'] ?? ''),
+                            'tmp_name' => $isMulti ? ($files['tmp_name'][$i] ?? '') : ($files['tmp_name'] ?? ''),
+                            'error' => $isMulti ? ($files['error'][$i] ?? UPLOAD_ERR_NO_FILE) : ($files['error'] ?? UPLOAD_ERR_NO_FILE),
+                            'size' => $isMulti ? (int) ($files['size'][$i] ?? 0) : (int) ($files['size'] ?? 0),
+                        ];
+                        $totalSize += $normalizedFiles[$i]['size'];
+                    }
+                    if ($totalSize > 100 * 1024 * 1024) {
+                        lex_reject_upload('case_file_document', 'The total upload size is too large. Keep each file at 25 MB or less and the batch at 100 MB or less.');
+                    }
+                    $uploadedCount = 0;
+                    $pendingCount = 0;
+                    $approvedCount = 0;
+                    $lastDocumentId = 0;
+                    foreach ($normalizedFiles as $uploadFile) {
+                        $document = lex_case_file_vault_store_document($caseFile, $folderId, $uploadFile, $user, $status);
+                        $lastDocumentId = (int) $document['id'];
+                        $uploadedCount++;
+                        if ($status === 'pending') {
+                            $pendingCount++;
+                            lex_audit('submit_case_file_document', 'case_file_documents', (string) $document['id']);
+                        } else {
+                            $approvedCount++;
+                            lex_audit('upload_case_file_document', 'case_file_documents', (string) $document['id']);
+                        }
+                    }
                     $pdo->prepare('UPDATE case_files SET updated_by_user_id = :updated_by_user_id WHERE id = :id')->execute([
                         'updated_by_user_id' => (int) $user['id'],
                         'id' => $caseFileId,
                     ]);
-                    lex_audit($status === 'pending' ? 'submit_case_file_document' : 'upload_case_file_document', 'case_file_documents', (string) $document['id']);
-                    if ($status === 'pending' && !empty($caseFile['assigned_lawyer_user_id'])) {
-                        lex_notify((int) $caseFile['assigned_lawyer_user_id'], 'case_file', 'A client submitted a document for approval.');
-                    } elseif ($status === 'approved') {
-                        lex_notify((int) $caseFile['client_user_id'], 'case_file', 'A new case document is available in your vault.');
+                    if ($pendingCount > 0 && !empty($caseFile['assigned_lawyer_user_id'])) {
+                        lex_notify((int) $caseFile['assigned_lawyer_user_id'], 'case_file', $pendingCount . ' client document' . ($pendingCount === 1 ? '' : 's') . ' submitted for approval.');
+                    } elseif ($approvedCount > 0) {
+                        lex_notify((int) $caseFile['client_user_id'], 'case_file', $approvedCount . ' new case document' . ($approvedCount === 1 ? '' : 's') . ' available in your vault.');
                     }
-                    lex_flash_set('success', $status === 'pending' ? 'Document submitted for lawyer approval.' : 'Document uploaded to the vault.');
+                    lex_flash_set('success', $status === 'pending'
+                        ? $uploadedCount . ' document' . ($uploadedCount === 1 ? '' : 's') . ' submitted for lawyer approval.'
+                        : $uploadedCount . ' document' . ($uploadedCount === 1 ? '' : 's') . ' uploaded to the vault.');
                     header('Location: ' . $returnUrl);
                     exit;
                 } catch (Throwable $e) {

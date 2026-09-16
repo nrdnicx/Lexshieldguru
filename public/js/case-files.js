@@ -429,7 +429,37 @@
       });
     };
 
-    const bindVaultFolders = () => {
+    const closeDocumentMenus = (except = null) => {
+    document.querySelectorAll('body:has([data-case-files-app]) .case-vault-doc-menu[open]').forEach((menu) => {
+      if (menu !== except) menu.removeAttribute('open');
+    });
+  };
+
+  const bindDocumentMenuBehavior = () => {
+    if (window.__lexCaseDocumentMenuBound) return;
+    window.__lexCaseDocumentMenuBound = true;
+
+    document.addEventListener('click', (event) => {
+      const summary = event.target.closest('body:has([data-case-files-app]) .case-vault-doc-menu > summary');
+      if (summary) {
+        const menu = summary.closest('.case-vault-doc-menu');
+        // Close every other file menu. The clicked <details> keeps its native toggle.
+        closeDocumentMenus(menu);
+        return;
+      }
+
+      // Clicking anywhere outside an open menu closes it.
+      if (!event.target.closest('body:has([data-case-files-app]) .case-vault-doc-menu')) {
+        closeDocumentMenus();
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeDocumentMenus();
+    });
+  };
+
+  const bindVaultFolders = () => {
       const folders = Array.from(document.querySelectorAll('.case-vault-folder-section'));
       if (!folders.length) return;
       folders.forEach((folder) => {
@@ -630,6 +660,7 @@
 
     bindPersistedForms();
     bindValidationForms();
+    bindDocumentMenuBehavior();
     bindVaultFolders();
 
     if (initial.failedAction === 'create' && initial.error) {

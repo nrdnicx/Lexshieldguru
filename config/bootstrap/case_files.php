@@ -436,7 +436,7 @@ function lex_case_file_vault_access(array $caseFile, array $user): string
 {
     $role = (string) ($user['role'] ?? '');
     $userId = (int) ($user['id'] ?? 0);
-    if ($role === 'lawyer' && ($userId === (int) ($caseFile['created_by_user_id'] ?? 0) || $userId === (int) ($caseFile['assigned_lawyer_user_id'] ?? 0))) {
+    if ($role === 'lawyer' && $userId === (int) ($caseFile['assigned_lawyer_user_id'] ?? 0)) {
         return 'manage';
     }
     if ($role === 'client' && $userId === (int) ($caseFile['client_user_id'] ?? 0)) {

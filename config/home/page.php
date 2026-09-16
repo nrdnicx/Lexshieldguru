@@ -146,7 +146,7 @@ $heroStats = lex_recent(
 );
 $heroStats = $heroStats[0] ?? ['active_lawyers' => 0, 'avg_rating' => 0, 'review_count' => 0];
 
-$lawyerSql = 'SELECT l.id, l.bar_number, l.specialization, l.status, l.bio, l.background, u.full_name, u.email, u.avatar_stored_name, u.created_at,
+$lawyerSql = 'SELECT l.id, l.bar_number, l.specialization, l.status, l.bio, l.background, l.address, u.full_name, u.email, u.avatar_stored_name, u.created_at,
         COALESCE(stats.avg_rating, 0) AS avg_rating,
         COALESCE(stats.review_count, 0) AS review_count
  FROM lawyers l
@@ -332,30 +332,41 @@ $topLawyers = array_slice($lawyers, 0, 4);
     }
 
     .site-nav {
-      position: sticky;
+      position: absolute;
       top: 0;
       left: 0;
       right: 0;
       width: 100%;
-      backdrop-filter: blur(18px);
-      background: rgba(8, 19, 33, 0.78);
-      border-bottom: 1px solid var(--line);
+      background: rgba(4, 10, 18, 0.04);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
       z-index: 1000;
+      transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, backdrop-filter 0.25s ease;
+    }
+
+    .site-nav.is-scrolled {
+      background: rgba(7, 18, 37, 0.88);
+      border-bottom-color: rgba(125, 184, 255, 0.16);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
     }
 
     .site-nav__inner {
+      position: relative;
       min-height: 76px;
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
       align-items: center;
-      justify-content: space-between;
       gap: 20px;
-      flex-wrap: wrap;
     }
 
     .brand {
       display: inline-flex;
       align-items: center;
-      gap: 12px;
+      justify-self: center;
+      grid-column: 2;
+      grid-row: 1;
+      gap: 10px;
       font-weight: 700;
       letter-spacing: 0.04em;
     }
@@ -388,7 +399,19 @@ $topLawyers = array_slice($lawyers, 0, 4);
     .nav-actions {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 8px;
+    }
+
+    .nav-links {
+      grid-column: 1;
+      grid-row: 1;
+      justify-self: start;
+    }
+
+    .nav-actions {
+      grid-column: 3;
+      grid-row: 1;
+      justify-self: end;
     }
 
     .nav-toggle {
@@ -433,6 +456,13 @@ $topLawyers = array_slice($lawyers, 0, 4);
     .nav-toggle__box span:nth-child(2) { top: 6px; }
     .nav-toggle__box span:nth-child(3) { top: 12px; }
 
+    .nav-toggle__label {
+      font-size: 0.84rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      line-height: 1;
+    }
+
     .site-nav.is-menu-open .nav-toggle__box span:nth-child(1) {
       top: 6px;
       transform: rotate(45deg);
@@ -465,18 +495,7 @@ $topLawyers = array_slice($lawyers, 0, 4);
     }
 
     .nav-links a::after {
-      content: "";
-      position: absolute;
-      left: 12px;
-      right: 12px;
-      bottom: 4px;
-      height: 2px;
-      border-radius: 999px;
-      background: linear-gradient(90deg, var(--gold), var(--gold-light));
-      transform: scaleX(0);
-      transform-origin: center;
-      opacity: 0;
-      transition: transform 0.22s ease, opacity 0.22s ease;
+      display: none;
     }
 
     .nav-links a.is-active {
@@ -488,8 +507,7 @@ $topLawyers = array_slice($lawyers, 0, 4);
     }
 
     .nav-links a.is-active::after {
-      transform: scaleX(1);
-      opacity: 1;
+      display: none;
     }
 
     .button {
@@ -575,6 +593,30 @@ $topLawyers = array_slice($lawyers, 0, 4);
       border-color: var(--line);
       color: var(--text);
     }
+
+    .site-nav .button {
+      min-height: 40px;
+      padding: 0 16px;
+      font-size: 0.86rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .site-nav .button--ghost {
+      background: rgba(5, 14, 25, 0.16);
+      border-color: rgba(255, 255, 255, 0.16);
+      color: #fff;
+    }
+
+    .site-nav .button--gold {
+      box-shadow: 0 10px 24px rgba(201, 168, 76, 0.18);
+    }
+
+    .site-nav .brand__text {
+      color: #fff;
+      text-shadow: 0 2px 14px rgba(0,0,0,.35);
+      white-space: nowrap;
+    }
+
 
     .hero {
       padding: 54px 0 34px;
@@ -1490,14 +1532,30 @@ $topLawyers = array_slice($lawyers, 0, 4);
     }
 
     .site-footer {
-      padding: 24px 0 44px;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      position: relative;
+      padding: 64px 0 28px;
+      border-top: 1px solid rgba(115, 146, 197, 0.12);
+      background:
+        radial-gradient(circle at 18% 0%, rgba(46, 137, 255, 0.10), transparent 34%),
+        linear-gradient(180deg, rgba(7, 18, 37, 0.96), rgba(4, 12, 25, 0.99));
+      overflow: hidden;
+    }
+
+    .site-footer::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.018), transparent);
     }
 
     .footer-grid {
-      grid-template-columns: minmax(0, 1.2fr) auto auto;
-      align-items: center;
-      gap: 34px;
+      display: grid;
+      grid-template-columns: minmax(220px, 1.05fr) minmax(280px, 1.35fr) minmax(150px, 0.65fr);
+      align-items: start;
+      gap: 42px;
+      position: relative;
+      z-index: 1;
     }
 
     .footer-brand-block {
@@ -1506,41 +1564,104 @@ $topLawyers = array_slice($lawyers, 0, 4);
       min-width: 0;
     }
 
+    .footer-brand-block .brand {
+      width: fit-content;
+      gap: 11px;
+    }
+
+    .footer-brand-block .brand__mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      flex: 0 0 42px;
+    }
+
+    .footer-brand-block .brand__mark img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: inherit;
+    }
+
+    .footer-brand-block .brand__text {
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
     .footer-copy {
       margin: 0;
+      max-width: 310px;
       color: var(--muted);
-      font-size: 0.72rem;
-      line-height: 1.6;
+      font-size: 0.78rem;
+      line-height: 1.75;
       letter-spacing: 0.01em;
     }
 
-    .footer-nav,
-    .footer-legal {
-      display: flex;
-      align-items: center;
-      gap: 22px;
-      flex-wrap: wrap;
-      justify-content: center;
+    .footer-heading {
+      margin: 0 0 13px;
+      color: #8bbcff;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
     }
 
-    .footer-nav a,
-    .footer-legal a {
+    .footer-location {
+      display: grid;
+      gap: 9px;
       color: var(--muted);
-      font-size: 0.72rem;
+      font-size: 0.78rem;
+      line-height: 1.65;
+    }
+
+    .footer-location p {
+      margin: 0;
+    }
+
+    .footer-location strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .footer-nav {
+      display: grid;
+      gap: 10px;
+      justify-items: start;
+    }
+
+    .footer-nav a {
+      color: var(--muted);
+      font-size: 0.78rem;
       letter-spacing: 0.01em;
       transition: color 0.2s ease, transform 0.2s ease;
     }
 
-    .footer-nav a:hover,
-    .footer-legal a:hover {
+    .footer-nav a:hover {
       color: var(--text);
-      transform: translateY(-1px);
+      transform: translateX(2px);
+    }
+
+    .footer-bottom {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      margin-top: 34px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(115, 146, 197, 0.10);
+    }
+
+    .footer-bottom .footer-copy {
+      max-width: none;
     }
 
     /* Theme alignment with the authenticated app surfaces. */
     .site-nav {
-      background: rgba(7, 18, 37, 0.9);
-      border-bottom-color: rgba(115, 146, 197, 0.14);
+      background: rgba(7, 18, 37, 0.18);
+      border-bottom-color: rgba(115, 146, 197, 0.08);
     }
 
     .brand__mark,
@@ -1599,7 +1720,7 @@ $topLawyers = array_slice($lawyers, 0, 4);
     }
 
     .nav-links a::after {
-      background: #2883ff;
+      display: none;
     }
 
     .button {
@@ -1809,48 +1930,108 @@ $topLawyers = array_slice($lawyers, 0, 4);
       }
 
       .site-nav__inner {
+        min-height: 64px;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
         align-items: center;
-        justify-content: space-between;
-        gap: 14px;
+        gap: 8px;
+      }
+
+      .brand--nav {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: center;
+        margin: 0;
+        font-size: 0.96rem;
       }
 
       .nav-toggle {
         display: inline-flex;
-        margin-left: auto;
+        grid-column: 1;
+        grid-row: 1;
+        justify-self: start;
+        width: auto;
+        min-width: 76px;
+        height: 40px;
+        padding: 0 11px;
+        gap: 8px;
+        margin: 0;
+        border-radius: 10px;
+        background: rgba(4, 10, 18, 0.12);
+        border-color: rgba(255, 255, 255, 0.12);
       }
 
-      .nav-links,
       .nav-actions {
-        width: 100%;
+        grid-column: 3;
+        grid-row: 1;
+        justify-self: end;
+        width: auto;
+        display: flex;
+        gap: 0;
+      }
+
+      .nav-actions .button {
+        width: auto;
+        min-width: 68px;
+      }
+
+      .nav-actions .nav-get-started {
+        display: none;
       }
 
       .nav-links {
         display: none;
-        gap: 8px;
-        padding-top: 4px;
+        position: fixed;
+        top: 64px;
+        left: 0;
+        right: 0;
+        width: 100%;
+        margin: 0;
+        padding: 12px 16px 16px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+        background: rgba(5, 14, 25, 0.96);
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.30);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        z-index: 20;
       }
 
-      .nav-actions {
-        display: none;
-        gap: 10px;
-      }
-
-      .site-nav.is-menu-open .nav-links,
-      .site-nav.is-menu-open .nav-actions {
+      .site-nav.is-menu-open .nav-links {
         display: flex;
       }
 
       .nav-links a {
         justify-content: flex-start;
         width: 100%;
+        min-height: 46px;
+        padding: 0 14px;
+        border-radius: 10px;
+        font-size: 0.96rem;
+      }
+
+      .nav-links a.is-active {
+        background: rgba(91, 142, 240, 0.14);
+        box-shadow: inset 0 0 0 1px rgba(91, 142, 240, 0.28);
       }
 
       .nav-links a::after {
-        left: 10px;
-        right: auto;
-        width: calc(100% - 20px);
-        bottom: 6px;
-        transform-origin: left center;
+        display: none;
+      }
+
+      .site-nav.is-menu-open::after {
+        content: "";
+        position: fixed;
+        top: 64px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.28);
+        pointer-events: none;
+        z-index: 10;
       }
 
       .nav-actions .button,
@@ -2363,22 +2544,202 @@ $topLawyers = array_slice($lawyers, 0, 4);
 
       .footer-grid {
         grid-template-columns: 1fr;
-        gap: 14px;
+        gap: 28px;
       }
 
-      .footer-nav,
-      .footer-legal {
-        display: grid;
+      .footer-nav {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px 14px;
         width: 100%;
       }
 
-      .footer-nav a,
-      .footer-legal a {
-        min-height: 38px;
+      .footer-nav .footer-heading {
+        grid-column: 1 / -1;
+      }
+
+      .footer-nav a {
+        min-height: 36px;
         display: flex;
         align-items: center;
+      }
+
+      .footer-bottom {
+        margin-top: 28px;
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+      }
+    }
+
+
+    /* Final footer redesign: clean brand, stronger hierarchy, and Iloilo details. */
+    .site-footer {
+      background:
+        radial-gradient(circle at 12% 0%, rgba(46, 137, 255, 0.14), transparent 30%),
+        radial-gradient(circle at 82% 18%, rgba(201, 168, 76, 0.08), transparent 24%),
+        linear-gradient(180deg, #08182d 0%, #061224 58%, #040d1b 100%);
+      border-top: 1px solid rgba(125, 184, 255, 0.16);
+    }
+
+    .site-footer__glow {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      width: min(720px, 80vw);
+      height: 1px;
+      transform: translateX(-50%);
+      background: linear-gradient(90deg, transparent, rgba(125,184,255,.75), transparent);
+      box-shadow: 0 0 26px rgba(46,137,255,.22);
+      pointer-events: none;
+    }
+
+    .footer-grid {
+      grid-template-columns: minmax(230px, .9fr) minmax(340px, 1.35fr) minmax(130px, .55fr);
+      gap: 54px;
+    }
+
+    .footer-brand-block {
+      gap: 18px;
+      padding-right: 12px;
+    }
+
+    .footer-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      width: fit-content;
+      text-decoration: none;
+    }
+
+    .footer-brand__mark {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 44px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 1px solid rgba(201,168,76,.38);
+      background: rgba(201,168,76,.08);
+      box-shadow: 0 8px 24px rgba(0,0,0,.18);
+    }
+
+    .footer-brand__mark img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: inherit;
+    }
+
+    .footer-brand__text {
+      color: #f7fbff;
+      font-size: 1.18rem;
+      font-weight: 850;
+      letter-spacing: -.03em;
+    }
+
+    .footer-brand__text span {
+      color: #7db8ff;
+    }
+
+    .footer-copy {
+      max-width: 360px;
+      color: #93a5bf;
+      font-size: .82rem;
+      line-height: 1.8;
+    }
+
+    .footer-location-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      width: fit-content;
+      padding: 8px 12px;
+      border: 1px solid rgba(125,184,255,.15);
+      border-radius: 999px;
+      background: rgba(255,255,255,.025);
+      color: #b7c5d8;
+      font-size: .72rem;
+      font-weight: 700;
+    }
+
+    .footer-location-chip__dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #7db8ff;
+      box-shadow: 0 0 0 4px rgba(125,184,255,.09);
+    }
+
+    .footer-location {
+      gap: 12px;
+      padding-left: 24px;
+      border-left: 1px solid rgba(125,184,255,.11);
+    }
+
+    .footer-detail {
+      display: grid;
+      grid-template-columns: 92px minmax(0,1fr);
+      gap: 12px;
+      color: #9cadc4;
+      font-size: .79rem;
+      line-height: 1.65;
+    }
+
+    .footer-detail__label {
+      color: #f0f5fb;
+      font-weight: 800;
+    }
+
+    .footer-nav {
+      gap: 6px;
+      padding-left: 10px;
+    }
+
+    .footer-nav a {
+      padding: 6px 0;
+      color: #9cadc4;
+      text-decoration: none;
+    }
+
+    .footer-nav a:hover {
+      color: #ffffff;
+      transform: translateX(3px);
+    }
+
+    .footer-bottom {
+      margin-top: 46px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(125,184,255,.10);
+    }
+
+    @media (max-width: 780px) {
+      .site-footer {
+        padding: 42px 0 calc(24px + env(safe-area-inset-bottom));
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+
+      .footer-brand-block {
+        padding-right: 0;
+      }
+
+      .footer-location {
+        padding-left: 0;
+        border-left: 0;
+        padding-top: 4px;
+        border-top: 1px solid rgba(125,184,255,.10);
+      }
+
+      .footer-detail {
+        grid-template-columns: 82px minmax(0,1fr);
+      }
+
+      .footer-nav {
+        padding-left: 0;
       }
     }
 
@@ -2429,13 +2790,196 @@ $topLawyers = array_slice($lawyers, 0, 4);
       }
     }
 
+
+    /* Homepage redesign: city-hall hero */
+    .hero--cityhall {
+      position: relative;
+      min-height: 680px;
+      padding: 0;
+      display: flex;
+      align-items: stretch;
+      overflow: hidden;
+      isolation: isolate;
+      background: #071321 var(--hero-cityhall) center 34% / cover no-repeat;
+    }
+
+    .hero--cityhall::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background: linear-gradient(90deg, rgba(4,12,22,.94) 0%, rgba(5,15,28,.86) 42%, rgba(5,15,28,.58) 68%, rgba(5,15,28,.34) 100%);
+    }
+
+    .hero--cityhall::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(180deg, rgba(3,10,18,.15) 0%, rgba(3,10,18,.05) 55%, rgba(3,10,18,.82) 100%);
+      pointer-events: none;
+    }
+
+    .hero__backdrop { position:absolute; inset:0; pointer-events:none; }
+    .hero__container {
+      min-height: 680px;
+      display:grid;
+      grid-template-columns:minmax(0,1.1fr) minmax(320px,.72fr);
+      gap:48px;
+      align-items:center;
+      padding-top:74px;
+      padding-bottom:74px;
+    }
+
+    .hero__content { max-width:760px; }
+    .hero--cityhall .hero__lead { max-width:62ch; color:#d7e0ef; }
+    .button--hero-ghost {
+      background:rgba(7,19,33,.55);
+      border-color:rgba(255,255,255,.2);
+      color:#fff;
+      backdrop-filter:blur(12px);
+    }
+    .button--hero-ghost:hover { background:rgba(7,19,33,.72); border-color:rgba(235,207,122,.5); }
+
+    .hero__location {
+      margin-top:26px;
+      width:min(100%,440px);
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:13px 15px;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:16px;
+      background:rgba(7,19,33,.48);
+      backdrop-filter:blur(14px);
+    }
+    .hero__location-icon { width:38px;height:38px;flex:0 0 38px;border-radius:12px;display:grid;place-items:center;background:rgba(201,168,76,.14);color:var(--gold-light);border:1px solid rgba(201,168,76,.24); }
+    .hero__location-icon svg { width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7; }
+    .hero__location strong,.hero__location small { display:block; }
+    .hero__location strong { font-size:.9rem; }
+    .hero__location small { margin-top:2px;color:#a9bad3;font-size:.78rem; }
+
+    .hero__stats { margin-top:28px; max-width:680px; }
+    .hero__stats .stat-card { background:rgba(10,25,44,.66); border-color:rgba(255,255,255,.13); box-shadow:0 14px 30px rgba(0,0,0,.18); }
+    .hero__side { display:flex; justify-content:flex-end; }
+    .hero__side-label { color:var(--gold-light);font-size:.74rem;letter-spacing:.18em;font-weight:700; }
+    .hero__side-card h2 { margin:8px 0 22px;font-family:"Cormorant Garamond",serif;font-size:2.35rem;line-height:1; }
+    .hero__side-list { display:grid; gap:11px; }
+    .hero__side-list > div { display:grid;grid-template-columns:38px minmax(0,1fr);gap:11px;align-items:center;padding:11px;border-radius:15px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.07); }
+    .hero__side-list > div > span { width:38px;height:38px;display:grid;place-items:center;border-radius:11px;background:rgba(201,168,76,.13);color:var(--gold-light);font-weight:700; }
+    .hero__side-list p { margin:0; }.hero__side-list strong,.hero__side-list small{display:block}.hero__side-list strong{font-size:.9rem}.hero__side-list small{margin-top:2px;color:#a9bad3;font-size:.74rem;line-height:1.35}
+    .hero__side-link { display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,.1);color:var(--gold-light);font-size:.88rem;font-weight:600; }
+
+    #directory .search-form { grid-template-columns:minmax(0,1.35fr) minmax(0,1fr) minmax(0,1fr) auto; }
+
+    @media (max-width: 980px) {
+      .site-nav__inner {
+        display: flex;
+        min-height: 68px;
+        gap: 10px;
+      }
+      .brand { margin-right: 0; }
+      .nav-links {
+        grid-column: auto;
+        grid-row: auto;
+        margin-right: 0;
+      }
+      .nav-actions {
+        grid-column: auto;
+        grid-row: auto;
+      }
+      .hero--cityhall { min-height:0; }
+      .hero__container { min-height:0; grid-template-columns:1fr; gap:28px; padding-top:58px; padding-bottom:58px; }
+      .hero__side { justify-content:flex-start; }
+      #directory .search-form { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+
+    @media (max-width: 640px) {
+      .site-nav { background: rgba(4,10,18,.10); }
+      .site-nav.is-scrolled { background: rgba(7,18,37,.90); }
+      .site-nav .button { min-height: 38px; padding: 0 13px; font-size: .78rem; }
+      .site-nav__inner { min-height: 64px; }
+      .hero--cityhall { background-position:center top; }
+      .hero--cityhall::before { background:linear-gradient(180deg,rgba(4,12,22,.76) 0%,rgba(4,12,22,.86) 52%,rgba(4,12,22,.97) 100%); }
+      .hero--cityhall::after { background:linear-gradient(180deg,rgba(3,10,18,.06),rgba(3,10,18,.72) 62%,rgba(3,10,18,.96)); }
+      .hero__container { width:min(100% - 22px, var(--container)); padding-top:42px; padding-bottom:40px; gap:20px; }
+      .hero--cityhall .eyebrow { margin-bottom:16px; padding:7px 11px; font-size:.68rem; }
+      .hero--cityhall h1 { font-size:clamp(2.65rem,14vw,4rem); max-width:11ch; }
+      .hero--cityhall .hero__lead { margin-top:16px; font-size:.91rem; line-height:1.65; }
+      .hero__location { margin-top:18px; width:100%; }
+      .hero__actions { margin-top:20px; display:grid; grid-template-columns:1fr; }
+      .hero__actions .button { width:100%; }
+      .hero__stats { margin-top:18px; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; }
+      .hero__stats .stat-card { padding:12px 9px; border-radius:14px; }
+      .hero__stats .stat-card strong { font-size:1.35rem; }
+      .hero__stats .stat-card span { font-size:.61rem; line-height:1.25; }
+      .hero__side-card h2 { font-size:1.9rem; margin-bottom:16px; }
+      .hero__side-list > div { padding:9px; grid-template-columns:34px minmax(0,1fr); }
+      .hero__side-list > div > span { width:34px;height:34px; }
+      #directory .search-form { grid-template-columns:1fr; }
+    }
+
+    /* Desktop header stays visible while scrolling; mobile keeps its existing flow. */
+    @media (min-width: 781px) {
+      .site-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+      }
+    }
+
+    /* Mobile header: Menu left, LEXSHIELD centered, Login right. */
+    @media (max-width: 780px) {
+      .site-nav {
+        min-height: 64px;
+      }
+
+      .site-nav__inner {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 64px;
+        height: 64px;
+        gap: 0;
+      }
+
+      .brand--nav {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        margin: 0;
+        z-index: 2;
+      }
+
+      .nav-toggle {
+        position: relative;
+        z-index: 3;
+        order: 1;
+        margin: 0;
+        justify-self: auto;
+      }
+
+      .nav-actions {
+        position: relative;
+        z-index: 3;
+        order: 3;
+        margin-left: auto;
+        justify-self: auto;
+      }
+
+      .nav-actions .nav-get-started {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>
   <nav class="site-nav">
     <div class="container site-nav__inner">
-      <a class="brand" href="#home">
-        <span class="brand__mark"><img src="<?= lex_e($logoAsset) ?>" alt="LexShield logo"></span>
+      <a class="brand brand--nav" href="#home" aria-label="LexShield home">
         <span class="brand__text">LEX<span>SHIELD</span></span>
       </a>
 
@@ -2445,6 +2989,7 @@ $topLawyers = array_slice($lawyers, 0, 4);
           <span></span>
           <span></span>
         </span>
+        <span class="nav-toggle__label">Menu</span>
       </button>
 
       <div class="nav-links" id="site-nav-menu">
@@ -2456,77 +3001,46 @@ $topLawyers = array_slice($lawyers, 0, 4);
       </div>
 
       <div class="nav-actions">
-        <a class="button button--ghost" href="<?= lex_e($portalLink) ?>"><?= $user ? 'Open Portal' : 'Login' ?></a>
-        <a class="button button--gold" href="<?= lex_e($appointLink) ?>"><?= $user && $user['role'] === 'client' ? 'Book Appointment' : 'Get Started' ?></a>
+        <a class="button button--ghost" href="<?= lex_e($portalLink) ?>">Login</a>
+        <a class="button button--gold nav-get-started" href="<?= lex_e(lex_app_url('auth/register.php')) ?>">Get Started</a>
       </div>
     </div>
   </nav>
 
   <main class="page-shell">
-    <section class="hero" id="home">
-      <div class="container">
-        <div class="hero__grid">
-          <div>
+    <section class="hero hero--cityhall" id="home" style="--hero-cityhall: url('<?= lex_e(lex_app_url('public/assets/iloilo-city-hall.jpg')) ?>');">
+      <div class="hero__backdrop" aria-hidden="true"></div>
+      <div class="container hero__container">
+        <div class="hero__content">
+          <h1>Legal help, <span class="accent">organized around your case.</span></h1>
+          <p class="hero__lead">
+            LexShield brings lawyer discovery, secure case documents, appointments, messaging, payments, and video consultations into one connected legal workspace.
+          </p>
 
-            <h1>Legal guidance with a <span class="accent">secure digital edge</span>.</h1>
-            <p class="hero__lead">
-              LexShield connects clients with active legal professionals through a platform built for privacy, appointment flow, and trusted communication. Search the directory, review lawyer profiles, and move into the portal when you are ready.
-            </p>
-
-            <div class="hero__actions">
-              <a class="button button--gold" href="#directory">Browse lawyers</a>
-              <a class="button button--soft" href="<?= lex_e($appointLink) ?>"><?= $user && $user['role'] === 'client' ? 'Start appointment' : 'Create an account' ?></a>
-            </div>
-
-            <div class="stat-row" aria-label="Platform statistics">
-              <div class="stat-card">
-                <span>Active lawyers</span>
-                <strong><?= number_format((int) $heroStats['active_lawyers']) ?></strong>
-              </div>
-              <div class="stat-card">
-                <span>Average rating</span>
-                <strong><?= number_format((float) $heroStats['avg_rating'], 1) ?>/5</strong>
-              </div>
-              <div class="stat-card">
-                <span>Client reviews</span>
-                <strong><?= number_format((int) $heroStats['review_count']) ?></strong>
-              </div>
-            </div>
+          <div class="hero__actions">
+            <a class="button button--gold" href="#directory">Find a lawyer</a>
+            <a class="button button--hero-ghost" href="<?= lex_e($appointLink) ?>"><?= $user && $user['role'] === 'client' ? 'Book an appointment' : 'Get started' ?></a>
           </div>
 
-          <aside class="glass-card" aria-label="Platform snapshot">
-            <div class="dashboard-top">
-              <div>
-              
-            <div class="overview-visual">
-              <img src="<?= lex_e(lex_app_url('public/assets/lexshield-platform-overview.png')) ?>" alt="LexShield platform overview logo">
+          <div class="stat-row hero__stats" aria-label="Platform statistics">
+            <div class="stat-card">
+              <span>Active lawyers</span>
+              <strong><?= number_format((int) $heroStats['active_lawyers']) ?></strong>
             </div>
-
-            <div class="progress-panel">
-              <div class="progress-row">
-                <div class="progress-meta">
-                  <span>Directory coverage</span>
-                  <span><?= number_format($visibleLawyerCount) ?> profiles</span>
-                </div>
-                <div class="progress-bar"><span style="width: <?= max(18, min(100, $visibleLawyerCount * 10)) ?>%;"></span></div>
-              </div>
-              <div class="progress-row">
-                <div class="progress-meta">
-                  <span>Client trust signal</span>
-                  <span><?= number_format((float) $heroStats['avg_rating'], 1) ?>/5</span>
-                </div>
-                <div class="progress-bar"><span style="width: <?= max(12, min(100, (int) round(((float) $heroStats['avg_rating'] / 5) * 100))) ?>%;"></span></div>
-              </div>
-              <div class="progress-row">
-                <div class="progress-meta">
-                  <span>Review participation</span>
-                  <span><?= number_format((int) $heroStats['review_count']) ?> ratings</span>
-                </div>
-                <div class="progress-bar"><span style="width: <?= max(10, min(100, (int) $heroStats['review_count'] * 4)) ?>%;"></span></div>
-              </div>
+            <div class="stat-card">
+              <span>Average rating</span>
+              <strong><?= number_format((float) $heroStats['avg_rating'], 1) ?>/5</strong>
             </div>
-          </aside>
+            <div class="stat-card">
+              <span>Client reviews</span>
+              <strong><?= number_format((int) $heroStats['review_count']) ?></strong>
+            </div>
+          </div>
         </div>
+
+
+      </div>
+    </section>
 
     <span class="anchor-alias" id="directiory" aria-hidden="true"></span>
     <section class="section" id="directory">
@@ -2875,41 +3389,53 @@ $topLawyers = array_slice($lawyers, 0, 4);
       </div>
     </section>
 
-    <section class="cta-wrap">
-      <div class="container">
-        <div class="cta-panel">
- 
-          <div class="cta-actions">
-            <a class="button button--gold" href="<?= lex_e($appointLink) ?>"><?= $user && $user['role'] === 'client' ? 'Continue to appointments' : 'Create account' ?></a>
-            <a class="button button--soft" href="<?= lex_e($portalLink) ?>"><?= $user ? 'Open portal' : 'Login now' ?></a>
-          </div>
-        </div>
-      </div>
-    </section>
   </main>
 
   <footer class="site-footer">
+    <div class="site-footer__glow" aria-hidden="true"></div>
     <div class="container footer-grid">
       <div class="footer-brand-block">
-        <a class="brand" href="#home">
-          <span class="brand__mark"><img src="<?= lex_e($logoAsset) ?>" alt="LexShield logo"></span>
-          <span class="brand__text">LEX<span>SHIELD</span></span>
+        <a class="footer-brand" href="#home" aria-label="LexShield home">
+          <span class="footer-brand__mark"><img src="<?= lex_e($logoAsset) ?>" alt=""></span>
+          <span class="footer-brand__text">LEX<span>SHIELD</span></span>
         </a>
         <p class="footer-copy">
-          &copy; <?= date('Y') ?> LexShield Legal Compliance. All rights reserved.
+          A connected legal workspace for lawyer discovery, secure case documents, appointments, messaging, payments, and video consultations.
         </p>
+        <div class="footer-location-chip">
+          <span class="footer-location-chip__dot" aria-hidden="true"></span>
+          <span>Iloilo City, Philippines</span>
+        </div>
       </div>
-      <nav class="footer-nav" aria-label="Footer navigation">
-        <a href="#home">Home</a>
-        <a href="#directory">Lawyers</a>
-        <a href="#services">Services</a>
-        <a href="#about">About</a>
-        <a href="#contact">Contact</a>
-      </nav>
-      
-     
+
+      <div class="footer-location">
+        <p class="footer-heading">Location Details</p>
+        <div class="footer-detail"><span class="footer-detail__label">Address</span><span>De la Rama Street, Iloilo City Proper, Iloilo City, 5000 Iloilo</span></div>
+        <div class="footer-detail"><span class="footer-detail__label">Landmark</span><span>Opposite/adjacent to Plaza Libertad and near the Iloilo River</span></div>
+        <div class="footer-detail"><span class="footer-detail__label">Office Hours</span><span>Monday to Friday, 8:00 AM &ndash; 5:00 PM</span></div>
+        <div class="footer-detail"><span class="footer-detail__label">Contact</span><span>(033) 333-1111</span></div>
+      </div>
+
+    </div>
+
+    <div class="container footer-bottom">
+      <p class="footer-copy">&copy; <?= date('Y') ?> LexShield Legal Compliance. All rights reserved.</p>
+      <p class="footer-copy">Legal services platform &middot; Iloilo City, Philippines</p>
     </div>
   </footer>
+
+    <style>
+      /* Footer: remove the Explore column and let the brand/location sections use the full width. */
+      .site-footer .footer-grid {
+        grid-template-columns: minmax(230px, 0.9fr) minmax(340px, 1.35fr);
+      }
+
+      @media (max-width: 767px) {
+        .site-footer .footer-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
 
   <script>
     (() => {
@@ -2956,6 +3482,14 @@ $topLawyers = array_slice($lawyers, 0, 4);
         nav.classList.add('is-menu-open');
         navToggle.setAttribute('aria-expanded', 'true');
         navToggle.setAttribute('aria-label', 'Close navigation');
+      };
+
+      const syncNavScrollState = () => {
+        if (!nav) {
+          return;
+        }
+
+        nav.classList.toggle('is-scrolled', window.scrollY > 24);
       };
 
       const syncActiveLinkToViewport = () => {
@@ -3076,6 +3610,9 @@ $topLawyers = array_slice($lawyers, 0, 4);
           closeMobileMenu();
         }
       });
+
+      window.addEventListener('scroll', syncNavScrollState, { passive: true });
+      syncNavScrollState();
 
       window.addEventListener('scroll', syncActiveLinkToViewport, { passive: true });
       window.addEventListener('load', syncActiveLinkToViewport);

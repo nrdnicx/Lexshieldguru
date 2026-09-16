@@ -32090,3 +32090,59 @@ html[data-theme="light"] .messages-page .conversation-menu-item small { color: #
   .video-consultation-header .button { width: 100%; }
   .video-consultation-stage { height: calc(100vh - 210px); min-height: 420px; border-radius: 10px; }
 }
+
+
+/* ================================================================
+   LexShield — Case Vault document action + pending status fix
+   ================================================================ */
+body:has([data-case-files-app]) .case-vault-doc-menu-panel {
+  display: none !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+body:has([data-case-files-app]) .case-vault-doc-menu[open] .case-vault-doc-menu-panel {
+  display: grid !important;
+}
+body:has([data-case-files-app]) .case-vault-doc-actions { min-width: 0; }
+body:has([data-case-files-app]) .case-vault-doc-actions .vault-status {
+  max-width: 100%; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+}
+body.app-workspace:has([data-case-files-app]) .case-vault-doc-menu-panel { display: none !important; }
+body.app-workspace:has([data-case-files-app]) .case-vault-doc-menu[open] .case-vault-doc-menu-panel { display: grid !important; }
+
+@media (max-width: 680px) {
+  body:has([data-case-files-app]) .case-vault-doc { overflow: visible !important; }
+  body:has([data-case-files-app]) .case-vault-doc-actions {
+    position: absolute !important; top: .5rem !important; right: .5rem !important;
+    width: auto !important; min-width: 34px !important; max-width: 118px !important;
+    min-height: 34px !important; align-self: auto !important; display: flex !important;
+    flex-direction: row !important; align-items: center !important; justify-content: flex-end !important;
+    gap: .3rem !important; z-index: 20 !important;
+  }
+  body:has([data-case-files-app]) .case-vault-doc-main { padding-right: 6.4rem !important; }
+  body:has([data-case-files-app]) .case-vault-doc-actions .vault-status {
+    display: inline-flex !important; align-items: center !important; justify-content: center !important;
+    max-width: 7rem !important; min-height: 26px !important; padding: .22rem .48rem !important;
+    border-radius: 999px !important; font-size: .57rem !important; line-height: 1.1 !important;
+    white-space: nowrap !important;
+  }
+  body:has([data-case-files-app]) .case-vault-doc-menu { position: relative !important; z-index: 1002 !important; }
+  body:has([data-case-files-app]) .case-vault-doc-menu-panel {
+    right: 0 !important; left: auto !important; top: auto !important;
+    bottom: calc(100% + .45rem) !important; width: min(228px, calc(100vw - 1rem)) !important;
+    max-width: calc(100vw - 1rem) !important; max-height: min(68vh, 390px) !important;
+    overflow-y: auto !important; overflow-x: hidden !important; z-index: 1003 !important;
+  }
+  body:has([data-case-files-app]) .case-vault-doc-menu-panel a,
+  body:has([data-case-files-app]) .case-vault-doc-menu-panel button {
+    min-width: 0 !important; max-width: 100% !important; box-sizing: border-box !important;
+    white-space: normal !important; overflow-wrap: anywhere !important;
+  }
+}
+@media (max-width: 390px) {
+  body:has([data-case-files-app]) .case-vault-doc-main { padding-right: 5.8rem !important; }
+  body:has([data-case-files-app]) .case-vault-doc-actions { right: .42rem !important; top: .42rem !important; max-width: 106px !important; }
+  body:has([data-case-files-app]) .case-vault-doc-actions .vault-status {
+    max-width: 5.7rem !important; font-size: .53rem !important; padding-inline: .38rem !important;
+  }
+}

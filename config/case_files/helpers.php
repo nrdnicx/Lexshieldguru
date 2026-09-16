@@ -556,12 +556,12 @@ function lex_case_files_render_vault(array $record, array $filters, array $user)
             </label>
             <label class="case-vault-file-input">
               <span class="case-vault-upload-drop">
-                <span class="case-vault-upload-drop-title">Choose a file or drag and drop</span>
-                <span class="case-vault-upload-drop-copy"><?= $isClient ? 'PDF, DOCX, JPG' : 'Upload approved or reviewable case files' ?></span>
+                <span class="case-vault-upload-drop-title">Choose files or drag and drop</span>
+                <span class="case-vault-upload-drop-copy"><?= $isClient ? 'Up to 5 files · 25 MB each · 100 MB per batch' : 'Up to 5 files · 25 MB each · 100 MB per batch' ?></span>
               </span>
-              <input type="file" name="vault_document" required>
+              <input type="file" name="vault_document[]" multiple required accept=".pdf,.jpg,.jpeg,.png,.webp,.docx">
             </label>
-            <button class="button button-primary" type="submit"><?= $isClient ? 'Submit for approval' : 'Upload document' ?></button>
+            <button class="button button-primary" type="submit"><?= $isClient ? 'Submit files for approval' : 'Upload files' ?></button>
             <p class="case-vault-note"><?= $isClient ? 'Uploads are reviewed by your lawyer before joining the vault.' : 'Pending client uploads stay marked for review until you approve them.' ?></p>
           </form>
         </div>
